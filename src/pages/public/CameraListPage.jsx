@@ -1,63 +1,74 @@
-import { useMemo, useState } from "react";
-import { Link } from "react-router-dom";
-import cameras from "../../data/cameras";
+import { useEffect, useState } from "react";
+import { Link, useSearchParams } from "react-router-dom";
+import { catalogService } from "../../services/catalogService";
 
-const categoryOptions = ["Tất cả", "Máy ảnh Film", "Máy ảnh Digital"];
 const sanitizeNumericInput = (value) => value.replace(/[^0-9]/g, "");
 
 function CameraListPage() {
+  const [searchParams] = useSearchParams();
   const [searchTerm, setSearchTerm] = useState("");
-  const [selectedCategory, setSelectedCategory] = useState("Tất cả");
-  const [selectedBrand, setSelectedBrand] = useState("Tất cả");
+  const [selectedCategory, setSelectedCategory] = useState(
+    () => searchParams.get("category") || "",
+  );
+  const [selectedBrand, setSelectedBrand] = useState("");
   const [minPrice, setMinPrice] = useState("");
   const [maxPrice, setMaxPrice] = useState("");
   const [sortBy, setSortBy] = useState("default");
 
-  const brands = useMemo(
-    () => ["Tất cả", ...new Set(cameras.map((camera) => camera.brand))],
-    [],
-  );
+  const [categories, setCategories] = useState([]);
+  const [brands, setBrands] = useState([]);
+  const [modelsResult, setModelsResult] = useState({ items: [], total: 0 });
 
-  const filteredCameras = useMemo(() => {
-    const min = minPrice ? Number(minPrice) : 0;
-    const max = maxPrice ? Number(maxPrice) : Number.MAX_SAFE_INTEGER;
+  useEffect(() => {
+    let active = true;
+    Promise.all([catalogService.getCategories(), catalogService.getBrands()])
+      .then(([catRes, brandRes]) => {
+        if (!active) return;
+        setCategories(catRes.items || []);
+        setBrands(brandRes.items || []);
+      })
+      .catch(() => {
+        if (!active) return;
+        setCategories([]);
+        setBrands([]);
+      });
+    return () => {
+      active = false;
+    };
+  }, []);
 
-    const result = cameras.filter((camera) => {
-      const matchesSearch =
-        camera.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        camera.brand.toLowerCase().includes(searchTerm.toLowerCase());
+  useEffect(() => {
+    let active = true;
+    catalogService
+      .getModels({
+        q: searchTerm.trim(),
+        category: selectedCategory,
+        brand: selectedBrand,
+        minPrice: minPrice || undefined,
+        maxPrice: maxPrice || undefined,
+        sort: sortBy,
+      })
+      .then((res) => {
+        if (active) {
+          setModelsResult({
+            items: res.items || [],
+            total: res.total ?? (res.items?.length || 0),
+          });
+        }
+      })
+      .catch(() => {
+        if (active) setModelsResult({ items: [], total: 0 });
+      });
 
-      const matchesCategory =
-        selectedCategory === "Tất cả" || camera.category === selectedCategory;
-      const matchesBrand =
-        selectedBrand === "Tất cả" || camera.brand === selectedBrand;
-      const matchesMinPrice = camera.price >= min;
-      const matchesMaxPrice = camera.price <= max;
-
-      return (
-        matchesSearch &&
-        matchesCategory &&
-        matchesBrand &&
-        matchesMinPrice &&
-        matchesMaxPrice
-      );
-    });
-
-    if (sortBy === "low-to-high") {
-      return [...result].sort((a, b) => a.price - b.price);
-    }
-
-    if (sortBy === "high-to-low") {
-      return [...result].sort((a, b) => b.price - a.price);
-    }
-
-    return result;
+    return () => {
+      active = false;
+    };
   }, [searchTerm, selectedCategory, selectedBrand, minPrice, maxPrice, sortBy]);
 
   const resetFilters = () => {
     setSearchTerm("");
-    setSelectedCategory("Tất cả");
-    setSelectedBrand("Tất cả");
+    setSelectedCategory("");
+    setSelectedBrand("");
     setMinPrice("");
     setMaxPrice("");
     setSortBy("default");
@@ -76,7 +87,7 @@ function CameraListPage() {
             hoạt, phù hợp cho từng dự án sáng tạo.
           </p>
           <div className="collection-summary">
-            <span>{filteredCameras.length} sản phẩm mẫu</span>
+            <span>{modelsResult.total} mẫu thiết bị</span>
           </div>
         </header>
 
@@ -100,9 +111,10 @@ function CameraListPage() {
                 value={selectedCategory}
                 onChange={(event) => setSelectedCategory(event.target.value)}
               >
-                {categoryOptions.map((option) => (
-                  <option key={option} value={option}>
-                    {option}
+                <option value="">Tất cả</option>
+                {categories.map((cat) => (
+                  <option key={cat.slug} value={cat.slug}>
+                    {cat.name}
                   </option>
                 ))}
               </select>
@@ -115,9 +127,10 @@ function CameraListPage() {
                 value={selectedBrand}
                 onChange={(event) => setSelectedBrand(event.target.value)}
               >
+                <option value="">Tất cả</option>
                 {brands.map((brand) => (
-                  <option key={brand} value={brand}>
-                    {brand}
+                  <option key={brand.slug} value={brand.slug}>
+                    {brand.name}
                   </option>
                 ))}
               </select>
@@ -163,8 +176,9 @@ function CameraListPage() {
                 onChange={(event) => setSortBy(event.target.value)}
               >
                 <option value="default">Mặc định</option>
-                <option value="low-to-high">Giá thấp đến cao</option>
-                <option value="high-to-low">Giá cao đến thấp</option>
+                <option value="price_asc">Giá thấp đến cao</option>
+                <option value="price_desc">Giá cao đến thấp</option>
+                <option value="newest">Mới nhất</option>
               </select>
             </div>
 
@@ -178,7 +192,7 @@ function CameraListPage() {
           </div>
         </section>
 
-        {filteredCameras.length === 0 ? (
+        {modelsResult.items.length === 0 ? (
           <div className="empty-state">
             <h2>Không tìm thấy sản phẩm phù hợp</h2>
             <p>
@@ -195,25 +209,28 @@ function CameraListPage() {
           </div>
         ) : (
           <section className="camera-grid">
-            {filteredCameras.map((camera) => (
+            {modelsResult.items.map((camera) => (
               <article key={camera.id} className="camera-card collection-card">
                 <div className="image-placeholder card-placeholder">
-                  <span>{camera.category}</span>
+                  <span>{camera.category?.name}</span>
                 </div>
 
                 <div className="camera-body">
-                  <span className="camera-category">{camera.category}</span>
+                  <span className="camera-category">
+                    {camera.category?.name}
+                  </span>
                   <h3>{camera.name}</h3>
                   <p className="camera-meta">
-                    {camera.brand} · {camera.type}
+                    {camera.brand?.name} · {camera.cameraType}
                   </p>
                   <p className="camera-description">{camera.description}</p>
 
                   <div className="camera-footer">
                     <strong>
-                      Giá thuê mẫu: {camera.price.toLocaleString("vi-VN")}đ/ngày
+                      Giá thuê mẫu: {camera.pricePerDay.toLocaleString("vi-VN")}
+                      đ/ngày
                     </strong>
-                    <Link to={`/cameras/${camera.id}`}>Xem chi tiết</Link>
+                    <Link to={`/cameras/${camera.slug}`}>Xem chi tiết</Link>
                   </div>
                 </div>
               </article>

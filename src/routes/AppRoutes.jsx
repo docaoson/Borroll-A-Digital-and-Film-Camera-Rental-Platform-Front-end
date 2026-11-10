@@ -22,7 +22,6 @@ import OrdersPage from "../pages/renter/OrdersPage";
 import OrderDetailPage from "../pages/renter/OrderDetailPage";
 import ProfilePage from "../pages/renter/ProfilePage";
 import FavoritesPage from "../pages/renter/FavoritesPage";
-import KycPage from "../pages/renter/KycPage";
 
 import AdminDashboardPage from "../pages/admin/AdminDashboardPage";
 import AdminInventoryPage from "../pages/admin/AdminInventoryPage";
@@ -116,16 +115,6 @@ function AppRoutes() {
         }
       >
         <Route index element={<FavoritesPage />} />
-      </Route>
-      <Route
-        path="/kyc"
-        element={
-          <ProtectedRoute>
-            <RenterLayout />
-          </ProtectedRoute>
-        }
-      >
-        <Route index element={<KycPage />} />
       </Route>
 
       <Route

@@ -1,41 +1,22 @@
+import { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
 import heroBackground from "../../assets/background-picture for homepage.jpg";
+import { catalogService } from "../../services/catalogService";
 
 const categories = [
   {
+    slug: "may-film",
     title: "Máy ảnh Film",
     description:
       "Khám phá chất ảnh cổ điển, cảm giác tương tác và phong cách sáng tạo riêng cho dự án của bạn.",
     label: "Film",
   },
   {
+    slug: "may-digital",
     title: "Máy ảnh Digital",
     description:
       "Dành cho quay video, chụp dự án và trải nghiệm hình ảnh rõ nét, linh hoạt trong nhiều tình huống.",
     label: "Digital",
-  },
-];
-
-const featuredCameras = [
-  {
-    name: "Canon AE-1 Program",
-    type: "Máy ảnh film 35mm",
-    price: "Giá thuê tham khảo: 550.000đ/ngày",
-  },
-  {
-    name: "Sony A7 III",
-    type: "Mirrorless digital",
-    price: "Giá thuê tham khảo: 900.000đ/ngày",
-  },
-  {
-    name: "Fujifilm X-T4",
-    type: "Digital hybrid",
-    price: "Giá thuê tham khảo: 850.000đ/ngày",
-  },
-  {
-    name: "Pentax K1000",
-    type: "Máy ảnh film cổ điển",
-    price: "Giá thuê tham khảo: 470.000đ/ngày",
   },
 ];
 
@@ -46,6 +27,23 @@ const steps = [
 ];
 
 function HomePage() {
+  const [featuredModels, setFeaturedModels] = useState([]);
+
+  useEffect(() => {
+    let active = true;
+    catalogService
+      .getModels({ featured: true, pageSize: 4 })
+      .then((res) => {
+        if (active) setFeaturedModels(res.items || []);
+      })
+      .catch(() => {
+        if (active) setFeaturedModels([]);
+      });
+    return () => {
+      active = false;
+    };
+  }, []);
+
   return (
     <div className="home-page">
       <section
@@ -100,9 +98,9 @@ function HomePage() {
           <div className="category-grid">
             {categories.map((category) => (
               <Link
-                to="/cameras"
+                to={`/cameras?category=${category.slug}`}
                 className="category-card"
-                key={category.title}
+                key={category.slug}
               >
                 <div className="image-placeholder category-placeholder">
                   <span>{category.label}</span>
@@ -125,18 +123,22 @@ function HomePage() {
           </div>
 
           <div className="featured-grid">
-            {featuredCameras.map((camera) => (
-              <article className="camera-card" key={camera.name}>
+            {featuredModels.map((camera) => (
+              <article className="camera-card" key={camera.id}>
                 <div className="image-placeholder card-placeholder">
-                  <span>{camera.type}</span>
+                  <span>{camera.category?.name}</span>
                 </div>
                 <div className="camera-body">
-                  <span className="sample-tag">Mẫu tham khảo</span>
+                  <span className="sample-tag">
+                    {camera.cameraType === "FILM" ? "Máy ảnh Film" : "Digital"}
+                  </span>
                   <h3>{camera.name}</h3>
-                  <p>{camera.type}</p>
+                  <p>{camera.brand?.name}</p>
                   <div className="camera-footer">
-                    <strong>{camera.price}</strong>
-                    <Link to="/cameras">Xem chi tiết</Link>
+                    <strong>
+                      {camera.pricePerDay.toLocaleString("vi-VN")} đ/ngày
+                    </strong>
+                    <Link to={`/cameras/${camera.slug}`}>Xem chi tiết</Link>
                   </div>
                 </div>
               </article>
@@ -163,7 +165,7 @@ function HomePage() {
                   {index === 1 &&
                     "Lựa chọn khoảng thời gian thuê phù hợp với lịch trình và dự án của bạn."}
                   {index === 2 &&
-                    "Nhận máy theo thông tin đặt thuê và bắt đầu trải nghiệm tạo hình riêng."}
+                    "Nhận máy tại chi nhánh và bắt đầu trải nghiệm tạo hình riêng."}
                 </p>
               </div>
             ))}

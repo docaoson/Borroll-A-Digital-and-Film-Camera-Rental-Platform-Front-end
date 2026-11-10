@@ -1,11 +1,17 @@
-import { useMemo, useState } from "react";
+import { useEffect, useState } from "react";
 import { Link, useParams } from "react-router-dom";
 import DateInput from "../../components/shared/DateInput";
-import cameras from "../../data/cameras";
+import { useRentalSelection } from "../../hooks/useRentalSelection";
+import { ApiError } from "../../lib/apiClient";
+import { bookingService } from "../../services/bookingService";
+import { catalogService } from "../../services/catalogService";
 import NotFoundPage from "../error/NotFoundPage";
 
-const STORAGE_KEY = "borroll_cart";
-const MS_PER_DAY = 1000 * 60 * 60 * 24;
+function getTodayVietnamIso() {
+  return new Intl.DateTimeFormat("en-CA", {
+    timeZone: "Asia/Ho_Chi_Minh",
+  }).format(new Date());
+}
 
 function parseIsoUtcMs(isoDate) {
   if (!isoDate || !/^\d{4}-\d{2}-\d{2}$/.test(isoDate)) {
@@ -17,39 +23,144 @@ function parseIsoUtcMs(isoDate) {
 
 function CameraDetailPage() {
   const { id } = useParams();
-  const camera = useMemo(() => cameras.find((item) => item.id === id), [id]);
+  const {
+    branchSlug: savedBranchSlug,
+    setBranchSlug: saveBranchSlug,
+    setStartDate: saveStartDate,
+    setEndDate: saveEndDate,
+    addItem,
+  } = useRentalSelection();
 
-  const today = new Date();
-  const todayString = new Date(
-    today.getTime() - today.getTimezoneOffset() * 60000,
-  )
-    .toISOString()
-    .split("T")[0];
+  const todayString = getTodayVietnamIso();
 
+  const [modelState, setModelState] = useState({
+    slug: null,
+    data: null,
+    notFound: false,
+  });
+  const [branches, setBranches] = useState([]);
+  const [branchSlug, setBranchSlug] = useState(savedBranchSlug || "tay-ho");
   const [pickupDate, setPickupDate] = useState(todayString);
   const [returnDate, setReturnDate] = useState("");
   const [pickupInvalid, setPickupInvalid] = useState(false);
   const [returnInvalid, setReturnInvalid] = useState(false);
   const [message, setMessage] = useState("");
+  const [quoteState, setQuoteState] = useState({
+    key: null,
+    data: null,
+    error: "",
+  });
 
-  if (!camera) {
-    return <NotFoundPage />;
-  }
+  useEffect(() => {
+    let active = true;
+    catalogService
+      .getBranches()
+      .then((res) => {
+        if (active) setBranches(res.items || []);
+      })
+      .catch(() => {
+        if (active) setBranches([]);
+      });
+    return () => {
+      active = false;
+    };
+  }, []);
+
+  useEffect(() => {
+    if (!id) return;
+    let active = true;
+    catalogService
+      .getModelBySlug(id)
+      .then((data) => {
+        if (active) setModelState({ slug: id, data, notFound: false });
+      })
+      .catch(() => {
+        if (active) setModelState({ slug: id, data: null, notFound: true });
+      });
+    return () => {
+      active = false;
+    };
+  }, [id]);
+
+  const camera = modelState.slug === id ? modelState.data : null;
+  const isModelLoading = modelState.slug !== id;
+  const isNotFound = modelState.slug === id && modelState.notFound;
 
   const pickupMs = parseIsoUtcMs(pickupDate);
   const returnMs = parseIsoUtcMs(returnDate);
   const isRangeInvalid =
-    pickupMs !== null && returnMs !== null && returnMs < pickupMs;
-
-  const hasValidRange =
-    pickupMs !== null && returnMs !== null && returnMs >= pickupMs;
-
-  const rentalDays = hasValidRange
-    ? Math.max(1, Math.round((returnMs - pickupMs) / MS_PER_DAY))
+    pickupMs !== null && returnMs !== null && returnMs <= pickupMs;
+  const canRequestQuote = Boolean(
+    camera &&
+      branchSlug &&
+      pickupMs !== null &&
+      returnMs !== null &&
+      returnMs > pickupMs,
+  );
+  const quoteRequestKey = canRequestQuote
+    ? `${branchSlug}|${pickupDate}|${returnDate}|${camera.id}`
     : null;
 
-  const estimatedTotal =
-    rentalDays !== null ? camera.price * rentalDays : null;
+  useEffect(() => {
+    if (!quoteRequestKey || !camera) return;
+
+    let active = true;
+    bookingService
+      .quote({
+        branchSlug,
+        startDate: pickupDate,
+        endDate: returnDate,
+        items: [{ modelId: camera.id }],
+        addons: [],
+      })
+      .then((data) => {
+        if (active) {
+          setQuoteState({ key: quoteRequestKey, data, error: "" });
+        }
+      })
+      .catch((error) => {
+        if (active) {
+          const msg =
+            error instanceof ApiError
+              ? error.message
+              : "Không thể lấy báo giá từ máy chủ lúc này.";
+          setQuoteState({ key: quoteRequestKey, data: null, error: msg });
+        }
+      });
+
+    return () => {
+      active = false;
+    };
+  }, [quoteRequestKey, branchSlug, pickupDate, returnDate, camera]);
+
+  if (isNotFound) {
+    return <NotFoundPage />;
+  }
+
+  if (isModelLoading || !camera) {
+    return (
+      <div className="camera-detail-page">
+        <div className="container detail-shell">
+          <div className="page-placeholder">
+            <p className="eyebrow">BORROLL</p>
+            <p>Đang tải thông tin thiết bị...</p>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  const isQuoteLoading = Boolean(
+    quoteRequestKey && quoteState.key !== quoteRequestKey,
+  );
+  const quote =
+    quoteRequestKey && quoteState.key === quoteRequestKey
+      ? quoteState.data
+      : null;
+  const quoteError =
+    quoteRequestKey && quoteState.key === quoteRequestKey
+      ? quoteState.error
+      : "";
 
   const handlePickupChange = (nextPickupDate, isInvalid) => {
     setPickupDate(nextPickupDate);
@@ -63,7 +174,7 @@ function CameraDetailPage() {
     setMessage("");
   };
 
-  const handleAddToCart = () => {
+  const handleAddToSelection = () => {
     if (pickupInvalid || returnInvalid) {
       setMessage("Ngày nhận hoặc ngày trả không hợp lệ. Vui lòng kiểm tra lại.");
       return;
@@ -75,30 +186,21 @@ function CameraDetailPage() {
     }
 
     if (isRangeInvalid) {
-      setMessage("Ngày trả máy không được trước ngày nhận máy.");
+      setMessage("Ngày trả máy phải sau ngày nhận máy ít nhất 1 ngày.");
       return;
     }
 
-    const cartItem = {
-      cameraId: camera.id,
-      cameraName: camera.name,
-      dailyPrice: camera.price,
-      startDate: pickupDate,
-      endDate: returnDate,
-      rentalDays,
-      estimatedTotal,
-    };
-
-    try {
-      const previousCart = JSON.parse(
-        localStorage.getItem(STORAGE_KEY) || "[]",
-      );
-      const nextCart = [...previousCart, cartItem];
-      localStorage.setItem(STORAGE_KEY, JSON.stringify(nextCart));
-      setMessage("Máy ảnh đã được thêm vào giỏ thuê thành công.");
-    } catch {
-      setMessage("Không thể lưu giỏ thuê. Vui lòng thử lại.");
-    }
+    saveBranchSlug(branchSlug);
+    saveStartDate(pickupDate);
+    saveEndDate(returnDate);
+    addItem({
+      modelId: camera.id,
+      slug: camera.slug,
+      name: camera.name,
+      kind: camera.kind,
+      mount: camera.mount,
+    });
+    setMessage("Đã thêm thiết bị vào danh sách chọn thuê.");
   };
 
   return (
@@ -115,16 +217,16 @@ function CameraDetailPage() {
         <div className="detail-layout">
           <div className="detail-visual">
             <div className="image-placeholder detail-placeholder">
-              <span>{camera.category}</span>
+              <span>{camera.category?.name}</span>
             </div>
           </div>
 
           <div className="detail-content">
-            <p className="eyebrow">{camera.category}</p>
+            <p className="eyebrow">{camera.category?.name}</p>
             <h1>{camera.name}</h1>
             <div className="detail-meta">
-              <span>{camera.brand}</span>
-              <span>{camera.type}</span>
+              <span>{camera.brand?.name}</span>
+              <span>{camera.cameraType}</span>
             </div>
 
             <p className="detail-description">{camera.description}</p>
@@ -134,15 +236,15 @@ function CameraDetailPage() {
               <ul className="info-list">
                 <li>
                   <span>Thương hiệu</span>
-                  <strong>{camera.brand}</strong>
+                  <strong>{camera.brand?.name}</strong>
                 </li>
                 <li>
-                  <span>Loại máy</span>
-                  <strong>{camera.type}</strong>
+                  <span>Dòng máy</span>
+                  <strong>{camera.cameraType}</strong>
                 </li>
                 <li>
                   <span>Phân loại</span>
-                  <strong>{camera.category}</strong>
+                  <strong>{camera.category?.name}</strong>
                 </li>
               </ul>
             </div>
@@ -150,8 +252,8 @@ function CameraDetailPage() {
             <div className="detail-section">
               <h2>Phụ kiện đi kèm</h2>
               <p>
-                Pin, dây đeo, túi bảo vệ và hướng dẫn sử dụng cơ bản. Dành cho
-                mục đích demo giao diện.
+                Pin, dây đeo, túi bảo vệ và hướng dẫn sử dụng cơ bản. Nhận và
+                trả máy trực tiếp tại chi nhánh đã chọn.
               </p>
             </div>
           </div>
@@ -160,6 +262,24 @@ function CameraDetailPage() {
         <div className="booking-panel">
           <div className="booking-form">
             <h2>Chọn thời gian thuê</h2>
+
+            <div className="form-field branch-field">
+              <label htmlFor="branch-select">Chi nhánh nhận và trả máy</label>
+              <select
+                id="branch-select"
+                value={branchSlug}
+                onChange={(event) => {
+                  setBranchSlug(event.target.value);
+                  setMessage("");
+                }}
+              >
+                {branches.map((branch) => (
+                  <option key={branch.slug} value={branch.slug}>
+                    {branch.name}
+                  </option>
+                ))}
+              </select>
+            </div>
 
             <div className="date-row">
               <div>
@@ -191,25 +311,61 @@ function CameraDetailPage() {
                 <strong>
                   {isRangeInvalid
                     ? "Không hợp lệ"
-                    : rentalDays !== null
-                      ? `${rentalDays} ngày`
-                      : "Chưa chọn"}
+                    : isQuoteLoading
+                      ? "Đang tính..."
+                      : quote
+                        ? `${quote.days} ngày`
+                        : "Chưa chọn"}
                 </strong>
               </div>
               <div>
-                <span>Giá thuê dự kiến</span>
+                <span>Tiền thuê (từ báo giá)</span>
                 <strong>
-                  {estimatedTotal !== null
-                    ? `${estimatedTotal.toLocaleString("vi-VN")}đ`
-                    : "—"}
+                  {isQuoteLoading
+                    ? "Đang tính..."
+                    : quote
+                      ? `${quote.rentalAmount.toLocaleString("vi-VN")} đ`
+                      : "—"}
+                </strong>
+              </div>
+              <div>
+                <span>Tiền cọc (hoàn lại khi trả)</span>
+                <strong>
+                  {isQuoteLoading
+                    ? "Đang tính..."
+                    : quote
+                      ? `${quote.depositAmount.toLocaleString("vi-VN")} đ`
+                      : "—"}
+                </strong>
+              </div>
+              <div>
+                <span>Tổng thanh toán tại cửa hàng</span>
+                <strong>
+                  {isQuoteLoading
+                    ? "Đang tính..."
+                    : quote
+                      ? `${quote.totalDueAtPickup.toLocaleString("vi-VN")} đ`
+                      : "—"}
                 </strong>
               </div>
             </div>
 
+            {quote && quote.available === false && (
+              <div className="form-alert error" role="alert">
+                Hết máy trong khoảng ngày này tại chi nhánh đã chọn.
+              </div>
+            )}
+
+            {quoteError && (
+              <div className="form-alert error" role="alert">
+                {quoteError}
+              </div>
+            )}
+
             <button
               type="button"
               className="button primary-button full-width"
-              onClick={handleAddToCart}
+              onClick={handleAddToSelection}
             >
               Thêm vào giỏ thuê
             </button>
@@ -221,12 +377,12 @@ function CameraDetailPage() {
             )}
             {isRangeInvalid && !message && (
               <p className="cart-message field-error">
-                Ngày trả máy không được trước ngày nhận máy.
+                Ngày trả máy phải sau ngày nhận máy ít nhất 1 ngày.
               </p>
             )}
             {message && <p className="cart-message">{message}</p>}
 
-            {message.includes("thành công") && (
+            {message.includes("Đã thêm") && (
               <Link
                 to="/cart"
                 className="button secondary-button full-width cart-link"
@@ -240,17 +396,20 @@ function CameraDetailPage() {
             <h3>Lưu ý thuê máy</h3>
             <ul>
               <li>
-                Giá thuê là mô hình demo và không phải thông tin kinh doanh thực
-                tế.
+                Nhận và trả máy tại cùng một chi nhánh đã chọn. Cửa hàng không
+                giao hàng tận nơi.
               </li>
               <li>
-                Khách hàng cần chọn ngày nhận và ngày trả trước khi thêm thiết
-                bị vào giỏ thuê.
+                Bạn thanh toán trực tiếp tại cửa hàng khi nhận máy. Tiền cọc sẽ
+                được hoàn lại khi trả máy nếu thiết bị không hư hỏng.
               </li>
-              <li>Thời gian thuê tối thiểu là một ngày.</li>
               <li>
-                Quy trình đơn giản giúp khách hàng kiểm tra và về sau có thể
-                nâng cấp sang tính năng đầy đủ.
+                Thời gian thuê tính theo công thức ngày trả trừ ngày nhận (tối
+                thiểu 1 ngày).
+              </li>
+              <li>
+                Báo giá chi tiết được tính qua <code>POST /bookings/quote</code>
+                .
               </li>
             </ul>
           </div>

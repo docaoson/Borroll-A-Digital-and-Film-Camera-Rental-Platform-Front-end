@@ -8,7 +8,6 @@ const renterNavLinks = [
   { to: "/cart", label: "Giỏ thuê" },
   { to: "/checkout", label: "Xác nhận đặt" },
   { to: "/orders", label: "Đơn thuê" },
-  { to: "/kyc", label: "KYC demo" },
 ];
 
 function RenterLayout() {

@@ -1364,3 +1364,30 @@ select {
     grid-template-columns: 1fr;
   }
 }
+
+
+/* Selection & Quote Helpers */
+.branch-field {
+  margin-bottom: 1.15rem;
+}
+
+.selection-layout {
+  display: grid;
+  gap: 1.25rem;
+}
+
+.selection-items h2 {
+  font-size: 1.15rem;
+  margin-bottom: 0.75rem;
+}
+
+.selection-kind {
+  font-size: 0.85rem;
+  color: rgba(47, 41, 39, 0.65);
+}
+
+.addon-qty-controls {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.65rem;
+}
