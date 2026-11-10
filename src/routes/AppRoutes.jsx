@@ -3,6 +3,7 @@ import { Routes, Route } from "react-router-dom";
 import PublicLayout from "../layouts/PublicLayout";
 import RenterLayout from "../layouts/RenterLayout";
 import AdminLayout from "../layouts/AdminLayout";
+import ProtectedRoute from "../components/shared/ProtectedRoute";
 
 import HomePage from "../pages/public/HomePage";
 import AboutPage from "../pages/public/AboutPage";
@@ -55,27 +56,86 @@ function AppRoutes() {
         <Route path="*" element={<NotFoundPage />} />
       </Route>
 
-      <Route path="/cart" element={<RenterLayout />}>
+      <Route
+        path="/cart"
+        element={
+          <ProtectedRoute>
+            <RenterLayout />
+          </ProtectedRoute>
+        }
+      >
         <Route index element={<CartPage />} />
       </Route>
-      <Route path="/checkout" element={<RenterLayout />}>
+      <Route
+        path="/checkout"
+        element={
+          <ProtectedRoute>
+            <RenterLayout />
+          </ProtectedRoute>
+        }
+      >
         <Route index element={<CheckoutPage />} />
       </Route>
-      <Route path="/orders" element={<RenterLayout />}>
+      <Route
+        path="/orders"
+        element={
+          <ProtectedRoute>
+            <RenterLayout />
+          </ProtectedRoute>
+        }
+      >
         <Route index element={<OrdersPage />} />
         <Route path=":id" element={<OrderDetailPage />} />
       </Route>
-      <Route path="/profile" element={<RenterLayout />}>
+      <Route
+        path="/profile"
+        element={
+          <ProtectedRoute>
+            <RenterLayout />
+          </ProtectedRoute>
+        }
+      >
         <Route index element={<ProfilePage />} />
       </Route>
-      <Route path="/favorites" element={<RenterLayout />}>
+      <Route
+        path="/settings"
+        element={
+          <ProtectedRoute>
+            <RenterLayout />
+          </ProtectedRoute>
+        }
+      >
+        <Route index element={<ProfilePage />} />
+      </Route>
+      <Route
+        path="/favorites"
+        element={
+          <ProtectedRoute>
+            <RenterLayout />
+          </ProtectedRoute>
+        }
+      >
         <Route index element={<FavoritesPage />} />
       </Route>
-      <Route path="/kyc" element={<RenterLayout />}>
+      <Route
+        path="/kyc"
+        element={
+          <ProtectedRoute>
+            <RenterLayout />
+          </ProtectedRoute>
+        }
+      >
         <Route index element={<KycPage />} />
       </Route>
 
-      <Route path="/admin" element={<AdminLayout />}>
+      <Route
+        path="/admin"
+        element={
+          <ProtectedRoute allowedRoles={["STAFF", "ADMIN"]}>
+            <AdminLayout />
+          </ProtectedRoute>
+        }
+      >
         <Route index element={<AdminDashboardPage />} />
         <Route path="inventory" element={<AdminInventoryPage />} />
         <Route path="inventory/new" element={<AddCameraPage />} />

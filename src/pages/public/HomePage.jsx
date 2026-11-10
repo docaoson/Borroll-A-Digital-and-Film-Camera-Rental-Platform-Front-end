@@ -1,4 +1,5 @@
 import { Link } from "react-router-dom";
+import heroBackground from "../../assets/background-picture for homepage.jpg";
 
 const categories = [
   {
@@ -47,7 +48,10 @@ const steps = [
 function HomePage() {
   return (
     <div className="home-page">
-      <section className="home-hero section-shell">
+      <section
+        className="home-hero section-shell"
+        style={{ "--home-hero-bg": `url("${heroBackground}")` }}
+      >
         <div className="container home-hero-inner">
           <div className="hero-copy">
             <p className="eyebrow">BORROLL</p>
@@ -82,11 +86,7 @@ function HomePage() {
             </div>
           </div>
 
-          <div className="hero-visual">
-            <div className="image-placeholder large-placeholder">
-              <span>Không gian góc nhìn BORROLL</span>
-            </div>
-          </div>
+          <div className="hero-visual" aria-hidden="true" />
         </div>
       </section>
 

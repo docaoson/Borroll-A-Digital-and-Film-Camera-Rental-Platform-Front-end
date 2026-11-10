@@ -3,6 +3,7 @@ import { Link } from "react-router-dom";
 import cameras from "../../data/cameras";
 
 const categoryOptions = ["Tất cả", "Máy ảnh Film", "Máy ảnh Digital"];
+const sanitizeNumericInput = (value) => value.replace(/[^0-9]/g, "");
 
 function CameraListPage() {
   const [searchTerm, setSearchTerm] = useState("");
@@ -18,8 +19,8 @@ function CameraListPage() {
   );
 
   const filteredCameras = useMemo(() => {
-    const min = Number(minPrice) || 0;
-    const max = Number(maxPrice) || Number.MAX_SAFE_INTEGER;
+    const min = minPrice ? Number(minPrice) : 0;
+    const max = maxPrice ? Number(maxPrice) : Number.MAX_SAFE_INTEGER;
 
     const result = cameras.filter((camera) => {
       const matchesSearch =
@@ -126,11 +127,14 @@ function CameraListPage() {
               <label htmlFor="min-price">Giá thấp nhất</label>
               <input
                 id="min-price"
-                type="number"
-                min="0"
+                type="text"
+                inputMode="numeric"
+                pattern="[0-9]*"
                 value={minPrice}
                 placeholder="0"
-                onChange={(event) => setMinPrice(event.target.value)}
+                onChange={(event) =>
+                  setMinPrice(sanitizeNumericInput(event.target.value))
+                }
               />
             </div>
 
@@ -138,11 +142,14 @@ function CameraListPage() {
               <label htmlFor="max-price">Giá cao nhất</label>
               <input
                 id="max-price"
-                type="number"
-                min="0"
+                type="text"
+                inputMode="numeric"
+                pattern="[0-9]*"
                 value={maxPrice}
                 placeholder="2000000"
-                onChange={(event) => setMaxPrice(event.target.value)}
+                onChange={(event) =>
+                  setMaxPrice(sanitizeNumericInput(event.target.value))
+                }
               />
             </div>
           </div>
