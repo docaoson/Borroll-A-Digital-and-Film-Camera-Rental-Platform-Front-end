@@ -4,7 +4,7 @@ const API_BASE_URL = (import.meta.env.VITE_API_URL || "/api/v1").replace(
   /\/+$/,
   "",
 );
-const USE_MOCK = import.meta.env.VITE_USE_MOCK !== "false";
+const USE_MOCK = import.meta.env.VITE_USE_MOCK === "true";
 
 let accessToken = null;
 let refreshPromise = null;

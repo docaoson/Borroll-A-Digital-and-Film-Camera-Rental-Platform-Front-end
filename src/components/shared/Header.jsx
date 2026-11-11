@@ -16,7 +16,7 @@ function Header({ variant = "public" }) {
 
         {variant !== "admin" && <MainNav variant={variant} />}
 
-        {(variant === "public" || variant === "renter") && <AccountMenu />}
+        <AccountMenu />
       </div>
     </header>
   );

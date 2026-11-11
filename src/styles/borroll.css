@@ -98,6 +98,8 @@ p {
   align-items: center;
   gap: 0.75rem;
   color: var(--borroll-charcoal);
+  flex-shrink: 0;
+  white-space: nowrap;
 }
 
 .brand-mark {
@@ -134,6 +136,12 @@ p {
   flex-wrap: wrap;
 }
 
+.site-header .main-nav,
+.site-header .account-menu {
+  flex-wrap: nowrap;
+  gap: 0.35rem;
+}
+
 .nav-link,
 .account-link,
 .admin-link,
@@ -142,6 +150,28 @@ p {
   border-radius: 999px;
   color: var(--borroll-charcoal);
   transition: all 0.2s ease;
+}
+
+.site-header .nav-link,
+.site-header .account-link {
+  padding: 0.48rem 0.72rem;
+  font-size: 0.94rem;
+  white-space: nowrap;
+  flex-shrink: 0;
+}
+
+.account-user-link {
+  max-width: 175px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+@media (max-width: 1080px) {
+  .header-inner,
+  .site-header .main-nav,
+  .site-header .account-menu {
+    flex-wrap: wrap;
+  }
 }
 
 .nav-link:hover,

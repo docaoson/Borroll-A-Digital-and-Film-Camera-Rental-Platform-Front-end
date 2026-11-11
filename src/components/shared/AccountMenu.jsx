@@ -29,7 +29,11 @@ function AccountMenu() {
             Quản trị
           </NavLink>
         )}
-        <NavLink to="/profile" className="account-link primary">
+        <NavLink
+          to="/profile"
+          className="account-link primary account-user-link"
+          title={user.fullName}
+        >
           {user.fullName}
         </NavLink>
         <button
