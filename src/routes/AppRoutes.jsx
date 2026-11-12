@@ -1,18 +1,16 @@
-import { Routes, Route } from "react-router-dom";
+import { Navigate, Routes, Route } from "react-router-dom";
 
 import PublicLayout from "../layouts/PublicLayout";
 import RenterLayout from "../layouts/RenterLayout";
 import AdminLayout from "../layouts/AdminLayout";
+import ProtectedRoute from "../components/shared/ProtectedRoute";
 
 import HomePage from "../pages/public/HomePage";
-import AboutPage from "../pages/public/AboutPage";
 import CameraListPage from "../pages/public/CameraListPage";
 import CameraDetailPage from "../pages/public/CameraDetailPage";
 import LoginPage from "../pages/public/LoginPage";
 import RegisterPage from "../pages/public/RegisterPage";
 import RentalPolicyPage from "../pages/public/RentalPolicyPage";
-import DeliveryPolicyPage from "../pages/public/DeliveryPolicyPage";
-import ReturnPolicyPage from "../pages/public/ReturnPolicyPage";
 import PrivacyPolicyPage from "../pages/public/PrivacyPolicyPage";
 
 import CartPage from "../pages/renter/CartPage";
@@ -21,7 +19,6 @@ import OrdersPage from "../pages/renter/OrdersPage";
 import OrderDetailPage from "../pages/renter/OrderDetailPage";
 import ProfilePage from "../pages/renter/ProfilePage";
 import FavoritesPage from "../pages/renter/FavoritesPage";
-import KycPage from "../pages/renter/KycPage";
 
 import AdminDashboardPage from "../pages/admin/AdminDashboardPage";
 import AdminInventoryPage from "../pages/admin/AdminInventoryPage";
@@ -41,41 +38,96 @@ function AppRoutes() {
     <Routes>
       <Route path="/" element={<PublicLayout />}>
         <Route index element={<HomePage />} />
-        <Route path="about" element={<AboutPage />} />
+        <Route path="about" element={<Navigate to="/" replace />} />
         <Route path="cameras" element={<CameraListPage />} />
         <Route path="cameras/:id" element={<CameraDetailPage />} />
         <Route path="login" element={<LoginPage />} />
         <Route path="register" element={<RegisterPage />} />
         <Route path="rental-policy" element={<RentalPolicyPage />} />
-        <Route path="delivery-policy" element={<DeliveryPolicyPage />} />
-        <Route path="return-policy" element={<ReturnPolicyPage />} />
+        <Route
+          path="delivery-policy"
+          element={<Navigate to="/rental-policy" replace />}
+        />
+        <Route
+          path="return-policy"
+          element={<Navigate to="/rental-policy" replace />}
+        />
         <Route path="privacy-policy" element={<PrivacyPolicyPage />} />
         <Route path="403" element={<ForbiddenPage />} />
         <Route path="error" element={<ErrorPage />} />
         <Route path="*" element={<NotFoundPage />} />
       </Route>
 
-      <Route path="/cart" element={<RenterLayout />}>
+      <Route
+        path="/cart"
+        element={
+          <ProtectedRoute>
+            <RenterLayout />
+          </ProtectedRoute>
+        }
+      >
         <Route index element={<CartPage />} />
       </Route>
-      <Route path="/checkout" element={<RenterLayout />}>
+      <Route
+        path="/checkout"
+        element={
+          <ProtectedRoute>
+            <RenterLayout />
+          </ProtectedRoute>
+        }
+      >
         <Route index element={<CheckoutPage />} />
       </Route>
-      <Route path="/orders" element={<RenterLayout />}>
+      <Route
+        path="/orders"
+        element={
+          <ProtectedRoute>
+            <RenterLayout />
+          </ProtectedRoute>
+        }
+      >
         <Route index element={<OrdersPage />} />
         <Route path=":id" element={<OrderDetailPage />} />
       </Route>
-      <Route path="/profile" element={<RenterLayout />}>
+      <Route
+        path="/profile"
+        element={
+          <ProtectedRoute>
+            <RenterLayout />
+          </ProtectedRoute>
+        }
+      >
         <Route index element={<ProfilePage />} />
       </Route>
-      <Route path="/favorites" element={<RenterLayout />}>
+      <Route
+        path="/settings"
+        element={
+          <ProtectedRoute>
+            <RenterLayout />
+          </ProtectedRoute>
+        }
+      >
+        <Route index element={<ProfilePage />} />
+      </Route>
+      <Route
+        path="/favorites"
+        element={
+          <ProtectedRoute>
+            <RenterLayout />
+          </ProtectedRoute>
+        }
+      >
         <Route index element={<FavoritesPage />} />
       </Route>
-      <Route path="/kyc" element={<RenterLayout />}>
-        <Route index element={<KycPage />} />
-      </Route>
 
-      <Route path="/admin" element={<AdminLayout />}>
+      <Route
+        path="/admin"
+        element={
+          <ProtectedRoute allowedRoles={["STAFF", "ADMIN"]}>
+            <AdminLayout />
+          </ProtectedRoute>
+        }
+      >
         <Route index element={<AdminDashboardPage />} />
         <Route path="inventory" element={<AdminInventoryPage />} />
         <Route path="inventory/new" element={<AddCameraPage />} />

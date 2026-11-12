@@ -1,89 +1,248 @@
-import { useMemo, useState } from "react";
+import { useEffect, useState } from "react";
 import { Link, useParams } from "react-router-dom";
-import cameras from "../../data/cameras";
+import DateInput from "../../components/shared/DateInput";
+import { useRentalSelection } from "../../hooks/useRentalSelection";
+import { ApiError } from "../../lib/apiClient";
+import { bookingService } from "../../services/bookingService";
+import { catalogService } from "../../services/catalogService";
 import NotFoundPage from "../error/NotFoundPage";
 
-const STORAGE_KEY = "borroll_cart";
+function getTodayVietnamIso() {
+  return new Intl.DateTimeFormat("en-CA", {
+    timeZone: "Asia/Ho_Chi_Minh",
+  }).format(new Date());
+}
 
-function CameraDetailPage() {
-  const { id } = useParams();
-  const camera = useMemo(() => cameras.find((item) => item.id === id), [id]);
-
-  const today = new Date();
-  const todayString = new Date(
-    today.getTime() - today.getTimezoneOffset() * 60000,
-  )
-    .toISOString()
-    .split("T")[0];
-
-  const [pickupDate, setPickupDate] = useState(todayString);
-  const [returnDate, setReturnDate] = useState("");
-  const [message, setMessage] = useState("");
-
-  if (!camera) {
-    return <NotFoundPage />;
+function parseIsoUtcMs(isoDate) {
+  if (!isoDate || !/^\d{4}-\d{2}-\d{2}$/.test(isoDate)) {
+    return null;
   }
+  const [year, month, day] = isoDate.split("-").map(Number);
+  return Date.UTC(year, month - 1, day);
+}
 
-  const rentalDays =
-    pickupDate && returnDate
-      ? Math.max(
-          1,
-          Math.ceil(
-            (new Date(returnDate) - new Date(pickupDate)) /
-              (1000 * 60 * 60 * 24) || 1,
-          ),
-        )
-      : 1;
+function FavoriteToggle({ modelId, isFavorite, onToggle }) {
+  const [pending, setPending] = useState(false);
 
-  const estimatedTotal = camera.price * rentalDays;
-
-  const handlePickupChange = (event) => {
-    const nextPickupDate = event.target.value;
-    setPickupDate(nextPickupDate);
-
-    if (returnDate && new Date(returnDate) < new Date(nextPickupDate)) {
-      setReturnDate(nextPickupDate);
+  const handleToggle = async () => {
+    if (!modelId || pending) return;
+    setPending(true);
+    try {
+      await onToggle(modelId, !isFavorite);
+    } finally {
+      setPending(false);
     }
   };
 
-  const handleAddToCart = () => {
-    if (!pickupDate || !returnDate) {
-      setMessage("Vui lòng chọn ngày nhận và ngày trả máy.");
-      return;
-    }
+  return (
+    <button
+      type="button"
+      className={`favorite-toggle detail-favorite-toggle ${
+        isFavorite ? "active" : ""
+      }`}
+      onClick={handleToggle}
+      disabled={pending}
+      aria-label={isFavorite ? "Bỏ yêu thích" : "Thêm vào yêu thích"}
+      title={isFavorite ? "Bỏ yêu thích" : "Thêm vào yêu thích"}
+    >
+      {pending ? "…" : isFavorite ? "♥ Đã thích" : "♡ Thêm yêu thích"}
+    </button>
+  );
+}
 
-    if (new Date(returnDate) < new Date(pickupDate)) {
-      setMessage("Ngày trả máy không được trước ngày nhận máy.");
-      return;
-    }
+function CameraDetailPage() {
+  const { id } = useParams();
+  const {
+    branchSlug: savedBranchSlug,
+    setBranchSlug: saveBranchSlug,
+    setStartDate: saveStartDate,
+    setEndDate: saveEndDate,
+    addItem,
+  } = useRentalSelection();
 
-    const finalDays = Math.max(
-      1,
-      Math.ceil(
-        (new Date(returnDate) - new Date(pickupDate)) / (1000 * 60 * 60 * 24),
-      ) + 1,
-    );
+  const todayString = getTodayVietnamIso();
 
-    const cartItem = {
-      cameraId: camera.id,
-      cameraName: camera.name,
-      dailyPrice: camera.price,
-      startDate: pickupDate,
-      endDate: returnDate,
-      rentalDays: finalDays,
-      estimatedTotal: camera.price * finalDays,
+  const [modelState, setModelState] = useState({
+    slug: null,
+    data: null,
+    notFound: false,
+  });
+  const [branches, setBranches] = useState([]);
+  const [branchSlug, setBranchSlug] = useState(savedBranchSlug || "tay-ho");
+  const [pickupDate, setPickupDate] = useState(todayString);
+  const [returnDate, setReturnDate] = useState("");
+  const [pickupInvalid, setPickupInvalid] = useState(false);
+  const [returnInvalid, setReturnInvalid] = useState(false);
+  const [message, setMessage] = useState("");
+  const [quoteState, setQuoteState] = useState({
+    key: null,
+    data: null,
+    error: "",
+  });
+
+  useEffect(() => {
+    let active = true;
+    catalogService
+      .getBranches()
+      .then((res) => {
+        if (active) setBranches(res.items || []);
+      })
+      .catch(() => {
+        if (active) setBranches([]);
+      });
+    return () => {
+      active = false;
     };
+  }, []);
 
-    try {
-      const previousCart = JSON.parse(
-        localStorage.getItem(STORAGE_KEY) || "[]",
+  useEffect(() => {
+    if (!id) return;
+    let active = true;
+    catalogService
+      .getModelBySlug(id)
+      .then((data) => {
+        if (active) setModelState({ slug: id, data, notFound: false });
+      })
+      .catch(() => {
+        if (active) setModelState({ slug: id, data: null, notFound: true });
+      });
+    return () => {
+      active = false;
+    };
+  }, [id]);
+
+  const camera = modelState.slug === id ? modelState.data : null;
+  const isModelLoading = modelState.slug !== id;
+  const isNotFound = modelState.slug === id && modelState.notFound;
+
+  const pickupMs = parseIsoUtcMs(pickupDate);
+  const returnMs = parseIsoUtcMs(returnDate);
+  const isRangeInvalid =
+    pickupMs !== null && returnMs !== null && returnMs <= pickupMs;
+  const canRequestQuote = Boolean(
+    camera &&
+    branchSlug &&
+    pickupMs !== null &&
+    returnMs !== null &&
+    returnMs > pickupMs,
+  );
+  const quoteRequestKey = canRequestQuote
+    ? `${branchSlug}|${pickupDate}|${returnDate}|${camera.id}`
+    : null;
+
+  useEffect(() => {
+    if (!quoteRequestKey || !camera) return;
+
+    let active = true;
+    bookingService
+      .quote({
+        branchSlug,
+        startDate: pickupDate,
+        endDate: returnDate,
+        items: [{ modelId: camera.id }],
+        addons: [],
+      })
+      .then((data) => {
+        if (active) {
+          setQuoteState({ key: quoteRequestKey, data, error: "" });
+        }
+      })
+      .catch((error) => {
+        if (active) {
+          const msg =
+            error instanceof ApiError
+              ? error.message
+              : "Không thể lấy báo giá từ máy chủ lúc này.";
+          setQuoteState({ key: quoteRequestKey, data: null, error: msg });
+        }
+      });
+
+    return () => {
+      active = false;
+    };
+  }, [quoteRequestKey, branchSlug, pickupDate, returnDate, camera]);
+
+  const handleToggleFavorite = async (modelId, shouldFavorite) => {
+    if (!modelId) return;
+    await catalogService.toggleFavorite(modelId, shouldFavorite);
+    setModelState((current) => ({
+      ...current,
+      data: current.data
+        ? { ...current.data, isFavorite: shouldFavorite }
+        : current.data,
+    }));
+  };
+
+  if (isNotFound) {
+    return <NotFoundPage />;
+  }
+
+  if (isModelLoading || !camera) {
+    return (
+      <div className="camera-detail-page">
+        <div className="container detail-shell">
+          <div className="page-placeholder">
+            <p className="page-kicker">BORROLL</p>
+            <p>Đang tải thông tin thiết bị...</p>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  const isQuoteLoading = Boolean(
+    quoteRequestKey && quoteState.key !== quoteRequestKey,
+  );
+  const quote =
+    quoteRequestKey && quoteState.key === quoteRequestKey
+      ? quoteState.data
+      : null;
+  const quoteError =
+    quoteRequestKey && quoteState.key === quoteRequestKey
+      ? quoteState.error
+      : "";
+
+  const handlePickupChange = (nextPickupDate, isInvalid) => {
+    setPickupDate(nextPickupDate);
+    setPickupInvalid(isInvalid);
+    setMessage("");
+  };
+
+  const handleReturnChange = (nextReturnDate, isInvalid) => {
+    setReturnDate(nextReturnDate);
+    setReturnInvalid(isInvalid);
+    setMessage("");
+  };
+
+  const handleAddToSelection = () => {
+    if (pickupInvalid || returnInvalid) {
+      setMessage(
+        "Ngày nhận hoặc ngày trả không hợp lệ. Vui lòng kiểm tra lại.",
       );
-      const nextCart = [...previousCart, cartItem];
-      localStorage.setItem(STORAGE_KEY, JSON.stringify(nextCart));
-      setMessage("Máy ảnh đã được thêm vào giỏ thuê thành công.");
-    } catch {
-      setMessage("Không thể lưu giỏ thuê. Vui lòng thử lại.");
+      return;
     }
+
+    if (!pickupDate || !returnDate) {
+      setMessage("Vui lòng nhập đầy đủ ngày nhận và ngày trả máy.");
+      return;
+    }
+
+    if (isRangeInvalid) {
+      setMessage("Ngày trả máy phải sau ngày nhận máy ít nhất 1 ngày.");
+      return;
+    }
+
+    saveBranchSlug(branchSlug);
+    saveStartDate(pickupDate);
+    saveEndDate(returnDate);
+    addItem({
+      modelId: camera.id,
+      slug: camera.slug,
+      name: camera.name,
+      kind: camera.kind,
+      mount: camera.mount,
+    });
+    setMessage("Đã thêm thiết bị vào danh sách chọn thuê.");
   };
 
   return (
@@ -100,21 +259,26 @@ function CameraDetailPage() {
         <div className="detail-layout">
           <div className="detail-visual">
             <div className="image-placeholder detail-placeholder">
-              <span>{camera.category}</span>
+              <span>{camera.category?.name}</span>
             </div>
           </div>
 
           <div className="detail-content">
-            <p className="eyebrow">{camera.category}</p>
-            <h1>{camera.name}</h1>
-            <div className="detail-meta">
-              <span>{camera.brand}</span>
-              <span>{camera.type}</span>
+            <div className="detail-header-row">
+              <div>
+                <p className="eyebrow">{camera.category?.name}</p>
+                <h1>{camera.name}</h1>
+              </div>
+              <FavoriteToggle
+                modelId={camera.id}
+                isFavorite={Boolean(camera.isFavorite)}
+                onToggle={handleToggleFavorite}
+              />
             </div>
 
-            <div className="detail-price-box">
-              <p>Giá thuê mẫu</p>
-              <strong>{camera.price.toLocaleString("vi-VN")}đ/ngày</strong>
+            <div className="detail-meta">
+              <span>{camera.brand?.name}</span>
+              <span>{camera.cameraType}</span>
             </div>
 
             <p className="detail-description">{camera.description}</p>
@@ -124,15 +288,15 @@ function CameraDetailPage() {
               <ul className="info-list">
                 <li>
                   <span>Thương hiệu</span>
-                  <strong>{camera.brand}</strong>
+                  <strong>{camera.brand?.name}</strong>
                 </li>
                 <li>
-                  <span>Loại máy</span>
-                  <strong>{camera.type}</strong>
+                  <span>Dòng máy</span>
+                  <strong>{camera.cameraType}</strong>
                 </li>
                 <li>
                   <span>Phân loại</span>
-                  <strong>{camera.category}</strong>
+                  <strong>{camera.category?.name}</strong>
                 </li>
               </ul>
             </div>
@@ -140,90 +304,96 @@ function CameraDetailPage() {
             <div className="detail-section">
               <h2>Phụ kiện đi kèm</h2>
               <p>
-                Pin, dây đeo, túi bảo vệ và hướng dẫn sử dụng cơ bản. Dành cho
-                mục đích demo giao diện.
+                Pin, dây đeo, túi bảo vệ và hướng dẫn sử dụng cơ bản. Nhận và
+                trả máy trực tiếp tại chi nhánh đã chọn.
               </p>
             </div>
           </div>
         </div>
 
-        <div className="booking-panel">
-          <div className="booking-form">
-            <h2>Chọn thời gian thuê</h2>
-
-            <div className="date-row">
-              <div>
-                <label htmlFor="pickup-date">Ngày nhận</label>
-                <input
-                  id="pickup-date"
-                  type="date"
-                  min={todayString}
-                  value={pickupDate}
-                  onChange={handlePickupChange}
-                />
-              </div>
-
-              <div>
-                <label htmlFor="return-date">Ngày trả</label>
-                <input
-                  id="return-date"
-                  type="date"
-                  min={pickupDate || todayString}
-                  value={returnDate}
-                  onChange={(event) => setReturnDate(event.target.value)}
-                />
-              </div>
+        <div className="checkout-card detail-booking-box">
+          <div className="checkout-section-header">
+            <div>
+              <p className="eyebrow">Thuê ngay</p>
+              <h2>Đặt lịch nhận máy</h2>
             </div>
+          </div>
 
-            <div className="summary-box">
-              <div>
-                <span>Thời gian thuê</span>
-                <strong>{rentalDays} ngày</strong>
-              </div>
-              <div>
-                <span>Giá thuê dự kiến</span>
-                <strong>{estimatedTotal.toLocaleString("vi-VN")}đ</strong>
-              </div>
-            </div>
-
-            <button
-              type="button"
-              className="button primary-button full-width"
-              onClick={handleAddToCart}
-            >
-              Thêm vào giỏ thuê
-            </button>
-
-            {message && <p className="cart-message">{message}</p>}
-
-            {message.includes("thành công") && (
-              <Link
-                to="/cart"
-                className="button secondary-button full-width cart-link"
+          <div className="booking-grid">
+            <div>
+              <label htmlFor="branch-select">Chi nhánh</label>
+              <select
+                id="branch-select"
+                value={branchSlug}
+                onChange={(event) => setBranchSlug(event.target.value)}
               >
-                Đi đến giỏ thuê
-              </Link>
-            )}
+                {branches.map((branch) => (
+                  <option key={branch.slug} value={branch.slug}>
+                    {branch.name}
+                  </option>
+                ))}
+              </select>
+            </div>
+
+            <DateInput
+              label="Ngày nhận"
+              value={pickupDate}
+              onChange={handlePickupChange}
+              minDate={todayString}
+            />
+
+            <DateInput
+              label="Ngày trả"
+              value={returnDate}
+              onChange={handleReturnChange}
+              minDate={pickupDate || todayString}
+            />
           </div>
 
-          <div className="booking-notes">
-            <h3>Lưu ý thuê máy</h3>
-            <ul>
-              <li>
-                Giá thuê là mô hình demo và không phải thông tin kinh doanh thực
-                tế.
-              </li>
-              <li>
-                Khách hàng cần chọn ngày nhận và ngày trả trước khi thêm thiết
-                bị vào giỏ thuê.
-              </li>
-              <li>Thời gian thuê tối thiểu là một ngày.</li>
-              <li>
-                Quy trình đơn giản giúp khách hàng kiểm tra và về sau có thể
-                nâng cấp sang tính năng đầy đủ.
-              </li>
-            </ul>
+          <div className="detail-price-panel">
+            <div className="price-row">
+              <span>Giá thuê / ngày</span>
+              <strong>{camera.pricePerDay.toLocaleString("vi-VN")}đ</strong>
+            </div>
+            <div className="price-row">
+              <span>Phí đặt cọc</span>
+              <strong>{camera.deposit.toLocaleString("vi-VN")}đ</strong>
+            </div>
           </div>
+
+          {message && <p className="status-message success">{message}</p>}
+
+          {quoteError && <p className="status-message error">{quoteError}</p>}
+
+          {isQuoteLoading && (
+            <p className="status-message muted">Đang tính báo giá...</p>
+          )}
+
+          {quote && (
+            <div className="quote-summary">
+              <div className="price-row">
+                <span>Thời gian thuê</span>
+                <strong>{quote.days} ngày</strong>
+              </div>
+              <div className="price-row">
+                <span>Tổng thuê</span>
+                <strong>{quote.rentalAmount.toLocaleString("vi-VN")}đ</strong>
+              </div>
+              <div className="price-row">
+                <span>Tổng đặt cọc</span>
+                <strong>{quote.depositAmount.toLocaleString("vi-VN")}đ</strong>
+              </div>
+            </div>
+          )}
+
+          <button
+            type="button"
+            className="button primary-button"
+            onClick={handleAddToSelection}
+            disabled={!canRequestQuote}
+          >
+            Thêm vào danh sách chọn thuê
+          </button>
         </div>
       </div>
     </div>

@@ -16,18 +16,7 @@ function Header({ variant = "public" }) {
 
         {variant !== "admin" && <MainNav variant={variant} />}
 
-        {variant === "public" && <AccountMenu />}
-        {variant === "renter" && (
-          <div className="renter-header-actions">
-            <Link to="/favorites" className="account-link">
-              Yêu thích
-            </Link>
-            <Link to="/cart" className="account-link primary">
-              Giỏ thuê
-            </Link>
-            <AccountMenu />
-          </div>
-        )}
+        {(variant === "public" || variant === "renter") && <AccountMenu />}
       </div>
     </header>
   );

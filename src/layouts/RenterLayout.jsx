@@ -1,6 +1,14 @@
-import { Outlet, Link } from "react-router-dom";
+import { NavLink, Outlet } from "react-router-dom";
 import Header from "../components/shared/Header";
 import Footer from "../components/shared/Footer";
+
+const renterNavLinks = [
+  { to: "/profile", label: "Hồ sơ" },
+  { to: "/favorites", label: "Yêu thích" },
+  { to: "/cart", label: "Giỏ thuê" },
+  { to: "/checkout", label: "Xác nhận đặt" },
+  { to: "/orders", label: "Đơn thuê" },
+];
 
 function RenterLayout() {
   return (
@@ -10,12 +18,15 @@ function RenterLayout() {
         <aside className="renter-sidebar">
           <h3>Tài khoản thuê máy</h3>
           <nav className="renter-nav" aria-label="Quản lý người thuê">
-            <Link to="/cart">Giỏ thuê</Link>
-            <Link to="/checkout">Xác nhận đặt</Link>
-            <Link to="/orders">Đơn thuê</Link>
-            <Link to="/profile">Hồ sơ</Link>
-            <Link to="/favorites">Yêu thích</Link>
-            <Link to="/kyc">KYC demo</Link>
+            {renterNavLinks.map((item) => (
+              <NavLink
+                key={item.to}
+                to={item.to}
+                className={({ isActive }) => (isActive ? "active" : undefined)}
+              >
+                {item.label}
+              </NavLink>
+            ))}
           </nav>
         </aside>
 

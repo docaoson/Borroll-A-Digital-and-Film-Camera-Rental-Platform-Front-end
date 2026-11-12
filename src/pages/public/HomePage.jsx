@@ -1,40 +1,22 @@
+import { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
+import heroBackground from "../../assets/background-picture for homepage.jpg";
+import { catalogService } from "../../services/catalogService";
 
 const categories = [
   {
+    slug: "may-film",
     title: "Máy ảnh Film",
     description:
       "Khám phá chất ảnh cổ điển, cảm giác tương tác và phong cách sáng tạo riêng cho dự án của bạn.",
     label: "Film",
   },
   {
+    slug: "may-digital",
     title: "Máy ảnh Digital",
     description:
       "Dành cho quay video, chụp dự án và trải nghiệm hình ảnh rõ nét, linh hoạt trong nhiều tình huống.",
     label: "Digital",
-  },
-];
-
-const featuredCameras = [
-  {
-    name: "Canon AE-1 Program",
-    type: "Máy ảnh film 35mm",
-    price: "Giá thuê tham khảo: 550.000đ/ngày",
-  },
-  {
-    name: "Sony A7 III",
-    type: "Mirrorless digital",
-    price: "Giá thuê tham khảo: 900.000đ/ngày",
-  },
-  {
-    name: "Fujifilm X-T4",
-    type: "Digital hybrid",
-    price: "Giá thuê tham khảo: 850.000đ/ngày",
-  },
-  {
-    name: "Pentax K1000",
-    type: "Máy ảnh film cổ điển",
-    price: "Giá thuê tham khảo: 470.000đ/ngày",
   },
 ];
 
@@ -44,10 +26,51 @@ const steps = [
   "Nhận máy và bắt đầu trải nghiệm",
 ];
 
+const brandPillars = [
+  {
+    number: "01",
+    title: "Thân thiện với khách hàng",
+    description:
+      "Tư vấn nhẹ nhàng, quy trình đặt thuê rõ ràng, dễ hiểu ngay cả với những người lần đầu tiếp xúc với máy ảnh film hoặc máy ảnh chuyên nghiệp.",
+  },
+  {
+    number: "02",
+    title: "Máy ảnh chất lượng",
+    description:
+      "Từng thiết bị được cửa hàng trực tiếp sở hữu, kiểm tra và vệ sinh cẩn thận trước khi giao cho khách thuê.",
+  },
+  {
+    number: "03",
+    title: "Giá cả phù hợp sinh viên",
+    description:
+      "Mức giá thuê minh bạch, hợp lý và dễ tiếp cận, giúp khách hàng thử nghiệm thiết bị mới mà không phải đầu tư quá lớn.",
+  },
+];
+
 function HomePage() {
+  const [featuredModels, setFeaturedModels] = useState([]);
+
+  useEffect(() => {
+    let active = true;
+    catalogService
+      .getModels({ featured: true, pageSize: 4 })
+      .then((res) => {
+        if (active) setFeaturedModels(res.items || []);
+      })
+      .catch(() => {
+        if (active) setFeaturedModels([]);
+      });
+    return () => {
+      active = false;
+    };
+  }, []);
+
   return (
     <div className="home-page">
-      <section className="home-hero section-shell">
+      <section
+        className="home-hero section-shell"
+        style={{ "--home-hero-bg": `url("${heroBackground}")` }}
+      >
         <div className="container home-hero-inner">
           <div className="hero-copy">
             <p className="eyebrow">BORROLL</p>
@@ -82,11 +105,7 @@ function HomePage() {
             </div>
           </div>
 
-          <div className="hero-visual">
-            <div className="image-placeholder large-placeholder">
-              <span>Không gian góc nhìn BORROLL</span>
-            </div>
-          </div>
+          <div className="hero-visual" aria-hidden="true" />
         </div>
       </section>
 
@@ -100,9 +119,9 @@ function HomePage() {
           <div className="category-grid">
             {categories.map((category) => (
               <Link
-                to="/cameras"
+                to={`/cameras?category=${category.slug}`}
                 className="category-card"
-                key={category.title}
+                key={category.slug}
               >
                 <div className="image-placeholder category-placeholder">
                   <span>{category.label}</span>
@@ -125,18 +144,22 @@ function HomePage() {
           </div>
 
           <div className="featured-grid">
-            {featuredCameras.map((camera) => (
-              <article className="camera-card" key={camera.name}>
+            {featuredModels.map((camera) => (
+              <article className="camera-card" key={camera.id}>
                 <div className="image-placeholder card-placeholder">
-                  <span>{camera.type}</span>
+                  <span>{camera.category?.name}</span>
                 </div>
                 <div className="camera-body">
-                  <span className="sample-tag">Mẫu tham khảo</span>
+                  <span className="sample-tag">
+                    {camera.cameraType === "FILM" ? "Máy ảnh Film" : "Digital"}
+                  </span>
                   <h3>{camera.name}</h3>
-                  <p>{camera.type}</p>
+                  <p>{camera.brand?.name}</p>
                   <div className="camera-footer">
-                    <strong>{camera.price}</strong>
-                    <Link to="/cameras">Xem chi tiết</Link>
+                    <strong>
+                      {camera.pricePerDay.toLocaleString("vi-VN")} đ/ngày
+                    </strong>
+                    <Link to={`/cameras/${camera.slug}`}>Xem chi tiết</Link>
                   </div>
                 </div>
               </article>
@@ -163,7 +186,7 @@ function HomePage() {
                   {index === 1 &&
                     "Lựa chọn khoảng thời gian thuê phù hợp với lịch trình và dự án của bạn."}
                   {index === 2 &&
-                    "Nhận máy theo thông tin đặt thuê và bắt đầu trải nghiệm tạo hình riêng."}
+                    "Nhận máy tại chi nhánh và bắt đầu trải nghiệm tạo hình riêng."}
                 </p>
               </div>
             ))}
@@ -177,10 +200,11 @@ function HomePage() {
             <p className="eyebrow">Về BORROLL</p>
             <h2>Thỏa sức sáng tạo bằng một trải nghiệm thuê máy linh hoạt.</h2>
             <p>
-              BORROLL mang đến không gian tìm kiếm, thử nghiệm và thuê máy ảnh
-              cho người yêu nhiếp ảnh, người sáng tạo nội dung và các dự án cá
-              nhân. Mỗi thiết bị được lựa chọn để hỗ trợ cảm hứng, hiệu suất và
-              sự thoải mái khi bắt đầu một hành trình sáng tạo mới.
+              BORROLL được khởi xướng bởi một nhóm sinh viên yêu nhiếp ảnh, xuất
+              phát từ nhu cầu thử nghiệm máy ảnh film và kỹ thuật số mà không
+              cần đầu tư lớn. Chúng tôi xây dựng mô hình cửa hàng sở hữu và quản
+              lý thiết bị trực tiếp để khách hàng dễ tiếp cận, kiểm tra và trải
+              nghiệm máy một cách rõ ràng và đáng tin cậy.
             </p>
           </div>
 
@@ -188,6 +212,25 @@ function HomePage() {
             <div className="image-placeholder square-placeholder">
               <span>Góc nhìn sáng tạo</span>
             </div>
+          </div>
+        </div>
+      </section>
+
+      <section className="section-shell">
+        <div className="container">
+          <div className="section-heading center-heading">
+            <p className="eyebrow">Giá trị</p>
+            <h2>Ba điều BORROLL luôn ưu tiên</h2>
+          </div>
+
+          <div className="process-grid">
+            {brandPillars.map((pillar) => (
+              <article className="process-card" key={pillar.number}>
+                <span className="process-number">{pillar.number}</span>
+                <h3>{pillar.title}</h3>
+                <p>{pillar.description}</p>
+              </article>
+            ))}
           </div>
         </div>
       </section>
