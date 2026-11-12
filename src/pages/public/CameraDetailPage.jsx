@@ -119,7 +119,8 @@ function CameraDetailPage() {
   }
 
   // Calendar State
-  const [currentCalendarMonth, setCurrentCalendarMonth] = useState(getCurrentMonthIso);
+  const [currentCalendarMonth, setCurrentCalendarMonth] =
+    useState(getCurrentMonthIso);
 
   // Quote State
   const [quoteState, setQuoteState] = useState({
@@ -178,7 +179,8 @@ function CameraDetailPage() {
   }, [id]);
 
   const camera = modelState.slug === id ? modelState.data : null;
-  const isModelLoading = modelState.slug !== id && !modelState.notFound && !modelState.error;
+  const isModelLoading =
+    modelState.slug !== id && !modelState.notFound && !modelState.error;
   const isNotFound = modelState.slug === id && modelState.notFound;
 
   // Calendar availability state
@@ -242,12 +244,12 @@ function CameraDetailPage() {
 
   const canRequestQuote = Boolean(
     camera &&
-      branchSlug &&
-      pickupMs !== null &&
-      returnMs !== null &&
-      returnMs > pickupMs &&
-      !pickupInvalid &&
-      !returnInvalid,
+    branchSlug &&
+    pickupMs !== null &&
+    returnMs !== null &&
+    returnMs > pickupMs &&
+    !pickupInvalid &&
+    !returnInvalid,
   );
 
   const quoteRequestKey = canRequestQuote
@@ -395,12 +397,16 @@ function CameraDetailPage() {
     setValidationAlert("");
 
     if (pickupInvalid || returnInvalid) {
-      setValidationAlert("Ngày nhận hoặc ngày trả không hợp lệ. Vui lòng kiểm tra lại.");
+      setValidationAlert(
+        "Ngày nhận hoặc ngày trả không hợp lệ. Vui lòng kiểm tra lại.",
+      );
       return;
     }
 
     if (!pickupDate || !returnDate) {
-      setValidationAlert("Vui lòng chọn đầy đủ ngày nhận và ngày trả máy trên lịch thuê.");
+      setValidationAlert(
+        "Vui lòng chọn đầy đủ ngày nhận và ngày trả máy trên lịch thuê.",
+      );
       return;
     }
 
@@ -409,8 +415,13 @@ function CameraDetailPage() {
       return;
     }
 
-    if (unavailableDatesSet.has(pickupDate) || unavailableDatesSet.has(returnDate)) {
-      setValidationAlert("Ngày nhận hoặc ngày trả rơi vào ngày kín lịch thuê. Vui lòng chọn ngày khác.");
+    if (
+      unavailableDatesSet.has(pickupDate) ||
+      unavailableDatesSet.has(returnDate)
+    ) {
+      setValidationAlert(
+        "Ngày nhận hoặc ngày trả rơi vào ngày kín lịch thuê. Vui lòng chọn ngày khác.",
+      );
       return;
     }
 
@@ -423,6 +434,11 @@ function CameraDetailPage() {
       name: camera.name,
       kind: camera.kind,
       mount: camera.mount,
+      thumbnailUrl: camera.thumbnailUrl || (camera.images?.[0]?.url ?? null),
+      pricePerDay: camera.pricePerDay,
+      deposit: camera.deposit,
+      brandName: camera.brand?.name,
+      categoryName: camera.category?.name,
     });
 
     setAddedSuccess(true);
@@ -436,7 +452,10 @@ function CameraDetailPage() {
     return (
       <div className="camera-detail-page">
         <div className="container detail-shell">
-          <div className="detail-loading-skeleton" aria-label="Đang tải thông tin thiết bị...">
+          <div
+            className="detail-loading-skeleton"
+            aria-label="Đang tải thông tin thiết bị..."
+          >
             <div className="skeleton-line skeleton-breadcrumb" />
             <div className="detail-layout">
               <div className="skeleton-visual-box" />
@@ -457,7 +476,14 @@ function CameraDetailPage() {
     Array.isArray(camera.images) && camera.images.length > 0
       ? camera.images
       : camera.thumbnailUrl
-        ? [{ id: "thumb", url: camera.thumbnailUrl, kind: "PRODUCT", caption: camera.name }]
+        ? [
+            {
+              id: "thumb",
+              url: camera.thumbnailUrl,
+              kind: "PRODUCT",
+              caption: camera.name,
+            },
+          ]
         : [];
 
   const activeImage = galleryImages[activeImageIndex] || galleryImages[0];
@@ -528,8 +554,12 @@ function CameraDetailPage() {
                   activeImage?.url ? "hidden" : ""
                 }`}
               >
-                <span className="fallback-camera-icon" aria-hidden="true">📷</span>
-                <span className="fallback-brand">{camera.brand?.name || "BORROLL"}</span>
+                <span className="fallback-camera-icon" aria-hidden="true">
+                  📷
+                </span>
+                <span className="fallback-brand">
+                  {camera.brand?.name || "BORROLL"}
+                </span>
               </div>
 
               {activeImage?.sampleLens && (
@@ -545,7 +575,10 @@ function CameraDetailPage() {
 
             {/* THUMBNAILS STRIP */}
             {galleryImages.length > 1 && (
-              <div className="detail-thumbnails-strip" aria-label="Danh sách ảnh thu nhỏ">
+              <div
+                className="detail-thumbnails-strip"
+                aria-label="Danh sách ảnh thu nhỏ"
+              >
                 {galleryImages.map((img, idx) => (
                   <button
                     key={img.id || idx}
@@ -563,7 +596,9 @@ function CameraDetailPage() {
             {/* BORROLL QUALITY GUARANTEE */}
             <div className="detail-guarantee-card">
               <div className="guarantee-header">
-                <span className="guarantee-icon" aria-hidden="true">🛡️</span>
+                <span className="guarantee-icon" aria-hidden="true">
+                  🛡️
+                </span>
                 <h3>Cam kết kỹ thuật & tiêu chuẩn bàn giao</h3>
               </div>
               <ul className="guarantee-list">
@@ -572,19 +607,26 @@ function CameraDetailPage() {
                   : DEFAULT_INSPECTION_ITEMS
                 ).map((item, i) => (
                   <li key={i}>
-                    <span className="check-bullet" aria-hidden="true">✓</span>
+                    <span className="check-bullet" aria-hidden="true">
+                      ✓
+                    </span>
                     <span>{item}</span>
                   </li>
                 ))}
               </ul>
               <p className="guarantee-note">
-                Tất cả thiết bị đều được đội ngũ chuyên viên Borroll kiểm tra, vệ sinh sensor / thấu kính và dán tem bảo dưỡng trước mỗi lượt giao nhận.
+                Tất cả thiết bị đều được đội ngũ chuyên viên Borroll kiểm tra,
+                vệ sinh sensor / thấu kính và dán tem bảo dưỡng trước mỗi lượt
+                giao nhận.
               </p>
             </div>
           </section>
 
           {/* RIGHT COLUMN: PRODUCT INFO & PRICING */}
-          <section className="detail-content-col" aria-label="Thông tin thiết bị">
+          <section
+            className="detail-content-col"
+            aria-label="Thông tin thiết bị"
+          >
             <div className="detail-header-card">
               <div className="detail-badges-row">
                 {camera.category?.name && (
@@ -639,9 +681,13 @@ function CameraDetailPage() {
               </div>
 
               <div className="deposit-policy-hint">
-                <span className="info-icon" aria-hidden="true">ℹ</span>
+                <span className="info-icon" aria-hidden="true">
+                  ℹ
+                </span>
                 <span>
-                  Chính sách cọc linh hoạt: Giữ CCCD gắn chip / Hộ chiếu gốc + đặt cọc 30-50% hoặc chuyển khoản cọc 100% (hoàn cọc ngay sau khi bàn giao máy).
+                  Chính sách cọc linh hoạt: Giữ CCCD gắn chip / Hộ chiếu gốc +
+                  đặt cọc 30-50% hoặc chuyển khoản cọc 100% (hoàn cọc ngay sau
+                  khi bàn giao máy).
                 </span>
               </div>
             </div>
@@ -725,9 +771,14 @@ function CameraDetailPage() {
               <h2>Phụ kiện đi kèm khi thuê</h2>
               <ul className="accessories-checklist">
                 <li>1x Thân máy kèm nắp đậy (Body Cap)</li>
-                <li>1x Pin chính hãng + Sạc tương thích (với máy Digital) hoặc Pin máy đo sáng đã lắp sẵn (với máy Film)</li>
+                <li>
+                  1x Pin chính hãng + Sạc tương thích (với máy Digital) hoặc Pin
+                  máy đo sáng đã lắp sẵn (với máy Film)
+                </li>
                 <li>1x Dây đeo cổ hoặc dây đeo tay thời trang</li>
-                <li>1x Túi chống sốc bảo vệ thiết bị trong quá trình di chuyển</li>
+                <li>
+                  1x Túi chống sốc bảo vệ thiết bị trong quá trình di chuyển
+                </li>
                 <li>Tài liệu hướng dẫn sử dụng nhanh từ Borroll Lab</li>
               </ul>
             </div>
@@ -735,14 +786,18 @@ function CameraDetailPage() {
         </div>
 
         {/* BOOKING & AVAILABILITY SECTION */}
-        <section className="checkout-card detail-booking-box" aria-label="Đặt lịch thuê máy">
+        <section
+          className="checkout-card detail-booking-box"
+          aria-label="Đặt lịch thuê máy"
+        >
           <div className="checkout-section-header">
             <div>
               <p className="eyebrow">ĐẶT LỊCH THUÊ NGAY</p>
               <h2>Chọn chi nhánh & Lịch thuê thiết bị</h2>
             </div>
             <p className="booking-subtitle">
-              Xem lịch trống trực tiếp theo thời gian thực và đặt giữ máy nhanh chóng.
+              Xem lịch trống trực tiếp theo thời gian thực và đặt giữ máy nhanh
+              chóng.
             </p>
           </div>
 
@@ -810,13 +865,22 @@ function CameraDetailPage() {
 
               <div className="calendar-legend">
                 <span className="legend-item">
-                  <span className="legend-swatch available" aria-hidden="true" /> Sẵn sàng
+                  <span
+                    className="legend-swatch available"
+                    aria-hidden="true"
+                  />{" "}
+                  Sẵn sàng
                 </span>
                 <span className="legend-item">
-                  <span className="legend-swatch unavailable" aria-hidden="true" /> Kín lịch
+                  <span
+                    className="legend-swatch unavailable"
+                    aria-hidden="true"
+                  />{" "}
+                  Kín lịch
                 </span>
                 <span className="legend-item">
-                  <span className="legend-swatch selected" aria-hidden="true" /> Ngày bạn chọn
+                  <span className="legend-swatch selected" aria-hidden="true" />{" "}
+                  Ngày bạn chọn
                 </span>
               </div>
             </div>
@@ -840,10 +904,18 @@ function CameraDetailPage() {
               </div>
 
               {/* CALENDAR CELLS */}
-              <div className="calendar-days-grid" role="grid" aria-label="Lịch kiểm tra tình trạng máy">
+              <div
+                className="calendar-days-grid"
+                role="grid"
+                aria-label="Lịch kiểm tra tình trạng máy"
+              >
                 {/* Blank days before day 1 */}
                 {Array.from({ length: firstDayOfWeek }).map((_, i) => (
-                  <div key={`empty-${i}`} className="cal-cell empty-cell" aria-hidden="true" />
+                  <div
+                    key={`empty-${i}`}
+                    className="cal-cell empty-cell"
+                    aria-hidden="true"
+                  />
                 ))}
 
                 {/* Days of current month */}
@@ -888,7 +960,11 @@ function CameraDetailPage() {
                                 : `Chọn ngày ${dayNum}/${cMonth}`
                       }
                       aria-label={`Ngày ${dayNum}/${cMonth}/${cYear}${
-                        isUnavailable ? " - Kín lịch" : isPast ? " - Đã qua" : ""
+                        isUnavailable
+                          ? " - Kín lịch"
+                          : isPast
+                            ? " - Đã qua"
+                            : ""
                       }`}
                     >
                       <span className="cal-day-num">{dayNum}</span>
@@ -901,7 +977,11 @@ function CameraDetailPage() {
               </div>
             </div>
             <p className="calendar-click-hint">
-              💡 <em>Mẹo: Bạn có thể bấm chọn ngày nhận và ngày trả trực tiếp trên lịch ở trên.</em>
+              💡{" "}
+              <em>
+                Mẹo: Bạn có thể bấm chọn ngày nhận và ngày trả trực tiếp trên
+                lịch ở trên.
+              </em>
             </p>
           </div>
 
@@ -909,7 +989,9 @@ function CameraDetailPage() {
           <div className="detail-price-panel">
             <div className="price-row">
               <span>Đơn giá niêm yết:</span>
-              <strong>{camera.pricePerDay.toLocaleString("vi-VN")} ₫ / ngày</strong>
+              <strong>
+                {camera.pricePerDay.toLocaleString("vi-VN")} ₫ / ngày
+              </strong>
             </div>
             <div className="price-row">
               <span>Phí đặt cọc thiết bị:</span>
@@ -958,18 +1040,30 @@ function CameraDetailPage() {
           {/* ADDED TO CART SUCCESS NOTIFICATION */}
           {addedSuccess && (
             <div className="added-success-card" role="status">
-              <div className="success-icon" aria-hidden="true">✓</div>
+              <div className="success-icon" aria-hidden="true">
+                ✓
+              </div>
               <div className="success-content">
-                <h4>Đã thêm &quot;{camera.name}&quot; vào giỏ thuê thành công!</h4>
+                <h4>
+                  Đã thêm &quot;{camera.name}&quot; vào giỏ thuê thành công!
+                </h4>
                 <p>
                   Thời gian: {pickupDate} đến {returnDate} tại Chi nhánh{" "}
-                  {branches.find((b) => b.slug === branchSlug)?.name || branchSlug}.
+                  {branches.find((b) => b.slug === branchSlug)?.name ||
+                    branchSlug}
+                  .
                 </p>
                 <div className="success-actions">
-                  <Link to="/cart" className="button primary-button small-button">
+                  <Link
+                    to="/cart"
+                    className="button primary-button small-button"
+                  >
                     Đi tới giỏ thuê ngay →
                   </Link>
-                  <Link to="/cameras" className="button secondary-button small-button">
+                  <Link
+                    to="/cameras"
+                    className="button secondary-button small-button"
+                  >
                     Tiếp tục xem thiết bị khác
                   </Link>
                 </div>
