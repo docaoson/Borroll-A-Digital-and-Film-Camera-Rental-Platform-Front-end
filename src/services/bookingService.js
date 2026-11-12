@@ -20,6 +20,7 @@ export const bookingService = {
     const query = new URLSearchParams();
     if (params.status) query.set("status", params.status);
     if (params.page) query.set("page", String(params.page));
+    if (params.pageSize) query.set("pageSize", String(params.pageSize));
     const qs = query.toString();
     return apiRequest(`/bookings${qs ? `?${qs}` : ""}`);
   },
