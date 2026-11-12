@@ -15,6 +15,7 @@ import RentalPolicyPage from "../pages/public/RentalPolicyPage";
 import DeliveryPolicyPage from "../pages/public/DeliveryPolicyPage";
 import ReturnPolicyPage from "../pages/public/ReturnPolicyPage";
 import PrivacyPolicyPage from "../pages/public/PrivacyPolicyPage";
+import SupportPage from "../pages/public/SupportPage";
 
 import CartPage from "../pages/renter/CartPage";
 import CheckoutPage from "../pages/renter/CheckoutPage";
@@ -50,6 +51,8 @@ function AppRoutes() {
         <Route path="delivery-policy" element={<DeliveryPolicyPage />} />
         <Route path="return-policy" element={<ReturnPolicyPage />} />
         <Route path="privacy-policy" element={<PrivacyPolicyPage />} />
+        <Route path="support" element={<SupportPage />} />
+        <Route path="faq" element={<SupportPage />} />
         <Route path="403" element={<ForbiddenPage />} />
         <Route path="error" element={<ErrorPage />} />
         <Route path="*" element={<NotFoundPage />} />

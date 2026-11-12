@@ -6,8 +6,8 @@ const renterNavLinks = [
   { to: "/profile", label: "Hồ sơ" },
   { to: "/favorites", label: "Yêu thích" },
   { to: "/cart", label: "Giỏ thuê" },
-  { to: "/checkout", label: "Xác nhận đặt" },
   { to: "/orders", label: "Đơn thuê" },
+  { to: "/support", label: "Hỗ trợ & FAQ" },
 ];
 
 function RenterLayout() {

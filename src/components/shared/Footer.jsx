@@ -24,6 +24,9 @@ function Footer() {
             <li>
               <Link to="/about">Về BORROLL</Link>
             </li>
+            <li>
+              <Link to="/support">Hỗ trợ & FAQ</Link>
+            </li>
           </ul>
         </div>
 

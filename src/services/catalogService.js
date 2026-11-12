@@ -50,16 +50,13 @@ export const catalogService = {
       }
     });
     const qs = query.toString();
-    return apiRequest(`/favorites${qs ? `?${qs}` : ""}`, {
-      skipAuthRetry: true,
-    });
+    return apiRequest(`/favorites${qs ? `?${qs}` : ""}`);
   },
 
   toggleFavorite(modelId, shouldFavorite) {
     const method = shouldFavorite ? "POST" : "DELETE";
     return apiRequest(`/favorites/${encodeURIComponent(modelId)}`, {
       method,
-      skipAuthRetry: true,
     });
   },
 };
