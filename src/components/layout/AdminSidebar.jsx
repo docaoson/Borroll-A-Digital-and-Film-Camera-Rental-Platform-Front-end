@@ -1,8 +1,8 @@
 import { NavLink } from "react-router-dom";
 
 const links = [
-  { to: "/admin", label: "Tổng quan" },
-  { to: "/admin/inventory", label: "Kho máy" },
+  { to: "/admin", label: "Tổng quan", end: true },
+  { to: "/admin/inventory", label: "Kho máy", end: true },
   { to: "/admin/inventory/new", label: "Thêm máy" },
   { to: "/admin/calendar", label: "Lịch thuê" },
   { to: "/admin/orders", label: "Đơn thuê" },
@@ -22,6 +22,7 @@ function AdminSidebar() {
           <NavLink
             key={link.to}
             to={link.to}
+            end={link.end}
             className={({ isActive }) =>
               isActive ? "admin-link active" : "admin-link"
             }

@@ -10,7 +10,7 @@ function MainNav({ variant = "public" }) {
   const links =
     variant === "admin"
       ? [
-          { to: "/admin", label: "Tổng quan" },
+          { to: "/admin", label: "Tổng quan", end: true },
           { to: "/admin/inventory", label: "Kho máy" },
           { to: "/admin/calendar", label: "Lịch thuê" },
           { to: "/admin/orders", label: "Đơn thuê" },
@@ -24,6 +24,7 @@ function MainNav({ variant = "public" }) {
         <NavLink
           key={link.to}
           to={link.to}
+          end={link.end}
           className={({ isActive }) =>
             isActive ? "nav-link active" : "nav-link"
           }
