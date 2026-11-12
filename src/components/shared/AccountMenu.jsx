@@ -1,13 +1,17 @@
 import { NavLink, useNavigate } from "react-router-dom";
 import { useAuth } from "../../hooks/useAuth";
 
-function AccountMenu() {
+function AccountMenu({ onNavigate }) {
   const { user, isAuthenticated, isLoading, logout } = useAuth();
   const navigate = useNavigate();
 
   const handleLogout = async () => {
-    await logout();
-    navigate("/");
+    try {
+      await logout();
+    } finally {
+      onNavigate?.();
+      navigate("/");
+    }
   };
 
   if (isLoading) {
@@ -25,7 +29,7 @@ function AccountMenu() {
     return (
       <div className="account-menu" aria-label="Tài khoản người dùng">
         {isStaffOrAdmin && (
-          <NavLink to="/admin" className="account-link">
+          <NavLink to="/admin" className="account-link" onClick={onNavigate}>
             Quản trị
           </NavLink>
         )}
@@ -33,6 +37,7 @@ function AccountMenu() {
           to="/profile"
           className="account-link primary account-user-link"
           title={user.fullName}
+          onClick={onNavigate}
         >
           {user.fullName}
         </NavLink>
@@ -49,10 +54,14 @@ function AccountMenu() {
 
   return (
     <div className="account-menu" aria-label="Tài khoản người dùng">
-      <NavLink to="/login" className="account-link">
+      <NavLink to="/login" className="account-link" onClick={onNavigate}>
         Đăng nhập
       </NavLink>
-      <NavLink to="/register" className="account-link primary">
+      <NavLink
+        to="/register"
+        className="account-link primary"
+        onClick={onNavigate}
+      >
         Đăng ký
       </NavLink>
     </div>

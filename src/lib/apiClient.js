@@ -134,6 +134,16 @@ export async function apiRequest(path, options = {}) {
       }
     }
 
+    if (
+      response.status === 401 &&
+      normalizedPath !== "/auth/login" &&
+      normalizedPath !== "/auth/refresh"
+    ) {
+      if (onAuthExpiredHandler) {
+        onAuthExpiredHandler();
+      }
+    }
+
     throw apiError;
   }
 

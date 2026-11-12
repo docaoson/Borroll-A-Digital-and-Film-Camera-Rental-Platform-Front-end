@@ -1,12 +1,20 @@
 import { NavLink } from "react-router-dom";
+import { useAuth } from "../../hooks/useAuth";
 
 const publicLinks = [
-  { to: "/", label: "Trang chủ" },
+  { to: "/", label: "Trang chủ", end: true },
   { to: "/cameras", label: "Thiết bị" },
   { to: "/rental-policy", label: "Chính sách thuê" },
 ];
 
-function MainNav({ variant = "public" }) {
+function MainNav({ variant = "public", onNavigate }) {
+  const { user, isAuthenticated } = useAuth();
+  const roles = user?.roles || [];
+  const isRenter =
+    isAuthenticated &&
+    roles.includes("RENTER") &&
+    !roles.includes("STAFF") &&
+    !roles.includes("ADMIN");
   const links =
     variant === "admin"
       ? [
@@ -16,7 +24,15 @@ function MainNav({ variant = "public" }) {
           { to: "/admin/orders", label: "Đơn thuê" },
           { to: "/admin/customers", label: "Khách hàng" },
         ]
-      : publicLinks;
+      : isRenter
+        ? [
+            publicLinks[0],
+            publicLinks[1],
+            { to: "/cart", label: "Giỏ thuê" },
+            { to: "/orders", label: "Đơn thuê" },
+            publicLinks[2],
+          ]
+        : publicLinks;
 
   return (
     <nav className="main-nav" aria-label="Điều hướng chính">
@@ -28,6 +44,7 @@ function MainNav({ variant = "public" }) {
           className={({ isActive }) =>
             isActive ? "nav-link active" : "nav-link"
           }
+          onClick={onNavigate}
         >
           {link.label}
         </NavLink>

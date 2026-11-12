@@ -31,9 +31,16 @@ function formatIso(year, month, day) {
   return `${String(year).padStart(4, "0")}-${String(month).padStart(2, "0")}-${String(day).padStart(2, "0")}`;
 }
 
-function DateInput({ id, value, min, onChange, label }) {
+function DateInput({ id, value, min, minDate, onChange, label }) {
+  const [prevValue, setPrevValue] = useState(value);
   const [parts, setParts] = useState(() => parseIsoToParts(value));
   const nativePickerRef = useRef(null);
+  const effectiveMin = min || minDate;
+
+  if (value !== prevValue) {
+    setPrevValue(value);
+    setParts(parseIsoToParts(value));
+  }
 
   const emitFromParts = (nextParts) => {
     const hasAnyInput = Boolean(
@@ -207,7 +214,7 @@ function DateInput({ id, value, min, onChange, label }) {
         <input
           ref={nativePickerRef}
           type="date"
-          min={min}
+          min={effectiveMin}
           value={value}
           onChange={handleNativeChange}
           className="date-native-input"

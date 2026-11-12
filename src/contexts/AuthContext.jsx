@@ -53,17 +53,31 @@ export function AuthProvider({ children }) {
   }, [clearSession]);
 
   const login = useCallback(async (credentials) => {
-    await authService.login(credentials);
-    const me = await authService.getMe();
-    setUser(me);
-    return me;
+    const data = await authService.login(credentials);
+    if (data?.user) {
+      setUser(data.user);
+    }
+    try {
+      const me = await authService.getMe();
+      if (me) setUser(me);
+      return me;
+    } catch {
+      return data?.user;
+    }
   }, []);
 
   const register = useCallback(async (payload) => {
-    await authService.register(payload);
-    const me = await authService.getMe();
-    setUser(me);
-    return me;
+    const data = await authService.register(payload);
+    if (data?.user) {
+      setUser(data.user);
+    }
+    try {
+      const me = await authService.getMe();
+      if (me) setUser(me);
+      return me;
+    } catch {
+      return data?.user;
+    }
   }, []);
 
   const logout = useCallback(async () => {
