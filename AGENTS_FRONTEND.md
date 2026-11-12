@@ -75,16 +75,12 @@ src/
 └─ middleware.ts
 ```
 
-## 8. Khi BE chưa xong
+## 8. Kết nối backend
 
-Dùng MSW (`src/mocks/`) trả dữ liệu **đúng như các ví dụ JSON trong hợp đồng**, bật bằng `NEXT_PUBLIC_USE_MOCK=true`. Khi BE sẵn sàng, tắt mock. Nếu hợp đồng và `docs/openapi.yaml` khác nhau thì `openapi.yaml` đúng; báo BE sửa tài liệu. Chạy `gen:api` mỗi khi BE cập nhật API.
+Frontend gọi backend thật qua `VITE_API_URL` (mặc định `/api/v1`). Không dùng dữ liệu mock; nếu backend hoặc hợp đồng API thay đổi, cập nhật service/frontend theo hợp đồng và `docs/openapi.yaml`.
 
-## 9. Biến môi trường (`.env.example`)
+## 9. Biến môi trường
 
 ```
-NEXT_PUBLIC_API_URL=http://localhost:4000/api/v1
-NEXT_PUBLIC_USE_MOCK=true
-NEXT_PUBLIC_FACEBOOK_URL=
-NEXT_PUBLIC_ZALO_URL=
-NEXT_PUBLIC_MESSENGER_URL=
+VITE_API_URL=http://localhost:4000/api/v1
 ```

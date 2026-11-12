@@ -1,10 +1,7 @@
-import { handleMockRequest } from "../mocks/mockApiRouter";
-
 const API_BASE_URL = (import.meta.env.VITE_API_URL || "/api/v1").replace(
   /\/+$/,
   "",
 );
-const USE_MOCK = import.meta.env.VITE_USE_MOCK === "true";
 
 let accessToken = null;
 let refreshPromise = null;
@@ -100,13 +97,6 @@ export async function apiRequest(path, options = {}) {
 
   const normalizedPath = path.startsWith("/") ? path : `/${path}`;
 
-  if (USE_MOCK) {
-    const mockResult = handleMockRequest(normalizedPath, options);
-    if (mockResult?.handled) {
-      return mockResult.data;
-    }
-  }
-
   const response = await fetch(`${API_BASE_URL}${normalizedPath}`, {
     method,
     headers: requestHeaders,
@@ -151,10 +141,6 @@ export async function apiRequest(path, options = {}) {
 }
 
 export async function uploadFileToPresignedUrl(uploadUrl, file) {
-  if (USE_MOCK) {
-    return;
-  }
-
   const response = await fetch(uploadUrl, {
     method: "PUT",
     headers: {
