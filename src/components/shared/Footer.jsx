@@ -19,35 +19,38 @@ function Footer() {
               <Link to="/">Trang chủ</Link>
             </li>
             <li>
-              <Link to="/cameras">Danh mục máy</Link>
-            </li>
-            <li>
-              <Link to="/rental-policy">Chính sách thuê</Link>
-            </li>
-          </ul>
-        </div>
-
-        <div>
-          <h4>Hỗ trợ</h4>
-          <ul>
-            <li>
-              <Link to="/privacy-policy">Bảo mật</Link>
+              <Link to="/cameras">Danh mục thiết bị</Link>
             </li>
             <li>
               <Link to="/about">Về BORROLL</Link>
             </li>
+          </ul>
+        </div>
+
+        <div>
+          <h4>Chính sách</h4>
+          <ul>
             <li>
-              <Link to="/cameras">Xem thiết bị</Link>
+              <Link to="/rental-policy">Chính sách thuê</Link>
+            </li>
+            <li>
+              <Link to="/delivery-policy">Chính sách giao nhận</Link>
+            </li>
+            <li>
+              <Link to="/return-policy">Chính sách trả máy</Link>
+            </li>
+            <li>
+              <Link to="/privacy-policy">Chính sách bảo mật</Link>
             </li>
           </ul>
         </div>
 
         <div>
-          <h4>Liên hệ</h4>
+          <h4>Chi nhánh cửa hàng</h4>
           <ul>
-            <li>Hotline: 0900 000 000</li>
-            <li>Email: hello@borroll.vn</li>
-            <li>Hà Nội, Việt Nam</li>
+            <li>Tây Hồ: 18 Xuân Diệu · 0866747114</li>
+            <li>Thanh Xuân: 42 Nguyễn Trãi · 0866747115</li>
+            <li>Giờ mở cửa: 09:00 – 21:00 hàng ngày</li>
           </ul>
         </div>
       </div>

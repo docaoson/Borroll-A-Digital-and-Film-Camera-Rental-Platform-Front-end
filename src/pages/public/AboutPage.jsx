@@ -21,6 +21,23 @@ const goals = [
   },
 ];
 
+const branches = [
+  {
+    slug: "tay-ho",
+    name: "Chi nhánh Tây Hồ",
+    address: "Số 18 Xuân Diệu, Tây Hồ, Hà Nội",
+    phone: "0866747114",
+    openHours: "09:00 – 21:00 hàng ngày",
+  },
+  {
+    slug: "thanh-xuan",
+    name: "Chi nhánh Thanh Xuân",
+    address: "Số 42 Nguyễn Trãi, Thanh Xuân, Hà Nội",
+    phone: "0866747115",
+    openHours: "09:00 – 21:00 hàng ngày",
+  },
+];
+
 function AboutPage() {
   return (
     <div className="about-page">
@@ -63,6 +80,30 @@ function AboutPage() {
           </div>
         </section>
 
+        <section className="about-story-card">
+          <div className="about-story-block">
+            <p className="eyebrow">DỊCH VỤ MÁY ẢNH FILM</p>
+            <h2>Chất ảnh hoài niệm &amp; trải nghiệm cơ khí</h2>
+            <p>
+              BORROLL cung cấp các dòng máy film 35mm đa dạng từ Compact ngắm
+              chụp, Rangefinder kinh điển đến SLR cơ học. Khách thuê được hướng
+              dẫn lắp film, đọc thông số đo sáng và có thể mua kèm các cuộn film
+              thông dụng ngay khi đặt đơn.
+            </p>
+          </div>
+
+          <div className="about-story-block">
+            <p className="eyebrow">DỊCH VỤ MÁY ẢNH DIGITAL</p>
+            <h2>Linh hoạt cho dự án quay chụp &amp; sự kiện</h2>
+            <p>
+              Phù hợp với nhu cầu chụp kỷ yếu, sự kiện trường lớp, quay đồ án
+              hoặc du lịch ngắn ngày. Các dòng máy Mirrorless và DSLR được trang
+              bị đầy đủ pin, sạc, thẻ nhớ và túi chống sốc, sẵn sàng tác nghiệp
+              ngay khi nhận máy.
+            </p>
+          </div>
+        </section>
+
         <section className="about-pillars">
           <div className="section-heading">
             <p className="eyebrow">GIÁ TRỊ HƯỚNG TỚI</p>
@@ -80,14 +121,39 @@ function AboutPage() {
           </div>
         </section>
 
+        <section className="about-pillars">
+          <div className="section-heading">
+            <p className="eyebrow">HỆ THỐNG CỬA HÀNG</p>
+            <h2>Chi nhánh nhận &amp; trả máy tại Hà Nội</h2>
+          </div>
+
+          <div className="branch-card-grid">
+            {branches.map((b) => (
+              <article className="branch-card" key={b.slug}>
+                <p className="eyebrow">BORROLL BRANCH</p>
+                <h3>{b.name}</h3>
+                <p><strong>Địa chỉ:</strong> {b.address}</p>
+                <p><strong>Hotline:</strong> {b.phone}</p>
+                <p><strong>Giờ mở cửa:</strong> {b.openHours}</p>
+                <span className="branch-highlight">Nhận và trả máy trực tiếp tại quầy</span>
+              </article>
+            ))}
+          </div>
+        </section>
+
         <section className="cta-box">
           <div>
             <p className="eyebrow">TRẢI NGHIỆM CÙNG BORROLL</p>
             <h2>Sẵn sàng chọn chiếc máy đồng hành cho dự án tiếp theo?</h2>
           </div>
-          <Link to="/cameras" className="button primary-button">
-            Xem danh sách thiết bị
-          </Link>
+          <div className="hero-actions">
+            <Link to="/cameras" className="button primary-button">
+              Xem danh sách thiết bị
+            </Link>
+            <Link to="/rental-policy" className="button secondary-button">
+              Chính sách thuê máy
+            </Link>
+          </div>
         </section>
       </div>
     </div>

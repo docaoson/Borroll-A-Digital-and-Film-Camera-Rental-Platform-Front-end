@@ -3,44 +3,50 @@ import { Link } from "react-router-dom";
 const policySections = [
   {
     id: "rental-conditions",
-    title: "1. Quy định thuê thiết bị",
-    summary: "Thông tin sơ bộ đang chờ phê duyệt chính thức từ BORROLL.",
-    body: [
-      "Khách hàng cần đặt thuê theo đúng thời gian nhận và trả máy đã xác nhận, đồng thời giữ đầy đủ giấy tờ tùy thân theo yêu cầu hiện hành của cửa hàng.",
-      "Thời gian thuê được tính theo ngày, với thời hạn tối thiểu theo quy định của từng loại thiết bị. Khách hàng cần thanh toán trực tiếp tại quầy khi nhận máy và lưu ý kiểm tra lại thông tin đơn trước khi ký biên bản giao nhận.",
-      "Việc đặt cọc, thanh toán và hoàn cọc sẽ được xác nhận rõ trên biên bản thuê và giao nhận. Đây là nội dung sơ bộ, chưa là các điều kiện pháp lý cuối cùng.",
-    ],
-  },
-  {
-    id: "handover",
-    title: "2. Chính sách giao nhận",
-    summary: "Thông tin sơ bộ đang chờ phê duyệt chính thức từ BORROLL.",
-    body: [
-      "BORROLL thực hiện giao nhận và trả máy trực tiếp tại chi nhánh đã chọn. Khách hàng sẽ nhận máy ở cùng địa điểm mà đơn thuê đã xác nhận.",
-      "Khi nhận máy, nhân viên sẽ đối chiếu thông tin đơn, kiểm tra tình trạng ngoại quan, phụ kiện đi kèm và nhắc khách hàng xem lại biên bản giao nhận trước khi ký xác nhận.",
-      "Ngoài các chi nhánh chính thức, BORROLL chưa áp dụng hình thức giao hàng tận nơi cho đơn thuê máy hiện tại. Đây là nội dung sơ bộ để chuẩn bị cho quy định chính thức sau này.",
-    ],
-  },
-  {
-    id: "return",
-    title: "3. Chính sách trả máy",
-    summary: "Thông tin sơ bộ đang chờ phê duyệt chính thức từ BORROLL.",
-    body: [
-      "Khách hàng cần trả máy đúng thời hạn, đúng chi nhánh đã nhận máy và đầy đủ phụ kiện theo biên bản giao nhận.",
-      "Khi trả máy, nhân viên sẽ kiểm tra tình trạng máy, đối chiếu với lúc nhận, xác nhận phụ kiện còn đầy đủ và ghi nhận các phát sinh nếu có.",
-      "Nếu khách hàng trả chậm hoặc không đúng quy trình, cửa hàng sẽ ghi nhận và xử lý theo biên bản kết thúc hợp đồng. Đây là nội dung dự phòng để chuẩn bị cho chính sách chính thức sau này.",
-    ],
-  },
-  {
-    id: "compensation",
-    title: "4. Chính sách bồi hoàn và đền bù",
+    title: "1. Điều kiện & Thủ tục thuê thiết bị",
     summary:
-      "Nội dung này là thông tin sơ bộ, chưa được phê duyệt là chính sách cuối cùng của BORROLL.",
+      "Quy định về giấy tờ tùy thân, xác nhận đơn và thanh toán đặt cọc tại quầy chi nhánh.",
     body: [
-      "Nếu thiết bị bị hư hỏng do hành vi của người thuê, cửa hàng sẽ tiến hành kiểm tra và xác định mức độ thiệt hại cùng với việc đối chiếu biên bản giao nhận ban đầu.",
-      "Trong trường hợp máy bị mất, thiếu phụ kiện hoặc không còn nguyên trạng như lúc nhận, BORROLL sẽ xem xét việc xử lý theo từng tình huống cụ thể và liên hệ với người thuê để xác nhận tình trạng thực tế.",
-      "Các trường hợp như sử dụng sai cách, sử dụng sai mục đích, bỏ quên phụ kiện, hoặc làm hỏng thiết bị trong quá trình thuê đều sẽ được kiểm tra kỹ lưỡng trước khi xác định mức xử lý.",
-      "Quy trình kiểm tra thiết bị và định giá đền bù sẽ dựa trên tình trạng thực tế của máy, kết quả kiểm tra kỹ thuật và các ghi nhận về phụ kiện trong biên bản. Nội dung này chưa bao gồm mức bồi thường, tỷ lệ hoặc khoản phí cụ thể nào.",
+      "Khách hàng cần có giấy tờ tùy thân hợp lệ (CCCD hoặc Hộ chiếu còn hạn) để nhân viên đối chiếu và xác nhận khi nhận máy tại quầy.",
+      "Mỗi đơn thuê cần được đặt trước trên website BORROLL để hệ thống kiểm tra và giữ thiết bị còn trống tại chi nhánh đã chọn.",
+      "Khách hàng thanh toán tiền thuê, phụ kiện film (nếu có) và tiền đặt cọc trực tiếp tại quầy chi nhánh bằng tiền mặt hoặc chuyển khoản.",
+      "Tiền cọc là khoản tạm giữ bảo đảm cho thiết bị và sẽ được hoàn lại 100% khi khách trả máy nguyên vẹn theo đúng biên bản giao nhận.",
+    ],
+  },
+  {
+    id: "rental-schedule",
+    title: "2. Quy định thời gian & Tính ngày thuê",
+    summary:
+      "Cách thức tính thời lượng thuê và khung giờ nhận trả máy tại các chi nhánh BORROLL.",
+    body: [
+      "Số ngày thuê được tính theo công thức: Ngày trả − Ngày nhận (thời hạn thuê tối thiểu là 1 ngày).",
+      "Ngày trả máy không bị tính là ngày kín: người thuê khác có thể đặt nhận thiết bị từ đúng ngày đó.",
+      "Khung giờ nhận và trả máy áp dụng theo giờ mở cửa chính thức của chi nhánh: 09:00 – 21:00 hàng ngày.",
+      "Thiết bị phải được nhận và trả tại cùng một chi nhánh mà khách hàng đã lựa chọn khi tạo đơn thuê.",
+    ],
+  },
+  {
+    id: "renter-responsibility",
+    title: "3. Trách nhiệm bảo quản của người thuê",
+    summary:
+      "Quy định về việc gìn giữ thiết bị, phụ kiện và an toàn trong quá trình sử dụng.",
+    body: [
+      "Người thuê có trách nhiệm bảo quản cẩn thận thân máy, ống kính và toàn bộ phụ kiện kèm theo (pin, sạc, dây đeo, nắp đậy, túi chống sốc).",
+      "Tuyệt đối không tự ý tháo mở linh kiện, tự sửa chữa, can thiệp phần cứng hoặc cho bên thứ ba mượn lại khi chưa có sự đồng ý của cửa hàng.",
+      "Khách hàng cần bảo quản thiết bị tránh tiếp xúc với nước, hóa chất, cát bụi, nguồn nhiệt cao hoặc các tình huống va đập mạnh.",
+      "Khi có sự cố kỹ thuật trong quá trình sử dụng, người thuê cần liên hệ ngay hotline chi nhánh để được hướng dẫn xử lý an toàn.",
+    ],
+  },
+  {
+    id: "return-deposit-policy",
+    title: "4. Quy định hoàn cọc & Xử lý phát sinh",
+    summary:
+      "Chính sách hoàn trả tiền cọc minh bạch và nguyên tắc xử lý khi phát sinh hư hỏng, trả muộn.",
+    body: [
+      "Khi trả máy đúng thời hạn và thiết bị hoạt động bình thường, đầy đủ phụ kiện, BORROLL hoàn cọc 100% bằng tiền mặt hoặc chuyển khoản tại quầy.",
+      "Trường hợp trả máy muộn hơn ngày hẹn đã cam kết, cửa hàng sẽ ghi nhận trạng thái quá hạn và tính phụ phí theo quy định.",
+      "Nếu thiết bị phát sinh trầy xước sâu, móp méo, hư hỏng chức năng hoặc thiếu phụ kiện, nhân viên sẽ đối chiếu ảnh chụp biên bản bàn giao ban đầu.",
+      "Chi phí khắc phục hoặc thay thế phụ kiện sẽ được thông báo rõ ràng và khấu trừ trực tiếp từ tiền đặt cọc trước khi hoàn trả phần còn lại.",
     ],
   },
 ];
@@ -50,25 +56,25 @@ function RentalPolicyPage() {
     <div className="about-page">
       <div className="container about-shell">
         <section className="about-hero-card">
-          <p className="eyebrow">CHÍNH SÁCH THUÊ</p>
-          <h1>Quy định sử dụng và thuê máy tại BORROLL</h1>
+          <p className="eyebrow">CHÍNH SÁCH THUÊ MÁY</p>
+          <h1>Quy định thuê và sử dụng thiết bị tại BORROLL</h1>
           <p className="about-lead">
-            Đây là nội dung sơ bộ, đang chờ BORROLL phê duyệt chính thức. Mục
-            đích của trang là chuẩn bị cấu trúc nội dung cho chính sách thuê,
-            giao nhận và xử lý hư hỏng trước khi cập nhật từ quản trị viên hoặc
-            hệ thống quản lý sau này.
+            Chính sách thuê thiết bị của BORROLL được xây dựng dựa trên nguyên
+            tắc minh bạch, rõ ràng và bảo vệ quyền lợi của khách thuê. Khách
+            hàng nhận và trả máy trực tiếp tại quầy chi nhánh, kiểm tra thiết bị
+            thực tế trước khi ký nhận và hoàn cọc ngay khi kết thúc đơn thuê.
           </p>
         </section>
 
         <section className="about-story-card">
           {policySections.map((section) => (
             <div className="about-story-block" key={section.id}>
-              <p className="eyebrow">BORROLL</p>
+              <p className="eyebrow">BORROLL POLICY</p>
               <h2>{section.title}</h2>
               <p>{section.summary}</p>
               <ul>
-                {section.body.map((item) => (
-                  <li key={`${section.id}-${item.slice(0, 20)}`}>{item}</li>
+                {section.body.map((item, idx) => (
+                  <li key={`${section.id}-${idx}`}>{item}</li>
                 ))}
               </ul>
             </div>
@@ -77,18 +83,18 @@ function RentalPolicyPage() {
 
         <section className="cta-box">
           <div>
-            <p className="eyebrow">BẠN CẦN THÊM THÔNG TIN?</p>
-            <h2>
-              Tìm hiểu thêm về cách nhận máy, trả máy và xử lý phát sinh trước
-              khi đặt thuê.
-            </h2>
+            <p className="eyebrow">TÌM HIỂU THÊM QUY TRÌNH</p>
+            <h2>Xem chi tiết quy trình nhận máy tại quầy và thủ tục hoàn cọc</h2>
           </div>
           <div className="hero-actions">
-            <Link to="/cameras" className="button primary-button">
-              Xem thiết bị
+            <Link to="/delivery-policy" className="button primary-button">
+              Chính sách giao nhận
             </Link>
-            <Link to="/privacy-policy" className="button secondary-button">
-              Chính sách bảo mật
+            <Link to="/return-policy" className="button secondary-button">
+              Chính sách trả máy &amp; hoàn cọc
+            </Link>
+            <Link to="/cameras" className="button secondary-button">
+              Xem danh mục thiết bị
             </Link>
           </div>
         </section>
