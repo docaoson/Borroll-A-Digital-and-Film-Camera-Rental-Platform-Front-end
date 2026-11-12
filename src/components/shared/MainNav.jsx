@@ -2,11 +2,8 @@ import { NavLink } from "react-router-dom";
 
 const publicLinks = [
   { to: "/", label: "Trang chủ" },
-  { to: "/about", label: "Giới thiệu" },
   { to: "/cameras", label: "Thiết bị" },
   { to: "/rental-policy", label: "Chính sách thuê" },
-  { to: "/delivery-policy", label: "Giao nhận" },
-  { to: "/return-policy", label: "Trả máy" },
 ];
 
 function MainNav({ variant = "public" }) {

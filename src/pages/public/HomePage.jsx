@@ -26,6 +26,27 @@ const steps = [
   "Nhận máy và bắt đầu trải nghiệm",
 ];
 
+const brandPillars = [
+  {
+    number: "01",
+    title: "Thân thiện với khách hàng",
+    description:
+      "Tư vấn nhẹ nhàng, quy trình đặt thuê rõ ràng, dễ hiểu ngay cả với những người lần đầu tiếp xúc với máy ảnh film hoặc máy ảnh chuyên nghiệp.",
+  },
+  {
+    number: "02",
+    title: "Máy ảnh chất lượng",
+    description:
+      "Từng thiết bị được cửa hàng trực tiếp sở hữu, kiểm tra và vệ sinh cẩn thận trước khi giao cho khách thuê.",
+  },
+  {
+    number: "03",
+    title: "Giá cả phù hợp sinh viên",
+    description:
+      "Mức giá thuê minh bạch, hợp lý và dễ tiếp cận, giúp khách hàng thử nghiệm thiết bị mới mà không phải đầu tư quá lớn.",
+  },
+];
+
 function HomePage() {
   const [featuredModels, setFeaturedModels] = useState([]);
 
@@ -179,10 +200,11 @@ function HomePage() {
             <p className="eyebrow">Về BORROLL</p>
             <h2>Thỏa sức sáng tạo bằng một trải nghiệm thuê máy linh hoạt.</h2>
             <p>
-              BORROLL mang đến không gian tìm kiếm, thử nghiệm và thuê máy ảnh
-              cho người yêu nhiếp ảnh, người sáng tạo nội dung và các dự án cá
-              nhân. Mỗi thiết bị được lựa chọn để hỗ trợ cảm hứng, hiệu suất và
-              sự thoải mái khi bắt đầu một hành trình sáng tạo mới.
+              BORROLL được khởi xướng bởi một nhóm sinh viên yêu nhiếp ảnh, xuất
+              phát từ nhu cầu thử nghiệm máy ảnh film và kỹ thuật số mà không
+              cần đầu tư lớn. Chúng tôi xây dựng mô hình cửa hàng sở hữu và quản
+              lý thiết bị trực tiếp để khách hàng dễ tiếp cận, kiểm tra và trải
+              nghiệm máy một cách rõ ràng và đáng tin cậy.
             </p>
           </div>
 
@@ -190,6 +212,25 @@ function HomePage() {
             <div className="image-placeholder square-placeholder">
               <span>Góc nhìn sáng tạo</span>
             </div>
+          </div>
+        </div>
+      </section>
+
+      <section className="section-shell">
+        <div className="container">
+          <div className="section-heading center-heading">
+            <p className="eyebrow">Giá trị</p>
+            <h2>Ba điều BORROLL luôn ưu tiên</h2>
+          </div>
+
+          <div className="process-grid">
+            {brandPillars.map((pillar) => (
+              <article className="process-card" key={pillar.number}>
+                <span className="process-number">{pillar.number}</span>
+                <h3>{pillar.title}</h3>
+                <p>{pillar.description}</p>
+              </article>
+            ))}
           </div>
         </div>
       </section>

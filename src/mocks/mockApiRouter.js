@@ -67,9 +67,13 @@ function handleGetModels(searchParams) {
   const excludeId = searchParams.get("excludeId") || "";
   const sort = searchParams.get("sort") || "default";
   const minPrice = Number(searchParams.get("minPrice")) || 0;
-  const maxPrice = Number(searchParams.get("maxPrice")) || Number.MAX_SAFE_INTEGER;
+  const maxPrice =
+    Number(searchParams.get("maxPrice")) || Number.MAX_SAFE_INTEGER;
   const page = Math.max(1, Number(searchParams.get("page")) || 1);
-  const pageSize = Math.min(100, Math.max(1, Number(searchParams.get("pageSize")) || 20));
+  const pageSize = Math.min(
+    100,
+    Math.max(1, Number(searchParams.get("pageSize")) || 20),
+  );
 
   const categorySlugs = categoryParam
     .split(",")
@@ -103,7 +107,8 @@ function handleGetModels(searchParams) {
   }
 
   if (kind) filtered = filtered.filter((m) => m.kind === kind);
-  if (cameraType) filtered = filtered.filter((m) => m.cameraType === cameraType);
+  if (cameraType)
+    filtered = filtered.filter((m) => m.cameraType === cameraType);
   if (mount) filtered = filtered.filter((m) => m.mount === mount);
   if (branch) {
     filtered = filtered.filter((m) => m.availableAtBranches.includes(branch));
@@ -171,7 +176,13 @@ function handleGetModels(searchParams) {
 }
 
 function buildQuote(body) {
-  const { branchSlug, startDate, endDate, items = [], addons = [] } = body || {};
+  const {
+    branchSlug,
+    startDate,
+    endDate,
+    items = [],
+    addons = [],
+  } = body || {};
 
   const startMs = parseIsoUtcMs(startDate);
   const endMs = parseIsoUtcMs(endDate);
@@ -276,6 +287,25 @@ function buildQuote(body) {
   };
 }
 
+const mockUser = {
+  id: "user_demo",
+  fullName: "Bảo Nguyên",
+  email: "bao.nguyen@borroll.vn",
+  phone: "0912345678",
+  avatarUrl: null,
+  roles: ["RENTER"],
+};
+
+let currentUser = { ...mockUser };
+
+function normalizePhone(value) {
+  return (value || "").replace(/\s+/g, "").trim();
+}
+
+function buildMeResponse() {
+  return { ...currentUser, avatarUrl: currentUser.avatarUrl || null };
+}
+
 export function handleMockRequest(normalizedPath, options = {}) {
   const method = (options.method || "GET").toUpperCase();
   const [pathname, rawQuery = ""] = normalizedPath.split("?");
@@ -284,6 +314,113 @@ export function handleMockRequest(normalizedPath, options = {}) {
     typeof options.body === "string" ? JSON.parse(options.body) : options.body;
 
   // Real Backend handles /health, /auth/*, /me*
+  if (
+    pathname === "/health" ||
+    pathname.startsWith("/auth/") ||
+    pathname === "/me" ||
+    pathname.startsWith("/me/")
+  ) {
+    if (pathname === "/auth/login" && method === "POST") {
+      return {
+        handled: true,
+        data: {
+          accessToken: "mock-access-token",
+          user: buildMeResponse(),
+        },
+      };
+    }
+
+    if (pathname === "/auth/register" && method === "POST") {
+      currentUser = {
+        ...currentUser,
+        fullName: body?.fullName || currentUser.fullName,
+        email: body?.email || currentUser.email,
+        phone: body?.phone || currentUser.phone,
+      };
+      return {
+        handled: true,
+        data: {
+          accessToken: "mock-access-token",
+          user: buildMeResponse(),
+        },
+      };
+    }
+
+    if (pathname === "/auth/refresh" && method === "POST") {
+      return {
+        handled: true,
+        data: { accessToken: "mock-access-token" },
+      };
+    }
+
+    if (pathname === "/auth/logout" && method === "POST") {
+      return { handled: true, data: null };
+    }
+
+    if (pathname === "/me" && method === "GET") {
+      return { handled: true, data: buildMeResponse() };
+    }
+
+    if (pathname === "/me" && method === "PATCH") {
+      const nextFullName =
+        typeof body?.fullName === "string"
+          ? body.fullName.trim()
+          : currentUser.fullName;
+      const nextPhone =
+        typeof body?.phone === "string"
+          ? normalizePhone(body.phone)
+          : currentUser.phone;
+
+      if (!nextFullName) {
+        throw new ApiError({
+          status: 400,
+          code: "VALIDATION_ERROR",
+          message: "Họ và tên không được để trống.",
+          details: { fields: { fullName: "Họ và tên không được để trống" } },
+        });
+      }
+
+      if (nextPhone && !/^0\d{9}$/.test(nextPhone)) {
+        throw new ApiError({
+          status: 400,
+          code: "VALIDATION_ERROR",
+          message: "Số điện thoại không hợp lệ.",
+          details: {
+            fields: {
+              phone: "Số điện thoại phải gồm 10 chữ số bắt đầu bằng 0",
+            },
+          },
+        });
+      }
+
+      currentUser = {
+        ...currentUser,
+        fullName: nextFullName,
+        phone: nextPhone,
+        avatarUrl:
+          body && Object.prototype.hasOwnProperty.call(body, "avatarPath")
+            ? body.avatarPath
+              ? `https://images.example.com/${body.avatarPath}`
+              : null
+            : currentUser.avatarUrl,
+      };
+
+      return { handled: true, data: buildMeResponse() };
+    }
+
+    if (pathname === "/me/avatar/presign" && method === "POST") {
+      const contentType = body?.contentType || "image/jpeg";
+      return {
+        handled: true,
+        data: {
+          uploadUrl: `https://example.com/upload?type=${encodeURIComponent(contentType)}`,
+          path: `avatars/${currentUser.id}/${Date.now()}.jpg`,
+          token: "mock-upload-token",
+        },
+      };
+    }
+  }
+
   if (
     pathname === "/health" ||
     pathname.startsWith("/auth/") ||
@@ -415,9 +552,8 @@ export function handleMockRequest(normalizedPath, options = {}) {
 
   if (method === "GET" && pathname === "/bookings") {
     const status = searchParams.get("status");
-    const items = (status
-      ? bookingsStore.filter((b) => b.status === status)
-      : bookingsStore
+    const items = (
+      status ? bookingsStore.filter((b) => b.status === status) : bookingsStore
     ).map((b) => {
       const rest = { ...b };
       delete rest.payments;
@@ -489,4 +625,3 @@ export function handleMockRequest(normalizedPath, options = {}) {
 
   return null;
 }
-

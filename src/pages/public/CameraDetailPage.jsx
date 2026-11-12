@@ -21,6 +21,35 @@ function parseIsoUtcMs(isoDate) {
   return Date.UTC(year, month - 1, day);
 }
 
+function FavoriteToggle({ modelId, isFavorite, onToggle }) {
+  const [pending, setPending] = useState(false);
+
+  const handleToggle = async () => {
+    if (!modelId || pending) return;
+    setPending(true);
+    try {
+      await onToggle(modelId, !isFavorite);
+    } finally {
+      setPending(false);
+    }
+  };
+
+  return (
+    <button
+      type="button"
+      className={`favorite-toggle detail-favorite-toggle ${
+        isFavorite ? "active" : ""
+      }`}
+      onClick={handleToggle}
+      disabled={pending}
+      aria-label={isFavorite ? "Bỏ yêu thích" : "Thêm vào yêu thích"}
+      title={isFavorite ? "Bỏ yêu thích" : "Thêm vào yêu thích"}
+    >
+      {pending ? "…" : isFavorite ? "♥ Đã thích" : "♡ Thêm yêu thích"}
+    </button>
+  );
+}
+
 function CameraDetailPage() {
   const { id } = useParams();
   const {
@@ -92,10 +121,10 @@ function CameraDetailPage() {
     pickupMs !== null && returnMs !== null && returnMs <= pickupMs;
   const canRequestQuote = Boolean(
     camera &&
-      branchSlug &&
-      pickupMs !== null &&
-      returnMs !== null &&
-      returnMs > pickupMs,
+    branchSlug &&
+    pickupMs !== null &&
+    returnMs !== null &&
+    returnMs > pickupMs,
   );
   const quoteRequestKey = canRequestQuote
     ? `${branchSlug}|${pickupDate}|${returnDate}|${camera.id}`
@@ -133,6 +162,17 @@ function CameraDetailPage() {
     };
   }, [quoteRequestKey, branchSlug, pickupDate, returnDate, camera]);
 
+  const handleToggleFavorite = async (modelId, shouldFavorite) => {
+    if (!modelId) return;
+    await catalogService.toggleFavorite(modelId, shouldFavorite);
+    setModelState((current) => ({
+      ...current,
+      data: current.data
+        ? { ...current.data, isFavorite: shouldFavorite }
+        : current.data,
+    }));
+  };
+
   if (isNotFound) {
     return <NotFoundPage />;
   }
@@ -142,7 +182,7 @@ function CameraDetailPage() {
       <div className="camera-detail-page">
         <div className="container detail-shell">
           <div className="page-placeholder">
-            <p className="eyebrow">BORROLL</p>
+            <p className="page-kicker">BORROLL</p>
             <p>Đang tải thông tin thiết bị...</p>
           </div>
         </div>
@@ -176,7 +216,9 @@ function CameraDetailPage() {
 
   const handleAddToSelection = () => {
     if (pickupInvalid || returnInvalid) {
-      setMessage("Ngày nhận hoặc ngày trả không hợp lệ. Vui lòng kiểm tra lại.");
+      setMessage(
+        "Ngày nhận hoặc ngày trả không hợp lệ. Vui lòng kiểm tra lại.",
+      );
       return;
     }
 
@@ -222,8 +264,18 @@ function CameraDetailPage() {
           </div>
 
           <div className="detail-content">
-            <p className="eyebrow">{camera.category?.name}</p>
-            <h1>{camera.name}</h1>
+            <div className="detail-header-row">
+              <div>
+                <p className="eyebrow">{camera.category?.name}</p>
+                <h1>{camera.name}</h1>
+              </div>
+              <FavoriteToggle
+                modelId={camera.id}
+                isFavorite={Boolean(camera.isFavorite)}
+                onToggle={handleToggleFavorite}
+              />
+            </div>
+
             <div className="detail-meta">
               <span>{camera.brand?.name}</span>
               <span>{camera.cameraType}</span>
@@ -259,19 +311,21 @@ function CameraDetailPage() {
           </div>
         </div>
 
-        <div className="booking-panel">
-          <div className="booking-form">
-            <h2>Chọn thời gian thuê</h2>
+        <div className="checkout-card detail-booking-box">
+          <div className="checkout-section-header">
+            <div>
+              <p className="eyebrow">Thuê ngay</p>
+              <h2>Đặt lịch nhận máy</h2>
+            </div>
+          </div>
 
-            <div className="form-field branch-field">
-              <label htmlFor="branch-select">Chi nhánh nhận và trả máy</label>
+          <div className="booking-grid">
+            <div>
+              <label htmlFor="branch-select">Chi nhánh</label>
               <select
                 id="branch-select"
                 value={branchSlug}
-                onChange={(event) => {
-                  setBranchSlug(event.target.value);
-                  setMessage("");
-                }}
+                onChange={(event) => setBranchSlug(event.target.value)}
               >
                 {branches.map((branch) => (
                   <option key={branch.slug} value={branch.slug}>
@@ -281,138 +335,65 @@ function CameraDetailPage() {
               </select>
             </div>
 
-            <div className="date-row">
-              <div>
-                <label htmlFor="pickup-date">Ngày nhận</label>
-                <DateInput
-                  id="pickup-date"
-                  label="Ngày nhận"
-                  min={todayString}
-                  value={pickupDate}
-                  onChange={handlePickupChange}
-                />
-              </div>
+            <DateInput
+              label="Ngày nhận"
+              value={pickupDate}
+              onChange={handlePickupChange}
+              minDate={todayString}
+            />
 
-              <div>
-                <label htmlFor="return-date">Ngày trả</label>
-                <DateInput
-                  id="return-date"
-                  label="Ngày trả"
-                  min={pickupDate || todayString}
-                  value={returnDate}
-                  onChange={handleReturnChange}
-                />
-              </div>
+            <DateInput
+              label="Ngày trả"
+              value={returnDate}
+              onChange={handleReturnChange}
+              minDate={pickupDate || todayString}
+            />
+          </div>
+
+          <div className="detail-price-panel">
+            <div className="price-row">
+              <span>Giá thuê / ngày</span>
+              <strong>{camera.pricePerDay.toLocaleString("vi-VN")}đ</strong>
             </div>
+            <div className="price-row">
+              <span>Phí đặt cọc</span>
+              <strong>{camera.deposit.toLocaleString("vi-VN")}đ</strong>
+            </div>
+          </div>
 
-            <div className="summary-box">
-              <div>
+          {message && <p className="status-message success">{message}</p>}
+
+          {quoteError && <p className="status-message error">{quoteError}</p>}
+
+          {isQuoteLoading && (
+            <p className="status-message muted">Đang tính báo giá...</p>
+          )}
+
+          {quote && (
+            <div className="quote-summary">
+              <div className="price-row">
                 <span>Thời gian thuê</span>
-                <strong>
-                  {isRangeInvalid
-                    ? "Không hợp lệ"
-                    : isQuoteLoading
-                      ? "Đang tính..."
-                      : quote
-                        ? `${quote.days} ngày`
-                        : "Chưa chọn"}
-                </strong>
+                <strong>{quote.days} ngày</strong>
               </div>
-              <div>
-                <span>Tiền thuê (từ báo giá)</span>
-                <strong>
-                  {isQuoteLoading
-                    ? "Đang tính..."
-                    : quote
-                      ? `${quote.rentalAmount.toLocaleString("vi-VN")} đ`
-                      : "—"}
-                </strong>
+              <div className="price-row">
+                <span>Tổng thuê</span>
+                <strong>{quote.rentalAmount.toLocaleString("vi-VN")}đ</strong>
               </div>
-              <div>
-                <span>Tiền cọc (hoàn lại khi trả)</span>
-                <strong>
-                  {isQuoteLoading
-                    ? "Đang tính..."
-                    : quote
-                      ? `${quote.depositAmount.toLocaleString("vi-VN")} đ`
-                      : "—"}
-                </strong>
-              </div>
-              <div>
-                <span>Tổng thanh toán tại cửa hàng</span>
-                <strong>
-                  {isQuoteLoading
-                    ? "Đang tính..."
-                    : quote
-                      ? `${quote.totalDueAtPickup.toLocaleString("vi-VN")} đ`
-                      : "—"}
-                </strong>
+              <div className="price-row">
+                <span>Tổng đặt cọc</span>
+                <strong>{quote.depositAmount.toLocaleString("vi-VN")}đ</strong>
               </div>
             </div>
+          )}
 
-            {quote && quote.available === false && (
-              <div className="form-alert error" role="alert">
-                Hết máy trong khoảng ngày này tại chi nhánh đã chọn.
-              </div>
-            )}
-
-            {quoteError && (
-              <div className="form-alert error" role="alert">
-                {quoteError}
-              </div>
-            )}
-
-            <button
-              type="button"
-              className="button primary-button full-width"
-              onClick={handleAddToSelection}
-            >
-              Thêm vào giỏ thuê
-            </button>
-
-            {(pickupInvalid || returnInvalid) && !message && (
-              <p className="cart-message field-error">
-                Ngày nhập chưa đúng lịch (ví dụ: 01–31 theo tháng).
-              </p>
-            )}
-            {isRangeInvalid && !message && (
-              <p className="cart-message field-error">
-                Ngày trả máy phải sau ngày nhận máy ít nhất 1 ngày.
-              </p>
-            )}
-            {message && <p className="cart-message">{message}</p>}
-
-            {message.includes("Đã thêm") && (
-              <Link
-                to="/cart"
-                className="button secondary-button full-width cart-link"
-              >
-                Đi đến giỏ thuê
-              </Link>
-            )}
-          </div>
-
-          <div className="booking-notes">
-            <h3>Lưu ý thuê máy</h3>
-            <ul>
-              <li>
-                Nhận và trả máy tại cùng một chi nhánh đã chọn. Cửa hàng không
-                giao hàng tận nơi.
-              </li>
-              <li>
-                Bạn thanh toán trực tiếp tại cửa hàng khi nhận máy. Tiền cọc sẽ
-                được hoàn lại khi trả máy nếu thiết bị không hư hỏng.
-              </li>
-              <li>
-                Thời gian thuê tính theo công thức ngày trả trừ ngày nhận (tối
-                thiểu 1 ngày).
-              </li>
-              <li>
-                Báo giá chi tiết được tính qua <code>POST /bookings/quote</code>
-                .
-              </li>
-            </ul>
-          </div>
+          <button
+            type="button"
+            className="button primary-button"
+            onClick={handleAddToSelection}
+            disabled={!canRequestQuote}
+          >
+            Thêm vào danh sách chọn thuê
+          </button>
         </div>
       </div>
     </div>

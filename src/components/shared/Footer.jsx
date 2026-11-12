@@ -16,7 +16,7 @@ function Footer() {
           <h4>Điều hướng</h4>
           <ul>
             <li>
-              <Link to="/about">Giới thiệu</Link>
+              <Link to="/">Trang chủ</Link>
             </li>
             <li>
               <Link to="/cameras">Danh mục máy</Link>
@@ -31,13 +31,13 @@ function Footer() {
           <h4>Hỗ trợ</h4>
           <ul>
             <li>
-              <Link to="/delivery-policy">Chính sách giao nhận</Link>
-            </li>
-            <li>
-              <Link to="/return-policy">Quy định trả máy</Link>
-            </li>
-            <li>
               <Link to="/privacy-policy">Bảo mật</Link>
+            </li>
+            <li>
+              <Link to="/about">Về BORROLL</Link>
+            </li>
+            <li>
+              <Link to="/cameras">Xem thiết bị</Link>
             </li>
           </ul>
         </div>

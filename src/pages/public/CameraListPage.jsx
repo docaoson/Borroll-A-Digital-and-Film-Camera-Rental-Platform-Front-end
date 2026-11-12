@@ -4,6 +4,35 @@ import { catalogService } from "../../services/catalogService";
 
 const sanitizeNumericInput = (value) => value.replace(/[^0-9]/g, "");
 
+function FavoriteToggle({ modelId, isFavorite, onToggle }) {
+  const [pending, setPending] = useState(false);
+
+  const handleClick = async (event) => {
+    event.preventDefault();
+    event.stopPropagation();
+    if (pending || !modelId) return;
+    setPending(true);
+    try {
+      await onToggle(modelId, !isFavorite);
+    } finally {
+      setPending(false);
+    }
+  };
+
+  return (
+    <button
+      type="button"
+      className={`favorite-toggle ${isFavorite ? "active" : ""}`}
+      onClick={handleClick}
+      aria-label={isFavorite ? "Bỏ yêu thích" : "Thêm vào yêu thích"}
+      disabled={pending}
+      title={isFavorite ? "Bỏ yêu thích" : "Thêm vào yêu thích"}
+    >
+      {pending ? "…" : isFavorite ? "♥" : "♡"}
+    </button>
+  );
+}
+
 function CameraListPage() {
   const [searchParams] = useSearchParams();
   const [searchTerm, setSearchTerm] = useState("");
@@ -18,6 +47,12 @@ function CameraListPage() {
   const [categories, setCategories] = useState([]);
   const [brands, setBrands] = useState([]);
   const [modelsResult, setModelsResult] = useState({ items: [], total: 0 });
+
+  const refreshFavoritesState = (items) =>
+    items.map((item) => ({
+      ...item,
+      isFavorite: Boolean(item.isFavorite),
+    }));
 
   useEffect(() => {
     let active = true;
@@ -51,7 +86,7 @@ function CameraListPage() {
       .then((res) => {
         if (active) {
           setModelsResult({
-            items: res.items || [],
+            items: refreshFavoritesState(res.items || []),
             total: res.total ?? (res.items?.length || 0),
           });
         }
@@ -64,6 +99,19 @@ function CameraListPage() {
       active = false;
     };
   }, [searchTerm, selectedCategory, selectedBrand, minPrice, maxPrice, sortBy]);
+
+  const handleToggleFavorite = async (modelId, shouldFavorite) => {
+    if (!modelId) return;
+    await catalogService.toggleFavorite(modelId, shouldFavorite);
+    setModelsResult((current) => ({
+      ...current,
+      items: current.items.map((camera) =>
+        camera.id === modelId
+          ? { ...camera, isFavorite: shouldFavorite }
+          : camera,
+      ),
+    }));
+  };
 
   const resetFilters = () => {
     setSearchTerm("");
@@ -216,9 +264,17 @@ function CameraListPage() {
                 </div>
 
                 <div className="camera-body">
-                  <span className="camera-category">
-                    {camera.category?.name}
-                  </span>
+                  <div className="camera-card-header">
+                    <span className="camera-category">
+                      {camera.category?.name}
+                    </span>
+                    <FavoriteToggle
+                      modelId={camera.id}
+                      isFavorite={Boolean(camera.isFavorite)}
+                      onToggle={handleToggleFavorite}
+                    />
+                  </div>
+
                   <h3>{camera.name}</h3>
                   <p className="camera-meta">
                     {camera.brand?.name} · {camera.cameraType}

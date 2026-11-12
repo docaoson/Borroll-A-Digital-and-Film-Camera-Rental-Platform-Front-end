@@ -41,5 +41,25 @@ export const catalogService = {
       { skipAuthRetry: true },
     );
   },
-};
 
+  getFavorites(params = {}) {
+    const query = new URLSearchParams();
+    Object.entries(params).forEach(([key, val]) => {
+      if (val !== undefined && val !== null && val !== "") {
+        query.set(key, String(val));
+      }
+    });
+    const qs = query.toString();
+    return apiRequest(`/favorites${qs ? `?${qs}` : ""}`, {
+      skipAuthRetry: true,
+    });
+  },
+
+  toggleFavorite(modelId, shouldFavorite) {
+    const method = shouldFavorite ? "POST" : "DELETE";
+    return apiRequest(`/favorites/${encodeURIComponent(modelId)}`, {
+      method,
+      skipAuthRetry: true,
+    });
+  },
+};
