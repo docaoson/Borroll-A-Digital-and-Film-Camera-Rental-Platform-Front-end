@@ -192,6 +192,7 @@ function CameraDetailPage() {
   const [availabilityState, setAvailabilityState] = useState({
     key: null,
     data: [],
+    error: null,
   });
 
   const isCalendarLoading = Boolean(
@@ -219,6 +220,7 @@ function CameraDetailPage() {
           setAvailabilityState({
             key: availabilityKey,
             data: res.unavailableDates || [],
+            error: null,
           });
         }
       })
@@ -227,6 +229,7 @@ function CameraDetailPage() {
           setAvailabilityState({
             key: availabilityKey,
             data: [],
+            error: "Không thể kiểm tra lịch trống của thiết bị. Vui lòng thử lại sau.",
           });
         }
       });
@@ -839,6 +842,11 @@ function CameraDetailPage() {
 
           {/* INTERACTIVE MONTHLY AVAILABILITY CALENDAR */}
           <div className="calendar-widget-shell">
+            {availabilityState.error && (
+              <div className="form-alert error calendar-error-alert" role="alert">
+                <span>⚠️ {availabilityState.error}</span>
+              </div>
+            )}
             <div className="calendar-header-bar">
               <div className="calendar-nav-controls">
                 <button

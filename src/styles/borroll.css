@@ -11214,3 +11214,24 @@ select {
     font-size: 0.8rem !important;
   }
 }
+
+
+/* Price Filter Error State */
+.price-input-error {
+  border-color: #d32f2f !important;
+  background-color: #fff8f8 !important;
+  box-shadow: 0 0 0 1px #d32f2f !important;
+}
+
+.price-error-hint {
+  color: #d32f2f;
+  font-size: 0.78rem;
+  font-weight: 600;
+  margin: 0.45rem 0 0;
+  line-height: 1.35;
+}
+
+.calendar-error-alert {
+  margin-bottom: 1rem;
+  padding: 0.75rem 1rem;
+}

@@ -94,6 +94,8 @@ function CameraListPage() {
   const [selectedBrands, setSelectedBrands] = useState(initialBrands);
   const [minPrice, setMinPrice] = useState(initialMinPrice);
   const [maxPrice, setMaxPrice] = useState(initialMaxPrice);
+  const [debouncedMinPrice, setDebouncedMinPrice] = useState(initialMinPrice);
+  const [debouncedMaxPrice, setDebouncedMaxPrice] = useState(initialMaxPrice);
   const [sortBy, setSortBy] = useState(initialSort);
   const [currentPage, setCurrentPage] = useState(
     Number.isInteger(initialPage) && initialPage > 0 ? initialPage : 1,
@@ -106,7 +108,7 @@ function CameraListPage() {
   const categoryParam = selectedCategories.join(",");
   const brandParam = selectedBrands.join(",");
 
-  const queryKey = `${debouncedSearch}|${categoryParam}|${brandParam}|${minPrice}|${maxPrice}|${sortBy}|${currentPage}|${reloadKey}`;
+  const queryKey = `${debouncedSearch}|${categoryParam}|${brandParam}|${debouncedMinPrice}|${debouncedMaxPrice}|${sortBy}|${currentPage}|${reloadKey}`;
 
   const [resultState, setResultState] = useState({
     key: null,
@@ -130,6 +132,41 @@ function CameraListPage() {
     return () => clearTimeout(timer);
   }, [searchInput]);
 
+  // Debounce price filter inputs (400ms) to avoid spamming network requests
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      setDebouncedMinPrice(minPrice);
+      setDebouncedMaxPrice(maxPrice);
+    }, 400);
+    return () => clearTimeout(timer);
+  }, [minPrice, maxPrice]);
+
+  // Validate price range (from <= to)
+  const minNum = debouncedMinPrice ? Number(debouncedMinPrice) : null;
+  const maxNum = debouncedMaxPrice ? Number(debouncedMaxPrice) : null;
+  const isPriceRangeInvalid = Boolean(
+    minNum !== null && maxNum !== null && minNum > maxNum,
+  );
+  const priceErrorMessage = isPriceRangeInvalid
+    ? "Giá từ không được lớn hơn giá đến"
+    : null;
+
+  const handleMinPriceChange = (val) => {
+    const clean = sanitizeNumericInput(val);
+    if (clean.length > 9) return;
+    if (clean && Number(clean) > 100_000_000) return;
+    setMinPrice(clean);
+    setCurrentPage(1);
+  };
+
+  const handleMaxPriceChange = (val) => {
+    const clean = sanitizeNumericInput(val);
+    if (clean.length > 9) return;
+    if (clean && Number(clean) > 100_000_000) return;
+    setMaxPrice(clean);
+    setCurrentPage(1);
+  };
+
   // Load categories and brands on mount
   useEffect(() => {
     let active = true;
@@ -150,15 +187,15 @@ function CameraListPage() {
     };
   }, []);
 
-  // Synchronize state changes to URL search params
+  // Synchronize state changes to URL search params (debounced)
   useEffect(() => {
     const params = new URLSearchParams();
     if (debouncedSearch) params.set("q", debouncedSearch);
     if (selectedCategories.length > 0)
       params.set("category", selectedCategories.join(","));
     if (selectedBrands.length > 0) params.set("brand", selectedBrands.join(","));
-    if (minPrice) params.set("minPrice", minPrice);
-    if (maxPrice) params.set("maxPrice", maxPrice);
+    if (debouncedMinPrice) params.set("minPrice", debouncedMinPrice);
+    if (debouncedMaxPrice) params.set("maxPrice", debouncedMaxPrice);
     if (sortBy && sortBy !== "default") params.set("sort", sortBy);
     if (currentPage > 1) params.set("page", String(currentPage));
 
@@ -167,8 +204,8 @@ function CameraListPage() {
     debouncedSearch,
     selectedCategories,
     selectedBrands,
-    minPrice,
-    maxPrice,
+    debouncedMinPrice,
+    debouncedMaxPrice,
     sortBy,
     currentPage,
     setSearchParams,
@@ -176,6 +213,17 @@ function CameraListPage() {
 
   // Fetch catalog items when filters change
   useEffect(() => {
+    // If user enters invalid price range (from > to), don't trigger search
+    if (isPriceRangeInvalid) {
+      setResultState({
+        key: queryKey,
+        items: [],
+        total: 0,
+        error: "Khoảng giá lọc không hợp lệ: Giá từ không được lớn hơn giá đến.",
+      });
+      return;
+    }
+
     let active = true;
 
     catalogService
@@ -183,8 +231,8 @@ function CameraListPage() {
         q: debouncedSearch || undefined,
         category: categoryParam || undefined,
         brand: brandParam || undefined,
-        minPrice: minPrice || undefined,
-        maxPrice: maxPrice || undefined,
+        minPrice: debouncedMinPrice || undefined,
+        maxPrice: debouncedMaxPrice || undefined,
         sort: sortBy,
         page: currentPage,
         pageSize: PAGE_SIZE,
@@ -215,12 +263,13 @@ function CameraListPage() {
     debouncedSearch,
     categoryParam,
     brandParam,
-    minPrice,
-    maxPrice,
+    debouncedMinPrice,
+    debouncedMaxPrice,
     sortBy,
     currentPage,
     reloadKey,
     queryKey,
+    isPriceRangeInvalid,
   ]);
 
   const handleToggleFavorite = async (modelId, shouldFavorite) => {
@@ -345,36 +394,39 @@ function CameraListPage() {
               <h3>Khoảng giá (VNĐ)</h3>
               <div className="price-range-inputs">
                 <div>
-                  <label htmlFor="min-price">Từ</label>
+                  <label htmlFor="min-price">Từ (₫)</label>
                   <input
                     id="min-price"
                     type="text"
                     inputMode="numeric"
                     pattern="[0-9]*"
+                    maxLength={9}
+                    className={isPriceRangeInvalid ? "price-input-error" : ""}
                     value={minPrice}
                     placeholder="0"
-                    onChange={(e) => {
-                      setMinPrice(sanitizeNumericInput(e.target.value));
-                      setCurrentPage(1);
-                    }}
+                    onChange={(e) => handleMinPriceChange(e.target.value)}
                   />
                 </div>
                 <div>
-                  <label htmlFor="max-price">Đến</label>
+                  <label htmlFor="max-price">Đến (₫)</label>
                   <input
                     id="max-price"
                     type="text"
                     inputMode="numeric"
                     pattern="[0-9]*"
+                    maxLength={9}
+                    className={isPriceRangeInvalid ? "price-input-error" : ""}
                     value={maxPrice}
                     placeholder="2.000.000"
-                    onChange={(e) => {
-                      setMaxPrice(sanitizeNumericInput(e.target.value));
-                      setCurrentPage(1);
-                    }}
+                    onChange={(e) => handleMaxPriceChange(e.target.value)}
                   />
                 </div>
               </div>
+              {priceErrorMessage && (
+                <p className="price-error-hint" role="alert">
+                  ⚠️ {priceErrorMessage}
+                </p>
+              )}
             </div>
 
             <button
@@ -478,7 +530,7 @@ function CameraListPage() {
                   className="camera-grid"
                   aria-label="Danh sách thiết bị máy ảnh"
                 >
-                  {modelsResult.items.map((camera) => {
+                  {modelsResult.items.map((camera, index) => {
                     const hasBranches =
                       Array.isArray(camera.availableAtBranches) &&
                       camera.availableAtBranches.length > 0;
@@ -496,7 +548,8 @@ function CameraListPage() {
                               src={camera.thumbnailUrl}
                               alt={camera.name}
                               className="camera-card-image"
-                              loading="lazy"
+                              loading={index < 4 ? "eager" : "lazy"}
+                              fetchPriority={index < 4 ? "high" : "low"}
                               onError={(e) => {
                                 e.currentTarget.style.display = "none";
                                 const fallback =
