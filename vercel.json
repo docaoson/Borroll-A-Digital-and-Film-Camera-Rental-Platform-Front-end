@@ -1,0 +1,12 @@
+{
+    "rewrites": [
+        {
+            "source": "/api/v1/:path*",
+            "destination": "https://borroll-a-digital-and-film-camera-r-gray.vercel.app/api/v1/:path*"
+        },
+        {
+            "source": "/(.*)",
+            "destination": "/index.html"
+        }
+    ]
+}
