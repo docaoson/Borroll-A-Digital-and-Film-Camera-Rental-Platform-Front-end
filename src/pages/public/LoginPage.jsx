@@ -40,13 +40,10 @@ function LoginPage() {
   }, []);
 
   const hasCustomNext = Boolean(searchParams.get("next"));
-  const defaultTarget =
-    user?.roles?.includes("ADMIN") || user?.roles?.includes("STAFF")
-      ? "/admin"
-      : "/profile";
+  const defaultTarget = hasCustomNext ? nextPath : "/";
 
   if (!isLoading && isAuthenticated) {
-    return <Navigate to={hasCustomNext ? nextPath : defaultTarget} replace />;
+    return <Navigate to={defaultTarget} replace />;
   }
 
   const handleSubmit = async (event) => {
@@ -68,14 +65,8 @@ function LoginPage() {
 
     setSubmitting(true);
     try {
-      const loggedUser = await login({ email: email.trim(), password });
-      const roles = loggedUser?.roles || [];
-      const isStaffOrAdmin = roles.includes("ADMIN") || roles.includes("STAFF");
-      const target = hasCustomNext
-        ? nextPath
-        : isStaffOrAdmin
-          ? "/admin"
-          : "/profile";
+      await login({ email: email.trim(), password });
+      const target = hasCustomNext ? nextPath : "/";
       navigate(target, { replace: true });
     } catch (error) {
       if (error instanceof ApiError) {

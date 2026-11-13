@@ -51,7 +51,7 @@ function RegisterPage() {
         phone: phone.trim(),
         password,
       });
-      navigate("/profile", { replace: true });
+      navigate("/", { replace: true });
     } catch (error) {
       if (error instanceof ApiError) {
         if (error.details?.fields) {
