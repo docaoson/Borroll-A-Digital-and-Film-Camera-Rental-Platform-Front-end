@@ -290,6 +290,30 @@ export const adminService = {
     return apiRequest(`/admin/units${buildQuery(params)}`);
   },
 
+  getAdminUnit(id) {
+    return apiRequest(`/admin/units/${encodeURIComponent(id)}`);
+  },
+
+  createAdminUnit(payload) {
+    return apiRequest("/admin/units", {
+      method: "POST",
+      body: payload,
+    });
+  },
+
+  updateAdminUnit(id, payload) {
+    return apiRequest(`/admin/units/${encodeURIComponent(id)}`, {
+      method: "PATCH",
+      body: payload,
+    });
+  },
+
+  deleteAdminUnit(id) {
+    return apiRequest(`/admin/units/${encodeURIComponent(id)}`, {
+      method: "DELETE",
+    });
+  },
+
   getStaffUnitBlocks(params = {}) {
     return apiRequest(`/staff/unit-blocks${buildQuery(params)}`);
   },

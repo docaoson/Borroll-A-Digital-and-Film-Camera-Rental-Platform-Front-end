@@ -9068,3 +9068,478 @@ select {
     background: rgba(184, 108, 77, 0.18);
   }
 }
+
+
+/* ==========================================================================
+   PHASE 7D: INVENTORY & BRANCHES STYLES
+   ========================================================================== */
+
+.admin-inventory-page,
+.admin-branches-page {
+  display: flex;
+  flex-direction: column;
+  gap: 1.5rem;
+  width: 100%;
+}
+
+/* SERIAL CELL & BADGES */
+.admin-serial-cell {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.serial-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+  background: rgba(47, 41, 39, 0.06);
+  border: 1px solid var(--borroll-line);
+  color: var(--borroll-charcoal);
+  font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+  font-size: 0.85rem;
+  font-weight: 700;
+  padding: 0.25rem 0.55rem;
+  border-radius: 6px;
+  letter-spacing: 0.02em;
+}
+
+.serial-badge.compact {
+  font-size: 0.78rem;
+  padding: 0.15rem 0.4rem;
+}
+
+.admin-model-cell {
+  display: flex;
+  flex-direction: column;
+  gap: 0.2rem;
+}
+
+.admin-model-cell strong {
+  font-size: 0.92rem;
+  color: var(--borroll-charcoal);
+}
+
+.admin-model-cell .sub-link {
+  font-size: 0.75rem;
+  color: var(--borroll-terra);
+  text-decoration: none;
+  font-weight: 500;
+}
+
+.admin-model-cell .sub-link:hover {
+  text-decoration: underline;
+}
+
+/* PILL BADGES FOR STATUS & CONDITION */
+.admin-pill-badge {
+  display: inline-flex;
+  align-items: center;
+  padding: 0.25rem 0.6rem;
+  border-radius: 999px;
+  font-size: 0.76rem;
+  font-weight: 600;
+  white-space: nowrap;
+}
+
+.admin-pill-badge.small {
+  padding: 0.15rem 0.45rem;
+  font-size: 0.7rem;
+}
+
+.unit-status-available {
+  background: rgba(46, 125, 50, 0.12);
+  color: #2e7d32;
+  border: 1px solid rgba(46, 125, 50, 0.25);
+}
+
+.unit-status-maintenance {
+  background: rgba(245, 124, 0, 0.12);
+  color: #e65100;
+  border: 1px solid rgba(245, 124, 0, 0.25);
+}
+
+.unit-status-retired {
+  background: rgba(120, 110, 105, 0.14);
+  color: #5c5550;
+  border: 1px solid rgba(120, 110, 105, 0.25);
+}
+
+.unit-cond-excellent {
+  background: rgba(0, 150, 136, 0.12);
+  color: #00796b;
+  border: 1px solid rgba(0, 150, 136, 0.25);
+}
+
+.unit-cond-good {
+  background: rgba(30, 136, 229, 0.12);
+  color: #1565c0;
+  border: 1px solid rgba(30, 136, 229, 0.25);
+}
+
+.unit-cond-fair {
+  background: rgba(230, 81, 0, 0.12);
+  color: #d84315;
+  border: 1px solid rgba(230, 81, 0, 0.25);
+}
+
+.small-pill {
+  font-size: 0.72rem;
+  font-weight: 600;
+  color: rgba(47, 41, 39, 0.75);
+}
+
+.admin-unit-notes {
+  display: block;
+  max-width: 200px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  font-size: 0.82rem;
+  color: rgba(47, 41, 39, 0.8);
+}
+
+.text-muted-italic {
+  font-style: italic;
+  color: rgba(47, 41, 39, 0.45);
+  font-size: 0.8rem;
+}
+
+.admin-staff-role-badge {
+  display: inline-flex;
+  align-items: center;
+  padding: 0.35rem 0.65rem;
+  border-radius: 6px;
+  background: rgba(47, 41, 39, 0.08);
+  font-size: 0.75rem;
+  font-weight: 700;
+  color: rgba(47, 41, 39, 0.6);
+  letter-spacing: 0.03em;
+}
+
+/* BRANCH CELLS */
+.admin-branch-title-cell {
+  display: flex;
+  flex-direction: column;
+  gap: 0.15rem;
+}
+
+.admin-branch-title-cell strong {
+  font-size: 0.92rem;
+  color: var(--borroll-charcoal);
+}
+
+.branch-slug-tag {
+  font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+  font-size: 0.72rem;
+  color: rgba(47, 41, 39, 0.55);
+}
+
+.admin-address-text {
+  display: block;
+  max-width: 240px;
+  font-size: 0.82rem;
+  color: rgba(47, 41, 39, 0.85);
+  line-height: 1.35;
+}
+
+.admin-phone-text {
+  font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+  font-size: 0.82rem;
+  color: var(--borroll-charcoal);
+  font-weight: 600;
+}
+
+.admin-hours-text {
+  font-size: 0.8rem;
+  color: rgba(47, 41, 39, 0.75);
+}
+
+.admin-map-link {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.3rem;
+  font-size: 0.78rem;
+  font-weight: 600;
+  color: #1976d2;
+  text-decoration: none;
+}
+
+.admin-map-link:hover {
+  text-decoration: underline;
+}
+
+.admin-map-link.inline {
+  margin-top: 0.25rem;
+}
+
+.admin-count-pill-link {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.3rem;
+  padding: 0.25rem 0.6rem;
+  border-radius: 6px;
+  background: rgba(184, 108, 77, 0.08);
+  color: var(--borroll-terra);
+  text-decoration: none;
+  font-size: 0.82rem;
+  transition: all 0.15s ease;
+}
+
+.admin-count-pill-link:hover {
+  background: rgba(184, 108, 77, 0.16);
+}
+
+/* DRAWER STYLES */
+.admin-drawer-backdrop {
+  position: fixed;
+  inset: 0;
+  background: rgba(30, 24, 22, 0.55);
+  backdrop-filter: blur(3px);
+  z-index: 1050;
+  display: flex;
+  justify-content: flex-end;
+  animation: fadeIn 0.2s ease;
+}
+
+.admin-detail-drawer {
+  background: var(--borroll-panel);
+  width: 100%;
+  max-width: 540px;
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+  box-shadow: -4px 0 24px rgba(47, 41, 39, 0.18);
+  animation: slideInRight 0.25s ease;
+}
+
+@keyframes slideInRight {
+  from {
+    transform: translateX(100%);
+  }
+  to {
+    transform: translateX(0);
+  }
+}
+
+.admin-drawer-header {
+  padding: 1.5rem;
+  border-bottom: 1px solid var(--borroll-line);
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 1rem;
+}
+
+.admin-drawer-header h2 {
+  margin: 0.25rem 0 0;
+  font-size: 1.25rem;
+  color: var(--borroll-charcoal);
+}
+
+.drawer-badge {
+  font-size: 0.68rem;
+  font-weight: 800;
+  letter-spacing: 0.06em;
+  color: var(--borroll-terra);
+  text-transform: uppercase;
+}
+
+.drawer-sub {
+  margin: 0.2rem 0 0;
+  font-size: 0.85rem;
+  color: rgba(47, 41, 39, 0.65);
+}
+
+.admin-drawer-close {
+  background: none;
+  border: none;
+  font-size: 1.2rem;
+  color: rgba(47, 41, 39, 0.6);
+  cursor: pointer;
+  padding: 0.35rem;
+  border-radius: 4px;
+  line-height: 1;
+}
+
+.admin-drawer-close:hover {
+  background: rgba(47, 41, 39, 0.08);
+  color: var(--borroll-charcoal);
+}
+
+.admin-drawer-content {
+  flex: 1;
+  overflow-y: auto;
+  padding: 1.5rem;
+  display: flex;
+  flex-direction: column;
+  gap: 1.75rem;
+}
+
+.admin-drawer-section {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+}
+
+.drawer-section-title {
+  font-size: 0.95rem;
+  font-weight: 700;
+  color: var(--borroll-charcoal);
+  margin: 0;
+}
+
+.section-head-with-badge {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.section-count-badge {
+  font-size: 0.72rem;
+  font-weight: 700;
+  background: rgba(47, 41, 39, 0.08);
+  padding: 0.15rem 0.5rem;
+  border-radius: 999px;
+  color: rgba(47, 41, 39, 0.7);
+}
+
+.section-desc {
+  font-size: 0.8rem;
+  color: rgba(47, 41, 39, 0.65);
+  margin: -0.25rem 0 0.5rem;
+  line-height: 1.4;
+}
+
+.admin-drawer-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 1rem;
+  background: rgba(47, 41, 39, 0.03);
+  padding: 1rem;
+  border-radius: 8px;
+  border: 1px solid var(--borroll-line);
+}
+
+.drawer-grid-item {
+  display: flex;
+  flex-direction: column;
+  gap: 0.2rem;
+}
+
+.drawer-grid-item.full-width {
+  grid-column: 1 / -1;
+}
+
+.drawer-grid-item .label {
+  font-size: 0.72rem;
+  color: rgba(47, 41, 39, 0.6);
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.02em;
+}
+
+.drawer-grid-item .value {
+  font-size: 0.88rem;
+  color: var(--borroll-charcoal);
+}
+
+.drawer-grid-item .value-desc {
+  font-size: 0.82rem;
+  color: rgba(47, 41, 39, 0.8);
+  margin: 0;
+  line-height: 1.4;
+}
+
+/* ADD BLOCK FORM */
+.admin-add-block-form {
+  background: rgba(184, 108, 77, 0.04);
+  border: 1px dashed rgba(184, 108, 77, 0.35);
+  padding: 1rem;
+  border-radius: 8px;
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+}
+
+.admin-add-block-form h5 {
+  margin: 0;
+  font-size: 0.85rem;
+  font-weight: 700;
+  color: var(--borroll-terra);
+}
+
+.admin-blocks-list-container {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.admin-blocks-empty {
+  padding: 1.25rem;
+  text-align: center;
+  background: rgba(47, 41, 39, 0.02);
+  border: 1px dashed var(--borroll-line);
+  border-radius: 8px;
+  font-size: 0.82rem;
+  color: rgba(47, 41, 39, 0.55);
+}
+
+.admin-mini-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 0.82rem;
+}
+
+.admin-mini-table th,
+.admin-mini-table td {
+  padding: 0.55rem 0.65rem;
+  border-bottom: 1px solid var(--borroll-line);
+  text-align: left;
+}
+
+.admin-mini-table th {
+  background: rgba(47, 41, 39, 0.04);
+  font-size: 0.72rem;
+  font-weight: 700;
+  color: rgba(47, 41, 39, 0.7);
+  text-transform: uppercase;
+}
+
+.date-range-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.3rem;
+  font-family: ui-monospace, SFMono-Regular, monospace;
+  font-size: 0.78rem;
+  color: #c62828;
+  font-weight: 600;
+}
+
+.date-range-badge .arrow {
+  color: rgba(47, 41, 39, 0.4);
+}
+
+.admin-drawer-link-bar {
+  margin-top: 0.75rem;
+}
+
+.admin-drawer-footer {
+  padding: 1.25rem 1.5rem;
+  border-top: 1px solid var(--borroll-line);
+  display: flex;
+  justify-content: flex-end;
+  gap: 0.75rem;
+  background: var(--borroll-panel);
+}
+
+/* RESPONSIVE FOR PHASE 7D */
+@media (max-width: 768px) {
+  .admin-drawer-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .admin-detail-drawer {
+    max-width: 100%;
+  }
+}

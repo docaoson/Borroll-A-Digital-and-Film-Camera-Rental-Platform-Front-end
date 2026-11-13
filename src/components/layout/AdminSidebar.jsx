@@ -183,10 +183,10 @@ const navSections = [
         iconType: "handover",
       },
       {
+        to: "/admin/branches",
         label: "Chi nhánh cửa hàng",
         iconType: "branches",
-        upcoming: "Phase 7D",
-        description: "Quản lý địa chỉ chi nhánh, kho lưu trữ và phân bổ nguồn thiết bị.",
+        end: true,
       },
     ],
   },
@@ -305,7 +305,7 @@ function AdminSidebar({ isOpen, onClose }) {
 
         <div className="admin-sidebar-footer">
           <div className="admin-sidebar-status">
-            <span className="admin-version-tag">Phase 7C Active</span>
+            <span className="admin-version-tag">Phase 7D Complete</span>
             <span className="admin-sync-tag">Sync: Back-End API v1</span>
           </div>
         </div>

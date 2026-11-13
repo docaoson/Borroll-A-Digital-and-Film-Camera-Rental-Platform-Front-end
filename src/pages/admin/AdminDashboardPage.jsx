@@ -640,6 +640,36 @@ function AdminDashboardPage() {
             <span className="admin-quick-arrow" aria-hidden="true">→</span>
           </Link>
 
+          <Link to="/admin/inventory" className="admin-quick-card">
+            <div className="admin-quick-icon">
+              <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
+                <path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"/>
+                <polyline points="3.27 6.96 12 12.01 20.73 6.96"/>
+                <line x1="12" y1="22.08" x2="12" y2="12"/>
+              </svg>
+            </div>
+            <div className="admin-quick-text">
+              <strong>Kho máy & Số serial</strong>
+              <span>Quản lý từng chiếc máy vật lý, số serial, tình trạng máy và lịch khóa bảo trì.</span>
+            </div>
+            <span className="admin-quick-arrow" aria-hidden="true">→</span>
+          </Link>
+
+          <Link to="/admin/branches" className="admin-quick-card">
+            <div className="admin-quick-icon">
+              <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
+                <path d="M3 21h18"/>
+                <path d="M5 21V7l8-4v18"/>
+                <path d="M19 21V11l-6-4"/>
+              </svg>
+            </div>
+            <div className="admin-quick-text">
+              <strong>Chi nhánh cửa hàng</strong>
+              <span>Quản lý địa chỉ cửa hàng, giờ mở cửa, bản đồ và danh sách máy phân bổ.</span>
+            </div>
+            <span className="admin-quick-arrow" aria-hidden="true">→</span>
+          </Link>
+
           <Link to="/admin/customers" className="admin-quick-card">
             <div className="admin-quick-icon">
               <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
@@ -686,13 +716,13 @@ function AdminDashboardPage() {
             <span className="step-status done">Hoàn thành</span>
           </div>
 
-          <div className="roadmap-step is-active">
+          <div className="roadmap-step">
             <div className="step-num">Phase 7C</div>
             <div className="step-content">
-              <strong>Vận hành đơn thuê (Hiện tại)</strong>
+              <strong>Vận hành đơn thuê</strong>
               <span>Xác nhận/từ chối đơn, Giao nhận máy, Biên bản ảnh lưu trữ S3/Supabase và Nghiệm thu hoàn cọc.</span>
             </div>
-            <span className="step-status done">Đang hoạt động</span>
+            <span className="step-status done">Hoàn thành</span>
           </div>
 
           <div className="roadmap-step">
@@ -701,16 +731,16 @@ function AdminDashboardPage() {
               <strong>Chi nhánh & Kho bãi</strong>
               <span>CRUD Chi nhánh, Tọa độ bản đồ, Quản lý từng chiếc máy theo serial và Khóa lịch bảo trì.</span>
             </div>
-            <span className="step-status upcoming">Phân kỳ tiếp theo</span>
+            <span className="step-status done">Hoàn thành</span>
           </div>
 
           <div className="roadmap-step">
             <div className="step-num">Phase 7E</div>
             <div className="step-content">
-              <strong>Tài khoản & Phân quyền</strong>
+              <strong>Tài khoản & Phân quyền (Kế hoạch tiếp theo)</strong>
               <span>Quản lý tài khoản khách hàng, Nhân viên cửa hàng, Phân quyền STAFF/ADMIN và Audit logs.</span>
             </div>
-            <span className="step-status upcoming">Phân kỳ tiếp theo</span>
+            <span className="step-status upcoming">Chưa triển khai</span>
           </div>
 
           <div className="roadmap-step">

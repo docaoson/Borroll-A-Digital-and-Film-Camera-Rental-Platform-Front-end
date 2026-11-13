@@ -29,6 +29,8 @@ import AdminProductsPage from "../pages/admin/AdminProductsPage";
 import AdminProductFormPage from "../pages/admin/AdminProductFormPage";
 import AdminCategoriesPage from "../pages/admin/AdminCategoriesPage";
 import AdminBrandsPage from "../pages/admin/AdminBrandsPage";
+import AdminInventoryPage from "../pages/admin/AdminInventoryPage";
+import AdminBranchesPage from "../pages/admin/AdminBranchesPage";
 import AdminCalendarPage from "../pages/admin/AdminCalendarPage";
 import AdminOrdersPage from "../pages/admin/AdminOrdersPage";
 import AdminOrderDetailPage from "../pages/admin/AdminOrderDetailPage";
@@ -135,9 +137,10 @@ function AppRoutes() {
         <Route path="products/:id/edit" element={<AdminProductFormPage />} />
         <Route path="categories" element={<AdminCategoriesPage />} />
         <Route path="brands" element={<AdminBrandsPage />} />
-        <Route path="inventory" element={<AdminProductsPage />} />
-        <Route path="inventory/new" element={<AdminProductFormPage />} />
-        <Route path="inventory/:id/edit" element={<AdminProductFormPage />} />
+        <Route path="inventory" element={<AdminInventoryPage />} />
+        <Route path="inventory/new" element={<AdminInventoryPage />} />
+        <Route path="inventory/:id" element={<AdminInventoryPage />} />
+        <Route path="branches" element={<AdminBranchesPage />} />
         <Route path="calendar" element={<AdminCalendarPage />} />
         <Route path="orders" element={<AdminOrdersPage />} />
         <Route path="orders/:id" element={<AdminOrderDetailPage />} />
