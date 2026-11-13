@@ -132,18 +132,72 @@ function AppRoutes() {
         }
       >
         <Route index element={<AdminDashboardPage />} />
-        <Route path="products" element={<AdminProductsPage />} />
-        <Route path="products/new" element={<AdminProductFormPage />} />
-        <Route path="products/:id/edit" element={<AdminProductFormPage />} />
-        <Route path="categories" element={<AdminCategoriesPage />} />
-        <Route path="brands" element={<AdminBrandsPage />} />
+        {/* Chỉ ADMIN mới có quyền: Thêm, sửa, ẩn mẫu máy (Row 7) */}
+        <Route
+          path="products"
+          element={
+            <ProtectedRoute allowedRoles={["ADMIN"]}>
+              <AdminProductsPage />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="products/new"
+          element={
+            <ProtectedRoute allowedRoles={["ADMIN"]}>
+              <AdminProductFormPage />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="products/:id/edit"
+          element={
+            <ProtectedRoute allowedRoles={["ADMIN"]}>
+              <AdminProductFormPage />
+            </ProtectedRoute>
+          }
+        />
+        {/* Chỉ ADMIN mới có quyền: Quản lý danh mục, hãng, chi nhánh (Row 9) */}
+        <Route
+          path="categories"
+          element={
+            <ProtectedRoute allowedRoles={["ADMIN"]}>
+              <AdminCategoriesPage />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="brands"
+          element={
+            <ProtectedRoute allowedRoles={["ADMIN"]}>
+              <AdminBrandsPage />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="branches"
+          element={
+            <ProtectedRoute allowedRoles={["ADMIN"]}>
+              <AdminBranchesPage />
+            </ProtectedRoute>
+          }
+        />
+        {/* KHO MÁY: Nhân viên & Admin xem chiếc máy & khóa bảo trì (Row 6), nhưng Thêm máy (Row 8) chỉ ADMIN */}
         <Route path="inventory" element={<AdminInventoryPage />} />
-        <Route path="inventory/new" element={<AdminInventoryPage />} />
+        <Route
+          path="inventory/new"
+          element={
+            <ProtectedRoute allowedRoles={["ADMIN"]}>
+              <AdminInventoryPage />
+            </ProtectedRoute>
+          }
+        />
         <Route path="inventory/:id" element={<AdminInventoryPage />} />
-        <Route path="branches" element={<AdminBranchesPage />} />
         <Route path="calendar" element={<AdminCalendarPage />} />
+        {/* VẬN HÀNH ĐƠN THUÊ: Nhân viên & Admin xem, xác nhận, giao/nhận máy (Row 2, 4, 5) */}
         <Route path="orders" element={<AdminOrdersPage />} />
         <Route path="orders/:id" element={<AdminOrderDetailPage />} />
+        {/* TÀI KHOẢN: Chỉ ADMIN mới xem, gán vai trò, khóa/mở khóa (Row 10) */}
         <Route
           path="users"
           element={

@@ -192,10 +192,16 @@ function AdminProductsPage() {
 
         <div className="admin-header-actions">
           <Link
-            to="/admin/products/new"
+            to="/admin/products/new?type=camera"
             className="button primary-button admin-action-cta"
           >
-            <span>Thêm mẫu máy mới</span>
+            <span>+ Thêm máy ảnh</span>
+          </Link>
+          <Link
+            to="/admin/products/new?type=accessory"
+            className="button secondary-button admin-action-cta"
+          >
+            <span>+ Thêm thiết bị (Phụ kiện / Film)</span>
           </Link>
         </div>
       </section>

@@ -1,5 +1,6 @@
 import { useState } from "react";
 import { NavLink } from "react-router-dom";
+import { useAuth } from "../../hooks/useAuth";
 
 function NavIcon({ type }) {
   switch (type) {
@@ -89,53 +90,95 @@ function NavIcon({ type }) {
   }
 }
 
-const navSections = [
-  {
-    title: "TỔNG QUAN",
-    items: [
-      {
-        to: "/admin",
-        label: "Tổng quan vận hành",
-        iconType: "dashboard",
-        end: true,
-      },
-    ],
-  },
-  {
-    title: "CATALOG & MẪU MÁY",
-    items: [
-      {
-        to: "/admin/products",
-        label: "Mẫu máy ảnh",
-        iconType: "products",
-        end: true,
-      },
-      {
-        to: "/admin/categories",
-        label: "Danh mục thiết bị",
-        iconType: "categories",
-        end: true,
-      },
-      {
-        to: "/admin/brands",
-        label: "Thương hiệu máy",
-        iconType: "brands",
-        end: true,
-      },
-    ],
-  },
-  {
+function getNavSections(isAdmin) {
+  const sections = [
+    {
+      title: "TỔNG QUAN",
+      items: [
+        {
+          to: "/admin",
+          label: "Tổng quan vận hành",
+          iconType: "dashboard",
+          end: true,
+        },
+      ],
+    },
+  ];
+
+  // CATALOG & MẪU MÁY: Chỉ ADMIN mới có quyền Thêm, sửa, ẩn mẫu máy & quản lý danh mục, hãng (Row 7 & 9)
+  if (isAdmin) {
+    sections.push({
+      title: "CATALOG & MẪU MÁY",
+      items: [
+        {
+          to: "/admin/products",
+          label: "Mẫu máy ảnh & Thiết bị",
+          iconType: "products",
+          end: true,
+        },
+        {
+          to: "/admin/products/new?type=camera",
+          label: "+ Thêm máy ảnh",
+          iconType: "plus",
+        },
+        {
+          to: "/admin/products/new?type=accessory",
+          label: "+ Thêm thiết bị (Phụ kiện/Film)",
+          iconType: "plus",
+        },
+        {
+          to: "/admin/categories",
+          label: "Danh mục thiết bị",
+          iconType: "categories",
+          end: true,
+        },
+        {
+          to: "/admin/brands",
+          label: "Thương hiệu máy",
+          iconType: "brands",
+          end: true,
+        },
+      ],
+    });
+  }
+
+  // VẬN HÀNH ĐƠN THUÊ: Cả Nhân viên & Admin đều có quyền xem mọi đơn, xác nhận, từ chối, giao/nhận máy (Row 2, 4, 5)
+  // Chi nhánh (Row 9) chỉ dành cho ADMIN
+  const operationItems = [
+    {
+      to: "/admin/orders",
+      label: "Quản lý đơn thuê",
+      iconType: "orders",
+    },
+    {
+      to: "/admin/orders?status=CONFIRMED",
+      label: "Bàn giao & Trả máy",
+      iconType: "handover",
+    },
+  ];
+
+  if (isAdmin) {
+    operationItems.push({
+      to: "/admin/branches",
+      label: "Chi nhánh cửa hàng",
+      iconType: "branches",
+      end: true,
+    });
+  }
+
+  sections.push({
+    title: "VẬN HÀNH ĐƠN THUÊ",
+    items: operationItems,
+  });
+
+  // KHO MÁY & SERIAL: Cả Nhân viên & Admin đều xem máy, khóa bảo trì, mở khóa (Row 6)
+  sections.push({
     title: "KHO MÁY & SERIAL",
     items: [
       {
         to: "/admin/inventory",
-        label: "Thiết bị & Số serial",
+        label: "Kho thiết bị & Số serial",
         iconType: "inventory",
-      },
-      {
-        to: "/admin/inventory/new",
-        label: "Thêm máy mới",
-        iconType: "plus",
       },
       {
         to: "/admin/calendar",
@@ -143,167 +186,81 @@ const navSections = [
         iconType: "calendar",
       },
     ],
-  },
-  {
-    title: "VẬN HÀNH ĐƠN THUÊ",
-    items: [
-      {
-        to: "/admin/orders",
-        label: "Quản lý đơn thuê",
-        iconType: "orders",
-      },
-      {
-        to: "/admin/orders?status=CONFIRMED",
-        label: "Bàn giao & Trả máy",
-        iconType: "handover",
-      },
-      {
-        to: "/admin/branches",
-        label: "Chi nhánh cửa hàng",
-        iconType: "branches",
-        end: true,
-      },
-    ],
-  },
-  {
-    title: "TÀI KHOẢN & NGƯỜI DÙNG",
-    items: [
-      {
-        to: "/admin/users",
-        label: "Tài khoản người dùng",
-        iconType: "roles",
-      },
-    ],
-  },
-];
+  });
+
+  // TÀI KHOẢN & NGƯỜI DÙNG: Chỉ ADMIN mới xem, gán vai trò, khóa/mở khóa tài khoản (Row 10)
+  if (isAdmin) {
+    sections.push({
+      title: "TÀI KHOẢN & NGƯỜI DÙNG",
+      items: [
+        {
+          to: "/admin/users",
+          label: "Tài khoản người dùng",
+          iconType: "roles",
+        },
+      ],
+    });
+  }
+
+  return sections;
+}
 
 function AdminSidebar({ isOpen, onClose }) {
-  const [upcomingInfo, setUpcomingInfo] = useState(null);
-
-  const handleUpcomingClick = (item) => {
-    setUpcomingInfo(item);
-  };
+  const { user } = useAuth();
+  const rawRoles = user?.roles || (user?.role ? [user.role] : []);
+  const isAdmin = rawRoles.includes("ADMIN");
+  const navSections = getNavSections(isAdmin);
 
   return (
-    <>
-      <aside
-        className={`admin-sidebar-panel ${isOpen ? "is-open" : ""}`}
-        aria-label="Danh mục điều hướng quản trị"
-      >
-        <div className="admin-sidebar-header">
-          <div className="admin-sidebar-heading">
-            <span className="admin-sidebar-role-tag">HỆ THỐNG QUẢN TRỊ</span>
-            <span className="admin-sidebar-sub">Borroll Platform v2.0</span>
-          </div>
-          {onClose && (
-            <button
-              type="button"
-              className="admin-sidebar-close-btn"
-              onClick={onClose}
-              aria-label="Đóng thanh điều hướng"
-            >
-              <span aria-hidden="true">✕</span>
-            </button>
-          )}
+    <aside
+      className={`admin-sidebar-panel ${isOpen ? "is-open" : ""}`}
+      aria-label="Danh mục điều hướng quản trị"
+    >
+      <div className="admin-sidebar-header">
+        <div className="admin-sidebar-heading">
+          <span className="admin-sidebar-role-tag">
+            {isAdmin ? "QUẢN TRỊ VIÊN (ADMIN)" : "NHÂN VIÊN (STAFF)"}
+          </span>
+          <span className="admin-sidebar-sub">Borroll Platform v2.0</span>
         </div>
-
-        <nav className="admin-nav-sections">
-          {navSections.map((sec) => (
-            <div key={sec.title} className="admin-nav-group">
-              <span className="admin-nav-group-title">{sec.title}</span>
-              <div className="admin-nav-items">
-                {sec.items.map((item, idx) => {
-                  if (item.upcoming) {
-                    return (
-                      <button
-                        key={`${sec.title}-${item.label}-${idx}`}
-                        type="button"
-                        className="admin-link upcoming-link"
-                        onClick={() => handleUpcomingClick(item)}
-                        title={`${item.label} (Kế hoạch: ${item.upcoming})`}
-                      >
-                        <span className="admin-link-icon" aria-hidden="true">
-                          <NavIcon type={item.iconType} />
-                        </span>
-                        <span className="admin-link-text">{item.label}</span>
-                        <span className="admin-upcoming-badge">
-                          {item.upcoming}
-                        </span>
-                      </button>
-                    );
-                  }
-
-                  return (
-                    <NavLink
-                      key={item.to + item.label}
-                      to={item.to}
-                      end={item.end}
-                      className={({ isActive }) =>
-                        isActive ? "admin-link active" : "admin-link"
-                      }
-                      onClick={onClose}
-                    >
-                      <span className="admin-link-icon" aria-hidden="true">
-                        <NavIcon type={item.iconType} />
-                      </span>
-                      <span className="admin-link-text">{item.label}</span>
-                    </NavLink>
-                  );
-                })}
-              </div>
-            </div>
-          ))}
-        </nav>
-
-        <div className="admin-sidebar-footer">
-          <div className="admin-sidebar-status">
-            <span className="admin-version-tag">Phase 7E Complete</span>
-            <span className="admin-sync-tag">Sync: Back-End API v1</span>
-          </div>
-        </div>
-      </aside>
-
-      {/* Modal thông báo tính năng theo phân kỳ Roadmap */}
-      {upcomingInfo && (
-        <div
-          className="admin-modal-backdrop"
-          role="dialog"
-          aria-modal="true"
-          onClick={() => setUpcomingInfo(null)}
-        >
-          <div
-            className="admin-roadmap-dialog"
-            onClick={(e) => e.stopPropagation()}
+        {onClose && (
+          <button
+            type="button"
+            className="admin-sidebar-close-btn"
+            onClick={onClose}
+            aria-label="Đóng thanh điều hướng"
           >
-            <div className="admin-dialog-header">
-              <span className="admin-dialog-badge">
-                LỘ TRÌNH TRIỂN KHAI · {upcomingInfo.upcoming}
-              </span>
-              <h3>{upcomingInfo.label}</h3>
-            </div>
-            <div className="admin-dialog-body">
-              <p>{upcomingInfo.description}</p>
-              <div className="admin-dialog-meta">
-                <span>Phân kỳ thực hiện: <strong>{upcomingInfo.upcoming}</strong></span>
-                <span>Trạng thái: <strong>Đã lập kế hoạch & cấu trúc API</strong></span>
-              </div>
-              <p className="admin-dialog-note">
-                Theo kế hoạch phát triển 6 phân kỳ của Phase 7, chức năng này sẽ được xây dựng và kết nối hoàn chỉnh ở phân kỳ tương ứng sau khi hoàn tất nền tảng Phase 7A.
-              </p>
-            </div>
-            <div className="admin-dialog-actions">
-              <button
-                type="button"
-                className="button primary-button compact"
-                onClick={() => setUpcomingInfo(null)}
-              >
-                Đã hiểu
-              </button>
+            <span aria-hidden="true">✕</span>
+          </button>
+        )}
+      </div>
+
+      <nav className="admin-nav-sections">
+        {navSections.map((sec) => (
+          <div key={sec.title} className="admin-nav-group">
+            <span className="admin-nav-group-title">{sec.title}</span>
+            <div className="admin-nav-items">
+              {sec.items.map((item) => (
+                <NavLink
+                  key={item.to + item.label}
+                  to={item.to}
+                  end={item.end}
+                  className={({ isActive }) =>
+                    isActive ? "admin-link active" : "admin-link"
+                  }
+                  onClick={onClose}
+                >
+                  <span className="admin-link-icon" aria-hidden="true">
+                    <NavIcon type={item.iconType} />
+                  </span>
+                  <span className="admin-link-text">{item.label}</span>
+                </NavLink>
+              ))}
             </div>
           </div>
-        </div>
-      )}
-    </>
+        ))}
+      </nav>
+    </aside>
   );
 }
 

@@ -27,6 +27,8 @@
 
 html {
   scroll-behavior: smooth;
+  overflow-x: hidden;
+  width: 100%;
 }
 
 body {
@@ -36,6 +38,8 @@ body {
   color: var(--borroll-charcoal);
   line-height: var(--borroll-lh-base, 1.6);
   letter-spacing: var(--borroll-ls-body, normal);
+  overflow-x: hidden;
+  width: 100%;
 }
 
 #root {
@@ -325,6 +329,20 @@ p {
   grid-template-columns: repeat(4, minmax(180px, 1fr));
   gap: 2rem;
   padding-bottom: 1.5rem;
+}
+
+@media (max-width: 900px) {
+  .footer-inner {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 1.5rem;
+  }
+}
+
+@media (max-width: 520px) {
+  .footer-inner {
+    grid-template-columns: 1fr;
+    gap: 1.5rem;
+  }
 }
 
 .footer-inner h3,
@@ -676,6 +694,20 @@ p {
 
 .featured-grid {
   grid-template-columns: repeat(4, minmax(0, 1fr));
+}
+
+@media (max-width: 1024px) {
+  .featured-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 1.25rem;
+  }
+}
+
+@media (max-width: 640px) {
+  .featured-grid {
+    grid-template-columns: 1fr;
+    gap: 1rem;
+  }
 }
 
 .camera-card {
@@ -10699,5 +10731,351 @@ select {
   .toolbar-sort,
   .toolbar-sort select {
     width: 100%;
+  }
+}
+
+
+/* Product Kind Tabs (Thêm máy ảnh vs Thêm thiết bị/phụ kiện) */
+.product-kind-tabs-wrapper {
+  margin-bottom: 2rem;
+}
+
+.product-kind-tabs {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 1.25rem;
+}
+
+.product-kind-tab {
+  display: flex;
+  align-items: center;
+  gap: 1.15rem;
+  padding: 1.25rem 1.5rem;
+  background: var(--borroll-panel);
+  border: 2px solid var(--borroll-line);
+  border-radius: 20px;
+  cursor: pointer;
+  text-align: left;
+  transition: all 0.2s ease;
+}
+
+.product-kind-tab:hover {
+  border-color: rgba(184, 108, 77, 0.45);
+  transform: translateY(-2px);
+  box-shadow: 0 8px 20px var(--borroll-shadow);
+}
+
+.product-kind-tab.active {
+  background: #ffffff;
+  border-color: var(--borroll-terra);
+  box-shadow: 0 10px 28px rgba(184, 108, 77, 0.18);
+}
+
+.kind-tab-icon {
+  font-size: 2.1rem;
+  line-height: 1;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 3.5rem;
+  height: 3.5rem;
+  min-width: 3.5rem;
+  border-radius: 14px;
+  background: rgba(184, 108, 77, 0.1);
+}
+
+.product-kind-tab.active .kind-tab-icon {
+  background: rgba(184, 108, 77, 0.18);
+}
+
+.kind-tab-text strong {
+  display: block;
+  font-size: 1.08rem;
+  color: var(--borroll-charcoal);
+  margin-bottom: 0.25rem;
+}
+
+.product-kind-tab.active .kind-tab-text strong {
+  color: var(--borroll-terra);
+}
+
+.kind-tab-text span {
+  display: block;
+  font-size: 0.85rem;
+  color: rgba(47, 41, 39, 0.68);
+  line-height: 1.4;
+}
+
+@media (max-width: 768px) {
+  .product-kind-tabs {
+    grid-template-columns: 1fr;
+  }
+}
+
+
+/* ==========================================================================
+   COMPREHENSIVE RESPONSIVE STYLING (MOBILE, TABLET, DESKTOP)
+   ========================================================================== */
+
+/* Container responsiveness */
+@media (max-width: 640px) {
+  .container {
+    width: min(1200px, calc(100% - 1.5rem));
+  }
+
+  .home-top-section,
+  .home-section {
+    padding: 1.5rem 0;
+  }
+
+  .section-header-inline {
+    flex-wrap: wrap;
+    gap: 0.5rem;
+    align-items: baseline;
+    margin-bottom: 1.25rem;
+  }
+
+  .section-header-inline h2 {
+    font-size: 1.5rem;
+  }
+}
+
+@media (max-width: 380px) {
+  .container {
+    width: min(1200px, calc(100% - 1rem));
+  }
+}
+
+/* Category Tiles Row responsive */
+@media (max-width: 900px) {
+  .category-tiles-row {
+    grid-template-columns: repeat(auto-fit, minmax(110px, 1fr));
+    gap: 0.75rem;
+  }
+}
+
+@media (max-width: 640px) {
+  .category-tiles-row {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 0.65rem;
+  }
+
+  .category-tile {
+    padding: 0.85rem 0.45rem;
+    border-radius: 14px;
+    gap: 0.45rem;
+  }
+
+  .category-tile-icon {
+    width: 2.6rem;
+    height: 2.6rem;
+    font-size: 0.72rem;
+    border-radius: 12px;
+  }
+
+  .category-tile-name {
+    font-size: 0.78rem;
+    line-height: 1.2;
+  }
+}
+
+@media (max-width: 400px) {
+  .category-tiles-row {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+
+/* Banners (Hero & Promo) */
+@media (max-width: 980px) {
+  .home-hero-banner,
+  .home-promo-banner {
+    grid-template-columns: 1fr;
+    gap: 1.5rem;
+  }
+
+  .hero-visual {
+    display: none;
+  }
+}
+
+@media (max-width: 680px) {
+  .home-hero-banner,
+  .home-promo-banner {
+    padding: 1.85rem 1.25rem;
+    border-radius: 20px;
+  }
+
+  .promo-banner-visual {
+    min-height: 200px;
+    border-radius: 16px;
+  }
+}
+
+@media (max-width: 480px) {
+  .home-hero-banner,
+  .home-promo-banner {
+    padding: 1.5rem 1rem;
+    border-radius: 16px;
+  }
+
+  .hero-copy h1 {
+    font-size: 1.65rem;
+    line-height: 1.25;
+  }
+
+  .hero-text {
+    font-size: 0.92rem;
+    line-height: 1.5;
+  }
+
+  .promo-banner-copy h2 {
+    font-size: 1.45rem;
+    line-height: 1.3;
+  }
+}
+
+/* Camera Card mobile refinement */
+@media (max-width: 640px) {
+  .camera-card {
+    border-radius: 18px;
+  }
+
+  .camera-body {
+    padding: 1rem 1.1rem 1.15rem;
+  }
+
+  .camera-body h3 {
+    font-size: 1.1rem;
+  }
+}
+
+/* CameraListPage Filters & Toolbar */
+@media (max-width: 980px) {
+  .collection-layout {
+    grid-template-columns: 1fr;
+    gap: 1.5rem;
+  }
+}
+
+@media (max-width: 680px) {
+  .collection-page {
+    padding: 1rem 0 3rem;
+  }
+
+  .collection-toolbar {
+    flex-direction: column;
+    align-items: stretch;
+    gap: 1rem;
+    margin-bottom: 1.25rem;
+  }
+
+  .collection-toolbar-controls {
+    width: 100%;
+    flex-direction: column;
+    align-items: stretch;
+    gap: 0.75rem;
+  }
+
+  .toolbar-search,
+  .toolbar-search input,
+  .toolbar-sort,
+  .toolbar-sort select {
+    width: 100%;
+    min-width: 0;
+  }
+
+  .toolbar-sort {
+    justify-content: space-between;
+  }
+
+  .filters-sidebar {
+    padding: 1.15rem;
+    border-radius: 18px;
+    gap: 1.15rem;
+  }
+
+  .filter-check-list {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+
+@media (max-width: 440px) {
+  .filter-check-list {
+    grid-template-columns: 1fr;
+  }
+}
+
+/* CameraDetailPage availability calendar & gallery */
+@media (max-width: 980px) {
+  .detail-layout {
+    grid-template-columns: 1fr;
+    gap: 1.75rem;
+  }
+}
+
+@media (max-width: 640px) {
+  .detail-main-image-card {
+    border-radius: 18px;
+  }
+
+  .detail-card {
+    padding: 1.25rem;
+    border-radius: 18px;
+  }
+
+  .calendar-header-bar {
+    flex-direction: column;
+    align-items: stretch;
+    gap: 0.75rem;
+  }
+
+  .calendar-nav-controls {
+    justify-content: space-between;
+    width: 100%;
+  }
+
+  .calendar-legend {
+    justify-content: center;
+    flex-wrap: wrap;
+    gap: 0.65rem;
+  }
+
+  .calendar-days-grid {
+    gap: 4px;
+  }
+
+  .cal-cell {
+    min-height: 42px;
+    padding: 2px;
+    font-size: 0.85rem;
+  }
+
+  .cal-unavail-badge {
+    display: none;
+  }
+}
+
+@media (max-width: 400px) {
+  .calendar-days-grid {
+    gap: 3px;
+  }
+
+  .cal-cell {
+    min-height: 38px;
+    font-size: 0.8rem;
+  }
+
+  .calendar-weekdays-row {
+    font-size: 0.75rem;
+  }
+}
+
+/* Floating contact button on mobile */
+@media (max-width: 640px) {
+  .floating-contact {
+    right: 1rem;
+    bottom: 1rem;
+    padding: 0.65rem 0.95rem;
+    font-size: 0.85rem;
   }
 }

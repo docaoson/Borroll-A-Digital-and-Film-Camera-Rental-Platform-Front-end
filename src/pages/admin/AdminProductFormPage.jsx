@@ -1,5 +1,5 @@
 import { useEffect, useState, useRef } from "react";
-import { Link, useNavigate, useParams } from "react-router-dom";
+import { Link, useNavigate, useParams, useSearchParams } from "react-router-dom";
 import { adminService } from "../../services/adminService";
 import { ApiError } from "../../lib/apiClient";
 
@@ -32,7 +32,9 @@ const ALLOWED_MIME_TYPES = ["image/jpeg", "image/png", "image/webp"];
 
 function AdminProductFormPage() {
   const { id } = useParams();
+  const [searchParams] = useSearchParams();
   const isEditMode = Boolean(id);
+  const initialType = searchParams.get("type");
   const navigate = useNavigate();
   const fileInputRef = useRef(null);
 
@@ -51,7 +53,9 @@ function AdminProductFormPage() {
   // Basic Details Form State
   const [name, setName] = useState("");
   const [slug, setSlug] = useState("");
-  const [kind, setKind] = useState("CAMERA");
+  const [kind, setKind] = useState(() =>
+    initialType === "accessory" ? "ACCESSORY" : "CAMERA",
+  );
   const [categoryId, setCategoryId] = useState("");
   const [brandId, setBrandId] = useState("");
   const [cameraType, setCameraType] = useState("DIGITAL");
@@ -521,19 +525,29 @@ function AdminProductFormPage() {
           <div className="admin-breadcrumb">
             <Link to="/admin">Bảng điều khiển</Link>
             <span className="sep">/</span>
-            <Link to="/admin/products">Mẫu máy ảnh</Link>
+            <Link to="/admin/products">Mẫu máy & Thiết bị</Link>
             <span className="sep">/</span>
             <span className="current">
-              {isEditMode ? `Chỉnh sửa: ${name || "Mẫu máy"}` : "Thêm mẫu máy mới"}
+              {isEditMode
+                ? `Chỉnh sửa: ${name || "Sản phẩm"}`
+                : kind === "CAMERA"
+                  ? "Thêm máy ảnh"
+                  : "Thêm thiết bị (Phụ kiện / Film)"}
             </span>
           </div>
           <h1 className="admin-heading-title">
-            {isEditMode ? "Chỉnh sửa mẫu máy ảnh" : "Thêm mẫu máy ảnh mới"}
+            {isEditMode
+              ? `Chỉnh sửa: ${name || "Mẫu máy"}`
+              : kind === "CAMERA"
+                ? "Thêm máy ảnh mới"
+                : "Thêm thiết bị & Phụ kiện mới (Cuộn film, ống kính, pin...)"}
           </h1>
           <p className="admin-heading-sub">
             {isEditMode
               ? "Cập nhật thông tin định danh, cấu hình giá thuê, tiền cọc, thông số kỹ thuật và thư viện ảnh."
-              : "Nhập thông tin chi tiết và chọn ảnh minh họa để thêm mẫu thiết bị mới vào hệ thống cho thuê."}
+              : kind === "CAMERA"
+                ? "Nhập thông tin chi tiết về thân máy ảnh số hoặc máy phim để đưa vào hệ thống cho thuê."
+                : "Nhập thông tin phụ kiện của máy ảnh như cuộn film, ống kính, pin sạc, chân máy... để khách hàng thuê kèm."}
           </p>
         </div>
 
@@ -553,6 +567,40 @@ function AdminProductFormPage() {
           )}
         </div>
       </section>
+
+      {/* MODE TABS (Chỉ hiện khi Thêm mới): Thêm máy ảnh vs Thêm thiết bị/phụ kiện */}
+      {!isEditMode && (
+        <div className="product-kind-tabs-wrapper">
+          <div className="product-kind-tabs" role="tablist">
+            <button
+              type="button"
+              className={`product-kind-tab ${kind === "CAMERA" ? "active" : ""}`}
+              onClick={() => setKind("CAMERA")}
+              role="tab"
+              aria-selected={kind === "CAMERA"}
+            >
+              <span className="kind-tab-icon">📷</span>
+              <div className="kind-tab-text">
+                <strong>Thêm máy ảnh</strong>
+                <span>Máy ảnh số, máy phim 35mm/120, máy polaroid</span>
+              </div>
+            </button>
+            <button
+              type="button"
+              className={`product-kind-tab ${kind === "ACCESSORY" || kind === "LENS" ? "active" : ""}`}
+              onClick={() => setKind("ACCESSORY")}
+              role="tab"
+              aria-selected={kind === "ACCESSORY" || kind === "LENS"}
+            >
+              <span className="kind-tab-icon">🎞️</span>
+              <div className="kind-tab-text">
+                <strong>Thêm thiết bị (Phụ kiện / Cuộn film)</strong>
+                <span>Cuộn film, ống kính rời, pin sạc, chân máy, thẻ nhớ</span>
+              </div>
+            </button>
+          </div>
+        </div>
+      )}
 
       {/* ALERTS */}
       {successMsg && (
