@@ -194,15 +194,14 @@ const navSections = [
     title: "TÀI KHOẢN & NGƯỜI DÙNG",
     items: [
       {
+        to: "/admin/users",
+        label: "Tài khoản người dùng",
+        iconType: "roles",
+      },
+      {
         to: "/admin/customers",
         label: "Khách hàng",
         iconType: "customers",
-      },
-      {
-        label: "Phân quyền & Nhân sự",
-        iconType: "roles",
-        upcoming: "Phase 7E",
-        description: "Quản lý tài khoản nhân viên, cấp quyền STAFF/ADMIN và trạng thái kích hoạt.",
       },
     ],
   },
@@ -305,7 +304,7 @@ function AdminSidebar({ isOpen, onClose }) {
 
         <div className="admin-sidebar-footer">
           <div className="admin-sidebar-status">
-            <span className="admin-version-tag">Phase 7D Complete</span>
+            <span className="admin-version-tag">Phase 7E Active</span>
             <span className="admin-sync-tag">Sync: Back-End API v1</span>
           </div>
         </div>

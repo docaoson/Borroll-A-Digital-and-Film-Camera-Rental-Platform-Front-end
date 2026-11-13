@@ -1,12 +1,7 @@
-import PagePlaceholder from "../../components/shared/PagePlaceholder";
+import AdminUsersPage from "./AdminUsersPage";
 
 function AdminCustomersPage() {
-  return (
-    <PagePlaceholder
-      title="Quản lý khách hàng"
-      description="Trang này dùng để xem danh sách khách hàng, lịch sử thuê và phản hồi lưu trữ trong cơ chế demo của BORROLL."
-    />
-  );
+  return <AdminUsersPage defaultRole="RENTER" />;
 }
 
 export default AdminCustomersPage;

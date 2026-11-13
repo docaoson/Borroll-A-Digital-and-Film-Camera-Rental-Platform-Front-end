@@ -35,6 +35,7 @@ import AdminCalendarPage from "../pages/admin/AdminCalendarPage";
 import AdminOrdersPage from "../pages/admin/AdminOrdersPage";
 import AdminOrderDetailPage from "../pages/admin/AdminOrderDetailPage";
 import AdminCustomersPage from "../pages/admin/AdminCustomersPage";
+import AdminUsersPage from "../pages/admin/AdminUsersPage";
 
 import ForbiddenPage from "../pages/error/ForbiddenPage";
 import ErrorPage from "../pages/error/ErrorPage";
@@ -145,6 +146,14 @@ function AppRoutes() {
         <Route path="orders" element={<AdminOrdersPage />} />
         <Route path="orders/:id" element={<AdminOrderDetailPage />} />
         <Route path="customers" element={<AdminCustomersPage />} />
+        <Route
+          path="users"
+          element={
+            <ProtectedRoute allowedRoles={["ADMIN"]}>
+              <AdminUsersPage />
+            </ProtectedRoute>
+          }
+        />
         <Route path="*" element={<NotFoundPage />} />
       </Route>
     </Routes>
