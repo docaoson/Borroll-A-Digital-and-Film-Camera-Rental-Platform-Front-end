@@ -22,7 +22,7 @@ function MainNav({ variant = "public", onNavigate }) {
           { to: "/admin/inventory", label: "Kho máy" },
           { to: "/admin/calendar", label: "Lịch thuê" },
           { to: "/admin/orders", label: "Đơn thuê" },
-          { to: "/admin/customers", label: "Khách hàng" },
+          { to: "/admin/users", label: "Tài khoản" },
         ]
       : isRenter
         ? [

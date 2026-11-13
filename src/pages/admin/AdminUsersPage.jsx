@@ -146,6 +146,15 @@ function AdminUsersPage({ defaultRole = "ALL" }) {
     setSearchParams(next);
   };
 
+  // Quick filter tab handler
+  const handleSelectRoleQuickFilter = (val) => {
+    setPage(1);
+    const next = new URLSearchParams(searchParams);
+    if (val === "ALL") next.delete("role");
+    else next.set("role", val);
+    setSearchParams(next);
+  };
+
   // Status filter change (client-side filter on current list)
   const handleStatusFilterChange = (e) => {
     setSelectedStatus(e.target.value);
@@ -328,9 +337,15 @@ function AdminUsersPage({ defaultRole = "ALL" }) {
             <span className="separator">/</span>
             <span>Tài khoản & Phân quyền</span>
           </div>
-          <h1 className="admin-page-title">Quản lý Tài khoản & Phân quyền RBAC</h1>
+          <h1 className="admin-page-title">
+            {selectedRole === "RENTER"
+              ? "Quản lý Khách thuê (RENTER)"
+              : "Quản lý Tài khoản & Phân quyền RBAC"}
+          </h1>
           <p className="admin-page-desc">
-            Quản trị danh sách người dùng toàn hệ thống, cấp quyền ADMIN / STAFF / RENTER và kiểm soát trạng thái hoạt động tài khoản.
+            {selectedRole === "RENTER"
+              ? "Danh sách khách hàng thuê thiết bị trên Borroll. Theo dõi thông tin tài khoản, phân quyền và kiểm soát trạng thái hoạt động."
+              : "Quản trị danh sách người dùng toàn hệ thống, cấp quyền ADMIN / STAFF / RENTER và kiểm soát trạng thái hoạt động tài khoản."}
           </p>
         </div>
 
@@ -375,29 +390,113 @@ function AdminUsersPage({ defaultRole = "ALL" }) {
 
       {/* KPI METRIC CARDS */}
       <div className="admin-quick-stats-row">
-        <div className="admin-quick-stat-card">
+        <div
+          className={`admin-quick-stat-card is-interactive ${selectedRole === "ALL" ? "is-selected-kpi" : ""}`}
+          onClick={() => handleSelectRoleQuickFilter("ALL")}
+          role="button"
+          tabIndex={0}
+          onKeyDown={(e) => e.key === "Enter" && handleSelectRoleQuickFilter("ALL")}
+          title="Nhấp để hiển thị toàn bộ người dùng"
+        >
           <span className="stat-label">Tổng người dùng hệ thống</span>
           <strong className="stat-value">{stats.total}</strong>
           <span className="stat-sub">Đã đăng ký tài khoản</span>
         </div>
 
-        <div className="admin-quick-stat-card">
-          <span className="stat-label">Quản trị viên (ADMIN)</span>
-          <strong className="stat-value text-purple">{stats.adminCount}</strong>
-          <span className="stat-sub">Toàn quyền vận hành</span>
+        <div
+          className={`admin-quick-stat-card is-interactive ${selectedRole === "RENTER" ? "is-selected-kpi" : ""}`}
+          onClick={() => handleSelectRoleQuickFilter("RENTER")}
+          role="button"
+          tabIndex={0}
+          onKeyDown={(e) => e.key === "Enter" && handleSelectRoleQuickFilter("RENTER")}
+          title="Nhấp để lọc nhanh Khách thuê (RENTER)"
+        >
+          <span className="stat-label">Khách thuê (RENTER)</span>
+          <strong className="stat-value text-success">{stats.renterCount}</strong>
+          <span className="stat-sub">Khách hàng đặt thuê thiết bị</span>
         </div>
 
-        <div className="admin-quick-stat-card">
+        <div
+          className={`admin-quick-stat-card is-interactive ${selectedRole === "STAFF" ? "is-selected-kpi" : ""}`}
+          onClick={() => handleSelectRoleQuickFilter("STAFF")}
+          role="button"
+          tabIndex={0}
+          onKeyDown={(e) => e.key === "Enter" && handleSelectRoleQuickFilter("STAFF")}
+          title="Nhấp để lọc nhanh Nhân viên (STAFF)"
+        >
           <span className="stat-label">Nhân viên (STAFF)</span>
           <strong className="stat-value text-primary">{stats.staffCount}</strong>
           <span className="stat-sub">Vận hành kho & đơn</span>
         </div>
 
-        <div className="admin-quick-stat-card">
-          <span className="stat-label">Khách thuê (RENTER)</span>
-          <strong className="stat-value text-success">{stats.renterCount}</strong>
-          <span className="stat-sub">Khách hàng đặt máy</span>
+        <div
+          className={`admin-quick-stat-card is-interactive ${selectedRole === "ADMIN" ? "is-selected-kpi" : ""}`}
+          onClick={() => handleSelectRoleQuickFilter("ADMIN")}
+          role="button"
+          tabIndex={0}
+          onKeyDown={(e) => e.key === "Enter" && handleSelectRoleQuickFilter("ADMIN")}
+          title="Nhấp để lọc nhanh Quản trị viên (ADMIN)"
+        >
+          <span className="stat-label">Quản trị viên (ADMIN)</span>
+          <strong className="stat-value text-purple">{stats.adminCount}</strong>
+          <span className="stat-sub">Toàn quyền vận hành</span>
         </div>
+      </div>
+
+      {/* QUICK ROLE TABS / BỘ LỌC NHANH VAI TRÒ */}
+      <div className="admin-user-role-tabs" role="tablist" aria-label="Bộ lọc nhanh vai trò tài khoản">
+        <button
+          type="button"
+          role="tab"
+          aria-selected={selectedRole === "ALL"}
+          className={`admin-role-tab ${selectedRole === "ALL" ? "active" : ""}`}
+          onClick={() => handleSelectRoleQuickFilter("ALL")}
+        >
+          <span>Tất cả người dùng</span>
+        </button>
+
+        <button
+          type="button"
+          role="tab"
+          aria-selected={selectedRole === "RENTER"}
+          className={`admin-role-tab ${selectedRole === "RENTER" ? "active" : ""}`}
+          onClick={() => handleSelectRoleQuickFilter("RENTER")}
+        >
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+            <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/>
+            <circle cx="9" cy="7" r="4"/>
+            <path d="M23 21v-2a4 4 0 0 0-3-3.87"/>
+            <path d="M16 3.13a4 4 0 0 1 0 7.75"/>
+          </svg>
+          <span>Khách thuê (RENTER)</span>
+        </button>
+
+        <button
+          type="button"
+          role="tab"
+          aria-selected={selectedRole === "STAFF"}
+          className={`admin-role-tab ${selectedRole === "STAFF" ? "active" : ""}`}
+          onClick={() => handleSelectRoleQuickFilter("STAFF")}
+        >
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+            <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/>
+          </svg>
+          <span>Nhân viên (STAFF)</span>
+        </button>
+
+        <button
+          type="button"
+          role="tab"
+          aria-selected={selectedRole === "ADMIN"}
+          className={`admin-role-tab ${selectedRole === "ADMIN" ? "active" : ""}`}
+          onClick={() => handleSelectRoleQuickFilter("ADMIN")}
+        >
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+            <circle cx="12" cy="12" r="3"/>
+            <path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"/>
+          </svg>
+          <span>Quản trị viên (ADMIN)</span>
+        </button>
       </div>
 
       {/* SEARCH & FILTERS TOOLBAR */}
@@ -435,9 +534,9 @@ function AdminUsersPage({ defaultRole = "ALL" }) {
               onChange={handleRoleFilterChange}
             >
               <option value="ALL">Tất cả vai trò</option>
-              <option value="ADMIN">Quản trị viên (ADMIN)</option>
-              <option value="STAFF">Nhân viên (STAFF)</option>
-              <option value="RENTER">Khách thuê (RENTER)</option>
+              <option value="RENTER">RENTER – Khách thuê</option>
+              <option value="STAFF">STAFF – Nhân viên vận hành</option>
+              <option value="ADMIN">ADMIN – Quản trị viên</option>
             </select>
           </div>
 
@@ -482,8 +581,16 @@ function AdminUsersPage({ defaultRole = "ALL" }) {
                 <path d="M16 3.13a4 4 0 0 1 0 7.75"/>
               </svg>
             </div>
-            <h3>Không tìm thấy người dùng nào</h3>
-            <p>Không có tài khoản nào phù hợp với từ khóa hoặc bộ lọc đã chọn.</p>
+            <h3>
+              {selectedRole === "RENTER"
+                ? "Không tìm thấy khách thuê nào"
+                : "Không tìm thấy người dùng nào"}
+            </h3>
+            <p>
+              {selectedRole === "RENTER"
+                ? "Không có tài khoản khách thuê nào phù hợp với từ khóa hoặc bộ lọc trạng thái đã chọn."
+                : "Không có tài khoản nào phù hợp với từ khóa hoặc bộ lọc đã chọn."}
+            </p>
           </div>
         ) : (
           <table className="admin-table">

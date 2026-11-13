@@ -9574,6 +9574,63 @@ select {
   color: #6a1b9a !important;
 }
 
+/* QUICK ROLE TABS & INTERACTIVE KPI CARDS */
+.admin-user-role-tabs {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  flex-wrap: wrap;
+}
+
+.admin-role-tab {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.45rem;
+  padding: 0.45rem 0.9rem;
+  border-radius: 8px;
+  background: var(--borroll-panel);
+  border: 1px solid var(--borroll-line);
+  font-size: 0.82rem;
+  font-weight: 600;
+  color: var(--borroll-charcoal);
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.admin-role-tab:hover {
+  border-color: var(--borroll-terra);
+  background: rgba(184, 108, 77, 0.06);
+}
+
+.admin-role-tab.active {
+  background: var(--borroll-terra);
+  border-color: var(--borroll-terra);
+  color: #ffffff;
+  box-shadow: 0 2px 8px rgba(184, 108, 77, 0.25);
+}
+
+.admin-role-tab.active svg {
+  stroke: #ffffff;
+}
+
+.admin-quick-stat-card.is-interactive {
+  cursor: pointer;
+  transition: all 0.2s ease;
+  user-select: none;
+}
+
+.admin-quick-stat-card.is-interactive:hover {
+  transform: translateY(-2px);
+  border-color: var(--borroll-terra);
+  box-shadow: 0 4px 12px rgba(47, 41, 39, 0.08);
+}
+
+.admin-quick-stat-card.is-selected-kpi {
+  border-color: var(--borroll-terra) !important;
+  background: rgba(184, 108, 77, 0.04) !important;
+  box-shadow: 0 0 0 1px var(--borroll-terra) !important;
+}
+
 /* USER TABLE CELL & AVATAR */
 .admin-user-cell {
   display: flex;

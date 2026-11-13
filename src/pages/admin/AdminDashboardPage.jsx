@@ -426,8 +426,8 @@ function AdminDashboardPage() {
             </span>
           </div>
           <div className="admin-stat-footer">
-            <Link to="/admin/customers" className="admin-stat-link">
-              Xem khách hàng →
+            <Link to="/admin/users?role=RENTER" className="admin-stat-link">
+              Xem khách thuê →
             </Link>
           </div>
         </div>
@@ -677,24 +677,8 @@ function AdminDashboardPage() {
               </svg>
             </div>
             <div className="admin-quick-text">
-              <strong>Tài khoản & Phân quyền</strong>
-              <span>Quản lý danh sách người dùng, cấp quyền ADMIN / STAFF / RENTER và kiểm soát trạng thái.</span>
-            </div>
-            <span className="admin-quick-arrow" aria-hidden="true">→</span>
-          </Link>
-
-          <Link to="/admin/customers" className="admin-quick-card">
-            <div className="admin-quick-icon">
-              <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
-                <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/>
-                <circle cx="9" cy="7" r="4"/>
-                <path d="M23 21v-2a4 4 0 0 0-3-3.87"/>
-                <path d="M16 3.13a4 4 0 0 1 0 7.75"/>
-              </svg>
-            </div>
-            <div className="admin-quick-text">
-              <strong>Danh sách khách hàng</strong>
-              <span>Thông tin tài khoản renter, lịch sử đơn đặt và các liên hệ hỗ trợ.</span>
+              <strong>Tài khoản & Người dùng</strong>
+              <span>Quản trị tài khoản, khách thuê (RENTER), nhân viên (STAFF) và cấp quyền ADMIN.</span>
             </div>
             <span className="admin-quick-arrow" aria-hidden="true">→</span>
           </Link>
@@ -750,19 +734,10 @@ function AdminDashboardPage() {
           <div className="roadmap-step is-active">
             <div className="step-num">Phase 7E</div>
             <div className="step-content">
-              <strong>Tài khoản & Phân quyền (Hiện tại)</strong>
+              <strong>Tài khoản & Phân quyền</strong>
               <span>Quản trị tài khoản người dùng, phân quyền vai trò ADMIN / STAFF / RENTER và kiểm soát trạng thái.</span>
             </div>
-            <span className="step-status done">Đang triển khai</span>
-          </div>
-
-          <div className="roadmap-step">
-            <div className="step-num">Phase 7F</div>
-            <div className="step-content">
-              <strong>Nội dung CMS & Cài đặt</strong>
-              <span>Quản trị bài viết, Chính sách thuê, Banner khuyến mãi và Cấu hình tham số tài chính.</span>
-            </div>
-            <span className="step-status upcoming">Chưa triển khai</span>
+            <span className="step-status done">Hoàn thành</span>
           </div>
         </div>
       </section>
