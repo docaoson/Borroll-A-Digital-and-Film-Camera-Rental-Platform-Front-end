@@ -1,251 +1,295 @@
 import { useEffect, useState } from "react";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import heroBackground from "../../assets/background-picture for homepage.jpg";
 import { catalogService } from "../../services/catalogService";
 
-const categories = [
-  {
-    slug: "may-film",
-    title: "Máy ảnh Film",
-    description:
-      "Khám phá chất ảnh cổ điển, cảm giác tương tác và phong cách sáng tạo riêng cho dự án của bạn.",
-    label: "Film",
-  },
-  {
-    slug: "may-digital",
-    title: "Máy ảnh Digital",
-    description:
-      "Dành cho quay video, chụp dự án và trải nghiệm hình ảnh rõ nét, linh hoạt trong nhiều tình huống.",
-    label: "Digital",
-  },
+const fallbackCategories = [
+  { slug: "may-film", name: "Máy ảnh Film", label: "Film" },
+  { slug: "may-digital", name: "Máy ảnh Digital", label: "Digital" },
+  { slug: "may-instant", name: "Máy ảnh Instant", label: "Instant" },
+  { slug: "ong-kinh", name: "Ống kính", label: "Lens" },
+  { slug: "film-slr", name: "SLR 35mm", label: "SLR" },
+  { slug: "film-compact", name: "Compact 35mm", label: "Compact" },
+  { slug: "digital-mirrorless", name: "Mirrorless", label: "Mirrorless" },
 ];
 
-const steps = [
-  "Chọn chiếc máy phù hợp",
-  "Lựa chọn thời gian thuê",
-  "Nhận máy và bắt đầu trải nghiệm",
-];
-
-const brandPillars = [
+const highlights = [
   {
-    number: "01",
-    title: "Thân thiện với khách hàng",
-    description:
-      "Tư vấn nhẹ nhàng, quy trình đặt thuê rõ ràng, dễ hiểu ngay cả với những người lần đầu tiếp xúc với máy ảnh film hoặc máy ảnh chuyên nghiệp.",
+    badge: "01",
+    title: "Thân thiện khách hàng",
+    description: "Tư vấn nhẹ nhàng, quy trình đặt thuê rõ ràng",
   },
   {
-    number: "02",
+    badge: "02",
     title: "Máy ảnh chất lượng",
-    description:
-      "Từng thiết bị được cửa hàng trực tiếp sở hữu, kiểm tra và vệ sinh cẩn thận trước khi giao cho khách thuê.",
+    description: "Kiểm tra và vệ sinh cẩn thận trước khi giao",
   },
   {
-    number: "03",
-    title: "Giá cả phù hợp sinh viên",
-    description:
-      "Mức giá thuê minh bạch, hợp lý và dễ tiếp cận, giúp khách hàng thử nghiệm thiết bị mới mà không phải đầu tư quá lớn.",
+    badge: "03",
+    title: "Thuê máy 3 bước",
+    description: "Chọn máy, chọn ngày và nhận tại chi nhánh",
+  },
+  {
+    badge: "04",
+    title: "Chi phí hợp lý",
+    description: "Giá thuê minh bạch, phù hợp sinh viên",
   },
 ];
+
+function flattenCategories(tree = []) {
+  const result = [];
+  for (const node of tree) {
+    result.push({
+      id: node.id || node.slug,
+      slug: node.slug,
+      name: node.name,
+      label: node.name.split(/\s+/)[0] || "Cam",
+    });
+    if (Array.isArray(node.children)) {
+      for (const child of node.children) {
+        result.push({
+          id: child.id || child.slug,
+          slug: child.slug,
+          name: child.name,
+          label: child.name.split(/\s+/)[0] || "Cam",
+        });
+      }
+    }
+  }
+  return result;
+}
+
+function ProductCard({ camera, onSelect }) {
+  return (
+    <article
+      className="camera-card clickable-card"
+      onClick={() => onSelect(camera.slug)}
+    >
+      <div className="camera-card-media">
+        {camera.thumbnailUrl ? (
+          <img
+            src={camera.thumbnailUrl}
+            alt={camera.name}
+            className="camera-card-image"
+            loading="lazy"
+            onError={(e) => {
+              e.currentTarget.style.display = "none";
+              const fallback = e.currentTarget.parentElement?.querySelector(
+                ".camera-image-fallback",
+              );
+              if (fallback) fallback.classList.remove("hidden");
+            }}
+          />
+        ) : null}
+        <div
+          className={`camera-image-fallback ${camera.thumbnailUrl ? "hidden" : ""}`}
+        >
+          <span className="fallback-category">
+            {camera.category?.name || "Máy ảnh"}
+          </span>
+        </div>
+      </div>
+      <div className="camera-body">
+        <span className="camera-category">
+          {camera.category?.name ||
+            (camera.cameraType === "FILM" ? "Máy ảnh Film" : "Digital")}
+        </span>
+        <h3>{camera.name}</h3>
+        <p className="camera-meta">{camera.brand?.name}</p>
+        <div className="camera-footer">
+          <strong>
+            {camera.pricePerDay
+              ? `${camera.pricePerDay.toLocaleString("vi-VN")} đ/ngày`
+              : "Liên hệ"}
+          </strong>
+        </div>
+      </div>
+    </article>
+  );
+}
 
 function HomePage() {
+  const navigate = useNavigate();
   const [featuredModels, setFeaturedModels] = useState([]);
+  const [recommendedModels, setRecommendedModels] = useState([]);
+  const [categoryList, setCategoryList] = useState(fallbackCategories);
 
   useEffect(() => {
     let active = true;
-    catalogService
-      .getModels({ featured: true, pageSize: 4 })
-      .then((res) => {
-        if (active) setFeaturedModels(res.items || []);
+    Promise.all([
+      catalogService.getModels({ featured: true, pageSize: 4 }),
+      catalogService.getModels({ sort: "newest", pageSize: 4 }),
+      catalogService.getCategories(),
+    ])
+      .then(([featuredRes, newestRes, catRes]) => {
+        if (!active) return;
+        const featured = featuredRes?.items || [];
+        const newest = newestRes?.items || [];
+        setFeaturedModels(featured.length > 0 ? featured : newest);
+        setRecommendedModels(newest);
+
+        const flatCats = flattenCategories(catRes?.items || []);
+        if (flatCats.length > 0) {
+          setCategoryList(flatCats.slice(0, 7));
+        }
       })
       .catch(() => {
-        if (active) setFeaturedModels([]);
+        if (!active) return;
+        setFeaturedModels([]);
+        setRecommendedModels([]);
       });
+
     return () => {
       active = false;
     };
   }, []);
 
+  const handleOpenCamera = (slug) => {
+    navigate(`/cameras/${slug}`);
+  };
+
   return (
     <div className="home-page">
-      <section
-        className="home-hero section-shell"
-        style={{ "--home-hero-bg": `url("${heroBackground}")` }}
-      >
-        <div className="container home-hero-inner">
-          <div className="hero-copy">
-            <p className="eyebrow">BORROLL</p>
-            <h1>Mỗi khoảnh khắc, một góc nhìn riêng.</h1>
-            <p className="hero-text">
-              Thuê máy ảnh phim và kỹ thuật số dễ dàng, linh hoạt và đáng tin
-              cậy ngay từ cửa hàng BORROLL.
-            </p>
-
-            <div className="hero-actions">
-              <Link to="/cameras" className="button primary-button">
-                Khám phá máy ảnh
-              </Link>
-              <Link to="/#how-it-works" className="button secondary-button">
-                Cách thức thuê
-              </Link>
-            </div>
-
-            <div className="hero-meta">
-              <div>
-                <strong>100+</strong>
-                <span>mẫu thiết bị</span>
-              </div>
-              <div>
-                <strong>3 bước</strong>
-                <span>thuê dễ dàng</span>
-              </div>
-              <div>
-                <strong>Hà Nội</strong>
-                <span>ưu tiên trải nghiệm</span>
-              </div>
-            </div>
-          </div>
-
-          <div className="hero-visual" aria-hidden="true" />
-        </div>
-      </section>
-
-      <section className="section-shell">
+      {/* PHẦN TRÊN (Cấu trúc theo ảnh 3: Hero Banner -> 4 điểm nổi bật -> Lựa chọn nổi bật) */}
+      <section className="home-top-section">
         <div className="container">
-          <div className="section-heading center-heading">
-            <p className="eyebrow">Khám phá</p>
-            <h2>Khám phá thế giới máy ảnh</h2>
+          <div
+            className="home-hero-banner"
+            style={{ "--home-hero-bg": `url("${heroBackground}")` }}
+          >
+            <div className="hero-copy">
+              <p className="eyebrow">BORROLL</p>
+              <h1>Mỗi khoảnh khắc, một góc nhìn riêng.</h1>
+              <p className="hero-text">
+                Thuê máy ảnh phim và kỹ thuật số dễ dàng, linh hoạt và đáng tin
+                cậy ngay từ cửa hàng BORROLL.
+              </p>
+
+              <div className="hero-actions">
+                <Link to="/cameras" className="button primary-button">
+                  Khám phá máy ảnh
+                </Link>
+              </div>
+            </div>
+
+            <div className="hero-visual" aria-hidden="true" />
           </div>
 
-          <div className="category-grid">
-            {categories.map((category) => (
-              <Link
-                to={`/cameras?category=${category.slug}`}
-                className="category-card"
-                key={category.slug}
-              >
-                <div className="image-placeholder category-placeholder">
-                  <span>{category.label}</span>
+          <div className="home-highlights-strip">
+            {highlights.map((item) => (
+              <div className="highlight-strip-item" key={item.badge}>
+                <span className="highlight-strip-badge">{item.badge}</span>
+                <div className="highlight-strip-text">
+                  <strong>{item.title}</strong>
+                  <p>{item.description}</p>
                 </div>
-                <div className="card-body">
-                  <h3>{category.title}</h3>
-                  <p>{category.description}</p>
-                </div>
-              </Link>
+              </div>
             ))}
           </div>
         </div>
       </section>
 
-      <section className="section-shell featured-shell">
+      {/* LỰA CHỌN NỔI BẬT */}
+      <section className="home-section">
         <div className="container">
-          <div className="section-heading">
-            <p className="eyebrow">Lựa chọn</p>
+          <div className="section-header-inline">
             <h2>Lựa chọn nổi bật</h2>
-          </div>
-
-          <div className="featured-grid">
-            {featuredModels.map((camera) => (
-              <article className="camera-card" key={camera.id}>
-                <div className="image-placeholder card-placeholder">
-                  <span>{camera.category?.name}</span>
-                </div>
-                <div className="camera-body">
-                  <span className="sample-tag">
-                    {camera.cameraType === "FILM" ? "Máy ảnh Film" : "Digital"}
-                  </span>
-                  <h3>{camera.name}</h3>
-                  <p>{camera.brand?.name}</p>
-                  <div className="camera-footer">
-                    <strong>
-                      {camera.pricePerDay.toLocaleString("vi-VN")} đ/ngày
-                    </strong>
-                    <Link to={`/cameras/${camera.slug}`}>Xem chi tiết</Link>
-                  </div>
-                </div>
-              </article>
-            ))}
-          </div>
-        </div>
-      </section>
-
-      <section id="how-it-works" className="section-shell process-shell">
-        <div className="container">
-          <div className="section-heading center-heading">
-            <p className="eyebrow">Quy trình</p>
-            <h2>Thuê máy thật dễ dàng</h2>
-          </div>
-
-          <div className="process-grid">
-            {steps.map((step, index) => (
-              <div className="process-card" key={step}>
-                <span className="process-number">0{index + 1}</span>
-                <h3>{step}</h3>
-                <p>
-                  {index === 0 &&
-                    "Khách hàng xem bộ sưu tập, so sánh phong cách và chọn máy phù hợp với mục tiêu ghi hình."}
-                  {index === 1 &&
-                    "Lựa chọn khoảng thời gian thuê phù hợp với lịch trình và dự án của bạn."}
-                  {index === 2 &&
-                    "Nhận máy tại chi nhánh và bắt đầu trải nghiệm tạo hình riêng."}
-                </p>
-              </div>
-            ))}
-          </div>
-        </div>
-      </section>
-
-      <section className="section-shell brand-shell">
-        <div className="container brand-intro">
-          <div className="brand-copy">
-            <p className="eyebrow">Về BORROLL</p>
-            <h2>Thỏa sức sáng tạo bằng một trải nghiệm thuê máy linh hoạt.</h2>
-            <p>
-              BORROLL được khởi xướng bởi một nhóm sinh viên yêu nhiếp ảnh, xuất
-              phát từ nhu cầu thử nghiệm máy ảnh film và kỹ thuật số mà không
-              cần đầu tư lớn. Chúng tôi xây dựng mô hình cửa hàng sở hữu và quản
-              lý thiết bị trực tiếp để khách hàng dễ tiếp cận, kiểm tra và trải
-              nghiệm máy một cách rõ ràng và đáng tin cậy.
-            </p>
-          </div>
-
-          <div className="brand-visual">
-            <div className="image-placeholder square-placeholder">
-              <span>Góc nhìn sáng tạo</span>
-            </div>
-          </div>
-        </div>
-      </section>
-
-      <section className="section-shell">
-        <div className="container">
-          <div className="section-heading center-heading">
-            <p className="eyebrow">Giá trị</p>
-            <h2>Ba điều BORROLL luôn ưu tiên</h2>
-          </div>
-
-          <div className="process-grid">
-            {brandPillars.map((pillar) => (
-              <article className="process-card" key={pillar.number}>
-                <span className="process-number">{pillar.number}</span>
-                <h3>{pillar.title}</h3>
-                <p>{pillar.description}</p>
-              </article>
-            ))}
-          </div>
-        </div>
-      </section>
-
-      <section className="section-shell cta-shell">
-        <div className="container">
-          <div className="cta-box">
-            <div>
-              <p className="eyebrow">Khám phá ngay</p>
-              <h2>Chọn chiếc máy phù hợp với từng dự án của bạn.</h2>
-            </div>
-            <Link to="/cameras" className="button primary-button">
-              Khám phá bộ sưu tập
+            <Link to="/cameras" className="section-view-all">
+              Xem tất cả →
             </Link>
           </div>
+
+          {featuredModels.length === 0 ? (
+            <div className="empty-state">
+              <p>Hiện chưa có mẫu thiết bị nổi bật nào được hiển thị.</p>
+            </div>
+          ) : (
+            <div className="featured-grid">
+              {featuredModels.map((camera) => (
+                <ProductCard
+                  key={camera.id}
+                  camera={camera}
+                  onSelect={handleOpenCamera}
+                />
+              ))}
+            </div>
+          )}
+        </div>
+      </section>
+
+      {/* PHẦN DƯỚI (Cấu trúc theo ảnh 1: Danh mục -> Banner ngang -> Thiết bị đề xuất) */}
+      <section className="home-section">
+        <div className="container">
+          <div className="section-header-inline">
+            <h2>Danh mục</h2>
+          </div>
+
+          <div className="category-tiles-row">
+            {categoryList.map((category) => (
+              <Link
+                to={`/cameras?category=${category.slug}`}
+                className="category-tile"
+                key={category.slug}
+              >
+                <div className="category-tile-icon">
+                  <span>{category.label}</span>
+                </div>
+                <span className="category-tile-name">{category.name}</span>
+              </Link>
+            ))}
+          </div>
+        </div>
+      </section>
+
+      <section className="home-section">
+        <div className="container">
+          <div className="home-promo-banner">
+            <div className="promo-banner-copy">
+              <p className="eyebrow">Về BORROLL</p>
+              <h2>Thỏa sức sáng tạo bằng một trải nghiệm thuê máy linh hoạt.</h2>
+              <p>
+                BORROLL được khởi xướng bởi nhóm sinh viên yêu nhiếp ảnh, xây
+                dựng mô hình cửa hàng sở hữu và quản lý thiết bị trực tiếp để
+                khách hàng dễ tiếp cận, kiểm tra và trải nghiệm máy rõ ràng.
+              </p>
+              <Link to="/cameras" className="button primary-button">
+                Khám phá bộ sưu tập
+              </Link>
+            </div>
+
+            <div
+              className="promo-banner-visual"
+              style={{ backgroundImage: `url("${heroBackground}")` }}
+              aria-label="Không gian máy ảnh BORROLL"
+            />
+          </div>
+        </div>
+      </section>
+
+      <section className="home-section">
+        <div className="container">
+          <div className="section-header-inline">
+            <h2>Thiết bị đề xuất</h2>
+            <Link to="/cameras" className="section-view-all">
+              Xem tất cả →
+            </Link>
+          </div>
+
+          {recommendedModels.length === 0 ? (
+            <div className="empty-state">
+              <p>Hiện chưa có thiết bị nào được hiển thị.</p>
+            </div>
+          ) : (
+            <div className="featured-grid">
+              {recommendedModels.map((camera) => (
+                <ProductCard
+                  key={camera.id}
+                  camera={camera}
+                  onSelect={handleOpenCamera}
+                />
+              ))}
+            </div>
+          )}
         </div>
       </section>
     </div>
