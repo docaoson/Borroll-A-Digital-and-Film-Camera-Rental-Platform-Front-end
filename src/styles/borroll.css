@@ -11,6 +11,14 @@
   --borroll-shadow: rgba(47, 41, 39, 0.08);
   --borroll-success: #4d7a5b;
   --borroll-warning: #c58c47;
+
+  /* Typography Scale & Metrics Tokens for Vietnamese readability */
+  --borroll-lh-tight: 1.25;
+  --borroll-lh-base: 1.6;
+  --borroll-lh-loose: 1.75;
+  --borroll-ls-heading: -0.01em;
+  --borroll-ls-body: normal;
+  --borroll-ls-caps: 0.06em;
 }
 
 * {
@@ -26,7 +34,8 @@ body {
   font-family: var(--borroll-font-sans);
   background: var(--borroll-cream);
   color: var(--borroll-charcoal);
-  line-height: 1.6;
+  line-height: var(--borroll-lh-base, 1.6);
+  letter-spacing: var(--borroll-ls-body, normal);
 }
 
 #root {
@@ -58,8 +67,8 @@ h5 {
   margin: 0 0 0.75rem;
   font-family: var(--borroll-font-sans);
   font-weight: 700;
-  letter-spacing: -0.025em;
-  line-height: 1.25;
+  letter-spacing: var(--borroll-ls-heading, -0.01em);
+  line-height: var(--borroll-lh-tight, 1.25);
   color: var(--borroll-charcoal);
 }
 
@@ -351,7 +360,7 @@ p {
 .page-kicker {
   margin-bottom: 1rem;
   font-size: 0.8rem;
-  letter-spacing: 0.18em;
+  letter-spacing: var(--borroll-ls-caps, 0.06em);
   text-transform: uppercase;
   color: var(--borroll-terra);
 }
@@ -476,7 +485,7 @@ p {
 .eyebrow {
   margin-bottom: 1rem;
   font-size: 0.76rem;
-  letter-spacing: 0.18em;
+  letter-spacing: var(--borroll-ls-caps, 0.06em);
   text-transform: uppercase;
   color: var(--borroll-terra);
   font-weight: 700;
@@ -484,8 +493,8 @@ p {
 
 .hero-copy h1 {
   font-size: clamp(2.5rem, 4.6vw, 4.4rem);
-  line-height: 1.1;
-  letter-spacing: -0.03em;
+  line-height: 1.2;
+  letter-spacing: var(--borroll-ls-heading, -0.01em);
   margin-bottom: 1.25rem;
 }
 
@@ -2990,7 +2999,7 @@ select {
   font-weight: 800;
   color: var(--borroll-charcoal);
   margin-top: 0.2rem;
-  letter-spacing: -0.02em;
+  letter-spacing: var(--borroll-ls-heading, -0.01em);
 }
 
 .order-header-right-actions {
@@ -4096,7 +4105,7 @@ select {
   display: inline-block;
   font-size: 0.85rem;
   font-weight: 700;
-  letter-spacing: 0.12em;
+  letter-spacing: var(--borroll-ls-caps, 0.06em);
   text-transform: uppercase;
   padding: 0.4rem 1rem;
   border-radius: 999px;
@@ -5384,7 +5393,7 @@ select {
   font-weight: 800;
   color: var(--borroll-charcoal);
   margin: 0.25rem 0 0.5rem;
-  letter-spacing: -0.02em;
+  letter-spacing: var(--borroll-ls-heading, -0.01em);
 }
 
 .support-subheading {
@@ -6308,7 +6317,7 @@ select {
   margin: 0;
   font-size: 1.6rem;
   font-weight: 800;
-  letter-spacing: -0.02em;
+  letter-spacing: var(--borroll-ls-heading, -0.01em);
   color: var(--borroll-charcoal);
 }
 
@@ -6518,7 +6527,7 @@ select {
 .admin-stat-number {
   font-size: 1.8rem;
   font-weight: 800;
-  letter-spacing: -0.03em;
+  letter-spacing: -0.01em;
   color: var(--borroll-charcoal);
   line-height: 1.1;
 }
@@ -7096,8 +7105,132 @@ select {
   color: #2e7d32;
 }
 
-/* FILTER & SEARCH TOOLBAR */
-.admin-filter-toolbar {
+/* ==========================================================================
+   ADMIN KPI METRICS GRID & CARDS
+   ========================================================================== */
+.admin-kpi-grid,
+.admin-quick-stats-row {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 1.15rem;
+  margin-bottom: 1.5rem;
+}
+
+@media (max-width: 1024px) {
+  .admin-kpi-grid,
+  .admin-quick-stats-row {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+
+@media (max-width: 600px) {
+  .admin-kpi-grid,
+  .admin-quick-stats-row {
+    grid-template-columns: 1fr;
+    gap: 0.85rem;
+  }
+}
+
+.admin-kpi-card,
+.admin-quick-stat-card {
+  background: var(--borroll-panel, #fffdfb);
+  border: 1px solid var(--borroll-line, rgba(47, 41, 39, 0.12));
+  border-radius: 12px;
+  padding: 1.15rem 1.25rem;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  gap: 0.35rem;
+  box-shadow: 0 2px 8px rgba(47, 41, 39, 0.03);
+  transition: transform 0.15s ease, box-shadow 0.15s ease, border-color 0.15s ease;
+  min-width: 0;
+}
+
+.admin-kpi-card:hover,
+.admin-quick-stat-card:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 6px 18px rgba(47, 41, 39, 0.07);
+  border-color: rgba(184, 108, 77, 0.35);
+}
+
+.admin-kpi-card .admin-stat-label,
+.admin-kpi-card .stat-label,
+.admin-quick-stat-card .admin-stat-label,
+.admin-quick-stat-card .stat-label {
+  display: block;
+  font-size: 0.74rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: var(--borroll-ls-caps, 0.05em);
+  color: rgba(47, 41, 39, 0.65);
+  margin: 0 0 0.2rem 0;
+  line-height: 1.35;
+}
+
+.admin-kpi-card .admin-stat-value,
+.admin-kpi-card .stat-value,
+.admin-quick-stat-card .admin-stat-value,
+.admin-quick-stat-card .stat-value {
+  display: block;
+  font-size: 1.9rem;
+  font-weight: 800;
+  color: var(--borroll-charcoal, #2f2927);
+  line-height: 1.15;
+  letter-spacing: -0.01em;
+  margin: 0.15rem 0 0.25rem 0;
+}
+
+.admin-kpi-card .admin-stat-value.text-success,
+.admin-kpi-card .stat-value.text-success,
+.admin-quick-stat-card .admin-stat-value.text-success,
+.admin-quick-stat-card .stat-value.text-success {
+  color: #2e7d32;
+}
+
+.admin-kpi-card .admin-stat-value.text-warning,
+.admin-kpi-card .stat-value.text-warning,
+.admin-quick-stat-card .admin-stat-value.text-warning,
+.admin-quick-stat-card .stat-value.text-warning {
+  color: #c58c47;
+}
+
+.admin-kpi-card .admin-stat-value.text-primary,
+.admin-kpi-card .stat-value.text-primary,
+.admin-quick-stat-card .admin-stat-value.text-primary,
+.admin-quick-stat-card .stat-value.text-primary {
+  color: var(--borroll-terra, #b86c4d);
+}
+
+.admin-kpi-card .admin-stat-value.text-muted,
+.admin-kpi-card .stat-value.text-muted,
+.admin-quick-stat-card .admin-stat-value.text-muted,
+.admin-quick-stat-card .stat-value.text-muted {
+  color: rgba(47, 41, 39, 0.45);
+}
+
+.admin-kpi-card .admin-stat-value.text-purple,
+.admin-kpi-card .stat-value.text-purple,
+.admin-quick-stat-card .admin-stat-value.text-purple,
+.admin-quick-stat-card .stat-value.text-purple {
+  color: #6a1b9a;
+}
+
+.admin-kpi-card .admin-stat-description,
+.admin-kpi-card .stat-sub,
+.admin-quick-stat-card .admin-stat-description,
+.admin-quick-stat-card .stat-sub {
+  display: block;
+  font-size: 0.74rem;
+  color: rgba(47, 41, 39, 0.6);
+  line-height: 1.35;
+  margin: auto 0 0 0;
+}
+
+/* ==========================================================================
+   FILTER & SEARCH TOOLBAR
+   ========================================================================== */
+.admin-filter-toolbar,
+.admin-filter-bar {
   background: var(--borroll-panel);
   border: 1px solid var(--borroll-line);
   border-radius: 12px;
@@ -7108,27 +7241,33 @@ select {
   gap: 1rem;
   flex-wrap: wrap;
   box-shadow: 0 2px 8px rgba(47, 41, 39, 0.03);
+  margin-bottom: 1.25rem;
 }
 
 .admin-search-box {
   position: relative;
   display: flex;
   align-items: center;
-  flex: 1;
+  flex: 1 1 260px;
   min-width: 240px;
 }
 
-.admin-search-box .search-icon {
+.admin-search-box .search-icon,
+.admin-search-box > svg {
   position: absolute;
-  left: 0.75rem;
+  left: 0.85rem;
   font-size: 0.95rem;
   color: rgba(47, 41, 39, 0.45);
   pointer-events: none;
+  display: flex;
+  align-items: center;
+  justify-content: center;
 }
 
-.admin-search-input {
+.admin-search-input,
+.admin-search-box > input {
   width: 100%;
-  padding: 0.45rem 2rem 0.45rem 2.25rem;
+  padding: 0.5rem 2.2rem 0.5rem 2.45rem;
   border: 1px solid var(--borroll-line);
   border-radius: 8px;
   font-size: 0.84rem;
@@ -7138,7 +7277,8 @@ select {
   transition: all 0.15s ease;
 }
 
-.admin-search-input:focus {
+.admin-search-input:focus,
+.admin-search-box > input:focus {
   background: #fff;
   border-color: var(--borroll-terra);
   box-shadow: 0 0 0 3px rgba(184, 108, 77, 0.12);
@@ -7153,13 +7293,35 @@ select {
   font-size: 0.85rem;
   cursor: pointer;
   padding: 0.2rem;
-}
-
-.admin-filter-controls {
   display: flex;
   align-items: center;
-  gap: 0.65rem;
+  justify-content: center;
+}
+
+.admin-search-clear:hover {
+  color: var(--borroll-charcoal);
+}
+
+.admin-filter-controls,
+.admin-filter-dropdowns {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
   flex-wrap: wrap;
+}
+
+.admin-select-wrapper {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.45rem;
+}
+
+.admin-select-wrapper label {
+  font-size: 0.8rem;
+  font-weight: 600;
+  color: rgba(47, 41, 39, 0.72);
+  white-space: nowrap;
+  user-select: none;
 }
 
 .admin-select-filter {
@@ -7172,20 +7334,37 @@ select {
   color: var(--borroll-charcoal);
   outline: none;
   cursor: pointer;
-  transition: border-color 0.15s ease;
+  transition: border-color 0.15s ease, box-shadow 0.15s ease;
 }
 
 .admin-select-filter:focus {
   border-color: var(--borroll-terra);
+  box-shadow: 0 0 0 2px rgba(184, 108, 77, 0.12);
 }
 
-/* DATA TABLE CONTAINER & ITEMS */
+.admin-filter-reset-btn {
+  margin-left: 0.25rem;
+  white-space: nowrap;
+}
+
+/* ==========================================================================
+   DATA TABLE CONTAINER & ITEMS
+   ========================================================================== */
 .admin-table-container {
   background: var(--borroll-panel);
   border: 1px solid var(--borroll-line);
   border-radius: 12px;
-  overflow: hidden;
+  overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
   box-shadow: 0 3px 12px rgba(47, 41, 39, 0.04);
+}
+
+.admin-table {
+  width: 100%;
+  min-width: 860px;
+  border-collapse: collapse;
+  text-align: left;
+  font-size: 0.84rem;
 }
 
 .admin-thumb-wrapper {
@@ -7289,10 +7468,60 @@ select {
 }
 
 .admin-table-actions {
-  display: flex;
+  display: inline-flex;
   align-items: center;
   justify-content: flex-end;
-  gap: 0.4rem;
+  gap: 0.5rem;
+  white-space: nowrap;
+}
+
+.admin-table-actions .button,
+.admin-table-actions .button.compact {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+  white-space: nowrap;
+  font-size: 0.78rem;
+  font-weight: 600;
+  padding: 0.38rem 0.65rem;
+  line-height: 1.25;
+  border-radius: 6px;
+  cursor: pointer;
+  transition: all 0.15s ease;
+}
+
+.admin-table-actions .button.text-button {
+  background: rgba(184, 108, 77, 0.08);
+  color: var(--borroll-terra);
+  border: 1px solid rgba(184, 108, 77, 0.2);
+}
+
+.admin-table-actions .button.text-button:hover {
+  background: rgba(184, 108, 77, 0.15);
+  border-color: var(--borroll-terra);
+}
+
+.admin-table-actions .button.secondary-button {
+  background: rgba(47, 41, 39, 0.05);
+  color: var(--borroll-charcoal);
+  border: 1px solid var(--borroll-line);
+}
+
+.admin-table-actions .button.secondary-button:hover {
+  background: rgba(47, 41, 39, 0.1);
+  border-color: rgba(47, 41, 39, 0.25);
+}
+
+.admin-table-actions .button.danger-text-button {
+  background: rgba(198, 40, 40, 0.08);
+  color: #c62828;
+  border: 1px solid rgba(198, 40, 40, 0.2);
+}
+
+.admin-table-actions .button.danger-text-button:hover {
+  background: rgba(198, 40, 40, 0.15);
+  border-color: #c62828;
 }
 
 .button.icon-button {

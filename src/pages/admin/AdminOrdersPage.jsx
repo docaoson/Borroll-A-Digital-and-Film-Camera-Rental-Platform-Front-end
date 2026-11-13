@@ -33,11 +33,13 @@ function AdminOrdersPage() {
 
   // Filters from URL or default
   const selectedStatus = searchParams.get("status") || "ALL";
-  const [selectedBranch, setSelectedBranch] = useState("ALL");
-  const [filterDate, setFilterDate] = useState("");
-  const [filterOverdue, setFilterOverdue] = useState(false);
-  const [searchQuery, setSearchQuery] = useState("");
-  const [debouncedSearch, setDebouncedSearch] = useState("");
+  const selectedBranch = searchParams.get("branch") || "ALL";
+  const filterDate = searchParams.get("date") || "";
+  const filterOverdue = searchParams.get("overdue") === "true";
+  const urlQ = searchParams.get("q") || "";
+
+  const [searchQuery, setSearchQuery] = useState(urlQ);
+  const [debouncedSearch, setDebouncedSearch] = useState(urlQ);
 
   // Options
   const [branches, setBranches] = useState([]);
@@ -57,14 +59,25 @@ function AdminOrdersPage() {
   const [processing, setProcessing] = useState(false);
   const [refreshKey, setRefreshKey] = useState(0);
 
-  // Debounce search input
+  // Debounce search input and sync to URL
   useEffect(() => {
     const timer = setTimeout(() => {
-      setDebouncedSearch(searchQuery.trim());
+      const trimmed = searchQuery.trim();
+      setDebouncedSearch(trimmed);
       setPage(1);
+      const currentQ = searchParams.get("q") || "";
+      if (trimmed !== currentQ) {
+        const next = new URLSearchParams(searchParams);
+        if (trimmed) {
+          next.set("q", trimmed);
+        } else {
+          next.delete("q");
+        }
+        setSearchParams(next, { replace: true });
+      }
     }, 350);
     return () => clearTimeout(timer);
-  }, [searchQuery]);
+  }, [searchQuery, searchParams, setSearchParams]);
 
   // Load branches and overview counters once
   useEffect(() => {
@@ -121,8 +134,9 @@ function AdminOrdersPage() {
       .getStaffBookings(params)
       .then((data) => {
         if (!active) return;
-        setBookings(data.items || []);
-        setTotal(data.total || 0);
+        const items = Array.isArray(data) ? data : data?.items || [];
+        setBookings(items);
+        setTotal(typeof data?.total === "number" ? data.total : items.length);
       })
       .catch((err) => {
         if (!active) return;
@@ -227,7 +241,6 @@ function AdminOrdersPage() {
 
   // Status Tab click
   const handleStatusTabClick = (statusVal) => {
-    setFilterOverdue(false);
     setPage(1);
     const next = new URLSearchParams(searchParams);
     if (statusVal === "ALL") {
@@ -235,24 +248,62 @@ function AdminOrdersPage() {
     } else {
       next.set("status", statusVal);
     }
+    next.delete("overdue");
     setSearchParams(next);
   };
 
   // Overdue Filter click
   const handleOverdueFilterClick = () => {
-    setFilterOverdue((prev) => !prev);
+    const nextVal = !filterOverdue;
     setPage(1);
     const next = new URLSearchParams(searchParams);
-    next.delete("status");
+    if (nextVal) {
+      next.set("overdue", "true");
+      next.delete("status");
+    } else {
+      next.delete("overdue");
+    }
+    setSearchParams(next);
+  };
+
+  // Branch filter change
+  const handleBranchChange = (branchVal) => {
+    setPage(1);
+    const next = new URLSearchParams(searchParams);
+    if (branchVal === "ALL") {
+      next.delete("branch");
+    } else {
+      next.set("branch", branchVal);
+    }
+    setSearchParams(next);
+  };
+
+  // Date filter change
+  const handleDateChange = (dateVal) => {
+    setPage(1);
+    const next = new URLSearchParams(searchParams);
+    if (!dateVal) {
+      next.delete("date");
+    } else {
+      next.set("date", dateVal);
+    }
+    setSearchParams(next);
+  };
+
+  // Clear search input
+  const handleClearSearch = () => {
+    setSearchQuery("");
+    setDebouncedSearch("");
+    setPage(1);
+    const next = new URLSearchParams(searchParams);
+    next.delete("q");
     setSearchParams(next);
   };
 
   // Reset filters
   const handleResetFilters = () => {
-    setSelectedBranch("ALL");
-    setFilterDate("");
-    setFilterOverdue(false);
     setSearchQuery("");
+    setDebouncedSearch("");
     setPage(1);
     setSearchParams({});
   };
@@ -485,7 +536,7 @@ function AdminOrdersPage() {
             <button
               type="button"
               className="admin-search-clear"
-              onClick={() => setSearchQuery("")}
+              onClick={handleClearSearch}
             >
               ✕
             </button>
@@ -497,10 +548,7 @@ function AdminOrdersPage() {
           <select
             className="admin-select-filter"
             value={selectedBranch}
-            onChange={(e) => {
-              setSelectedBranch(e.target.value);
-              setPage(1);
-            }}
+            onChange={(e) => handleBranchChange(e.target.value)}
             aria-label="Lọc theo chi nhánh"
           >
             <option value="ALL">Tất cả chi nhánh</option>
@@ -517,10 +565,7 @@ function AdminOrdersPage() {
               type="date"
               className="admin-select-filter"
               value={filterDate}
-              onChange={(e) => {
-                setFilterDate(e.target.value);
-                setPage(1);
-              }}
+              onChange={(e) => handleDateChange(e.target.value)}
               title="Lọc đơn theo ngày nhận hoặc ngày trả"
               aria-label="Lọc theo ngày nhận hoặc trả"
             />

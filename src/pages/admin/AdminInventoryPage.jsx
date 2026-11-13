@@ -576,41 +576,44 @@ function AdminInventoryPage() {
       )}
 
       {/* KPI METRIC CARDS */}
-      <div className="admin-quick-stats-row">
-        <div className="admin-quick-stat-card">
-          <span className="stat-label">Tổng thiết bị trong kho</span>
-          <strong className="stat-value">{stats.total}</strong>
-          <span className="stat-sub">Các mẫu máy & serial</span>
+      <div className="admin-kpi-grid">
+        <div className="admin-kpi-card">
+          <span className="admin-stat-label">Tổng thiết bị trong kho</span>
+          <strong className="admin-stat-value">{stats.total}</strong>
+          <span className="admin-stat-description">Các mẫu máy & serial</span>
         </div>
 
-        <div className="admin-quick-stat-card">
-          <span className="stat-label">Sẵn sàng cho thuê</span>
-          <strong className="stat-value text-success">{stats.available}</strong>
-          <span className="stat-sub">Hoạt động bình thường</span>
+        <div className="admin-kpi-card">
+          <span className="admin-stat-label">Sẵn sàng cho thuê</span>
+          <strong className="admin-stat-value text-success">{stats.available}</strong>
+          <span className="admin-stat-description">Hoạt động bình thường</span>
         </div>
 
-        <div className="admin-quick-stat-card">
-          <span className="stat-label">Đang bảo trì / khóa</span>
-          <strong className="stat-value text-warning">{stats.maintenance}</strong>
-          <span className="stat-sub">Chờ bảo dưỡng hoặc kiểm định</span>
+        <div className="admin-kpi-card">
+          <span className="admin-stat-label">Đang bảo trì / khóa</span>
+          <strong className="admin-stat-value text-warning">{stats.maintenance}</strong>
+          <span className="admin-stat-description">Chờ bảo dưỡng hoặc kiểm định</span>
         </div>
 
-        <div className="admin-quick-stat-card">
-          <span className="stat-label">Ngừng sử dụng</span>
-          <strong className="stat-value text-muted">{stats.retired}</strong>
-          <span className="stat-sub">Đã thanh lý hoặc hỏng</span>
+        <div className="admin-kpi-card">
+          <span className="admin-stat-label">Ngừng sử dụng</span>
+          <strong className="admin-stat-value text-muted">{stats.retired}</strong>
+          <span className="admin-stat-description">Đã thanh lý hoặc hỏng</span>
         </div>
       </div>
 
       {/* SEARCH & FILTERS TOOLBAR */}
       <div className="admin-filter-bar">
         <div className="admin-search-box">
-          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
-            <circle cx="11" cy="11" r="8"/>
-            <line x1="21" y1="21" x2="16.65" y2="16.65"/>
-          </svg>
+          <span className="search-icon" aria-hidden="true">
+            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+              <circle cx="11" cy="11" r="8"/>
+              <line x1="21" y1="21" x2="16.65" y2="16.65"/>
+            </svg>
+          </span>
           <input
             type="text"
+            className="admin-search-input"
             placeholder="Tìm theo số serial, tên mẫu máy ảnh..."
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
@@ -698,7 +701,7 @@ function AdminInventoryPage() {
 
           <button
             type="button"
-            className="button text-button compact"
+            className="button secondary-button compact admin-filter-reset-btn"
             onClick={handleResetFilters}
           >
             Đặt lại bộ lọc
@@ -745,7 +748,7 @@ function AdminInventoryPage() {
                 <th>Trạng thái</th>
                 <th>Ghi chú máy</th>
                 <th>Ngày nhập</th>
-                <th className="text-right">Thao tác</th>
+                <th className="text-right" style={{ minWidth: "220px" }}>Thao tác</th>
               </tr>
             </thead>
             <tbody>

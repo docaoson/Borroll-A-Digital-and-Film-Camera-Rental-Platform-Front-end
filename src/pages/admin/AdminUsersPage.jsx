@@ -502,12 +502,15 @@ function AdminUsersPage({ defaultRole = "ALL" }) {
       {/* SEARCH & FILTERS TOOLBAR */}
       <div className="admin-filter-bar">
         <div className="admin-search-box">
-          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
-            <circle cx="11" cy="11" r="8"/>
-            <line x1="21" y1="21" x2="16.65" y2="16.65"/>
-          </svg>
+          <span className="search-icon" aria-hidden="true">
+            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+              <circle cx="11" cy="11" r="8"/>
+              <line x1="21" y1="21" x2="16.65" y2="16.65"/>
+            </svg>
+          </span>
           <input
             type="text"
+            className="admin-search-input"
             placeholder="Tìm theo họ tên, email hoặc số điện thoại..."
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
@@ -556,7 +559,7 @@ function AdminUsersPage({ defaultRole = "ALL" }) {
 
           <button
             type="button"
-            className="button text-button compact"
+            className="button secondary-button compact admin-filter-reset-btn"
             onClick={handleResetFilters}
           >
             Đặt lại bộ lọc
@@ -601,7 +604,7 @@ function AdminUsersPage({ defaultRole = "ALL" }) {
                 <th>Phân quyền (Roles)</th>
                 <th>Trạng thái</th>
                 <th>Ngày đăng ký</th>
-                <th className="text-right">Thao tác</th>
+                <th className="text-right" style={{ minWidth: "180px" }}>Thao tác</th>
               </tr>
             </thead>
             <tbody>

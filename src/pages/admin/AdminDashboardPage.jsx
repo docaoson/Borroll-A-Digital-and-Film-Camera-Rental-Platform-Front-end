@@ -275,7 +275,7 @@ function AdminDashboardPage() {
             </span>
           </div>
           <div className="admin-stat-footer">
-            <Link to="/admin/orders" className="admin-stat-link">
+            <Link to="/admin/orders?status=PENDING" className="admin-stat-link">
               Xử lý đơn thuê →
             </Link>
           </div>
@@ -421,13 +421,13 @@ function AdminDashboardPage() {
             </span>
             <span className="admin-stat-desc">
               {isAdmin && totalUsers !== null
-                ? `Chi nhánh hoạt động · ${totalUsers} khách hàng`
+                ? `${branches.length} chi nhánh · ${totalUsers} tài khoản người dùng`
                 : "Chi nhánh tiếp nhận và lưu kho thiết bị"}
             </span>
           </div>
           <div className="admin-stat-footer">
-            <Link to="/admin/users?role=RENTER" className="admin-stat-link">
-              Xem khách thuê →
+            <Link to="/admin/branches" className="admin-stat-link">
+              Quản lý chi nhánh →
             </Link>
           </div>
         </div>
