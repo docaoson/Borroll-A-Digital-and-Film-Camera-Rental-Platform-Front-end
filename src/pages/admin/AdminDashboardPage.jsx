@@ -229,7 +229,11 @@ function AdminDashboardPage() {
       {dashboardData.overdue.length > 0 && (
         <div className="admin-critical-banner" role="status">
           <span className="critical-icon" aria-hidden="true">
-            ⚠️
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+              <path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/>
+              <line x1="12" y1="9" x2="12" y2="13"/>
+              <line x1="12" y1="17" x2="12.01" y2="17"/>
+            </svg>
           </span>
           <div className="critical-text">
             <strong>Cảnh báo vận hành:</strong> Có{" "}
@@ -256,7 +260,10 @@ function AdminDashboardPage() {
           <div className="admin-stat-head">
             <span className="admin-stat-title">Đơn chờ xác nhận</span>
             <span className="admin-stat-icon warning" aria-hidden="true">
-              ⏳
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                <circle cx="12" cy="12" r="10"/>
+                <polyline points="12 6 12 12 16 14"/>
+              </svg>
             </span>
           </div>
           <div className="admin-stat-body">
@@ -279,7 +286,10 @@ function AdminDashboardPage() {
           <div className="admin-stat-head">
             <span className="admin-stat-title">Nhận máy hôm nay</span>
             <span className="admin-stat-icon info" aria-hidden="true">
-              📦
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                <path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"/>
+                <polyline points="3.27 6.96 12 12.01 20.73 6.96"/>
+              </svg>
             </span>
           </div>
           <div className="admin-stat-body">
@@ -306,7 +316,10 @@ function AdminDashboardPage() {
           <div className="admin-stat-head">
             <span className="admin-stat-title">Trả máy hôm nay</span>
             <span className="admin-stat-icon success" aria-hidden="true">
-              ↩️
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                <polyline points="9 14 4 9 9 4"/>
+                <path d="M20 20v-7a4 4 0 0 0-4-4H4"/>
+              </svg>
             </span>
           </div>
           <div className="admin-stat-body">
@@ -338,7 +351,11 @@ function AdminDashboardPage() {
               className={`admin-stat-icon ${dashboardData.overdue.length > 0 ? "danger" : "neutral"}`}
               aria-hidden="true"
             >
-              ⚠️
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                <path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/>
+                <line x1="12" y1="9" x2="12" y2="13"/>
+                <line x1="12" y1="17" x2="12.01" y2="17"/>
+              </svg>
             </span>
           </div>
           <div className="admin-stat-body">
@@ -365,7 +382,10 @@ function AdminDashboardPage() {
           <div className="admin-stat-head">
             <span className="admin-stat-title">Mẫu máy trong catalog</span>
             <span className="admin-stat-icon primary" aria-hidden="true">
-              📷
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                <path d="M14.5 4h-5L7 7H4a2 2 0 0 0-2 2v9a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2V9a2 2 0 0 0-2-2h-3l-2.5-3z"/>
+                <circle cx="12" cy="13" r="3"/>
+              </svg>
             </span>
           </div>
           <div className="admin-stat-body">
@@ -377,8 +397,8 @@ function AdminDashboardPage() {
             </span>
           </div>
           <div className="admin-stat-footer">
-            <Link to="/admin/inventory" className="admin-stat-link">
-              Quản lý kho máy →
+            <Link to="/admin/products" className="admin-stat-link">
+              Quản lý mẫu máy →
             </Link>
           </div>
         </div>
@@ -388,7 +408,11 @@ function AdminDashboardPage() {
           <div className="admin-stat-head">
             <span className="admin-stat-title">Chi nhánh & Mạng lưới</span>
             <span className="admin-stat-icon purple" aria-hidden="true">
-              🏢
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                <path d="M3 21h18"/>
+                <path d="M5 21V7l8-4v18"/>
+                <path d="M19 21V11l-6-4"/>
+              </svg>
             </span>
           </div>
           <div className="admin-stat-body">
@@ -466,14 +490,17 @@ function AdminDashboardPage() {
           ) : currentTabItems.length === 0 ? (
             <div className="admin-table-empty">
               <span className="empty-icon" aria-hidden="true">
-                {activeTab === "overdue" ? "✨" : "📋"}
+                <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
+                  <path d="M16 4h2a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h2"/>
+                  <rect x="8" y="2" width="8" height="4" rx="1" ry="1"/>
+                </svg>
               </span>
               <h3>
                 {activeTab === "pickups"
                   ? "Không có lịch nhận máy nào trong ngày hôm nay"
                   : activeTab === "returns"
                     ? "Không có đơn thuê nào cần thu hồi trong ngày hôm nay"
-                    : "Tuyệt vời! Không có đơn thuê nào bị quá hạn trả máy"}
+                    : "Không có đơn thuê nào bị quá hạn trả máy"}
               </h3>
               <p>
                 {activeTab === "pickups"
@@ -569,17 +596,29 @@ function AdminDashboardPage() {
       <section className="admin-quick-actions-section">
         <h2 className="admin-subheading">Truy cập nhanh chức năng quản trị</h2>
         <div className="admin-quick-grid">
-          <Link to="/admin/inventory" className="admin-quick-card">
-            <div className="admin-quick-icon">📷</div>
+          <Link to="/admin/products" className="admin-quick-card">
+            <div className="admin-quick-icon">
+              <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
+                <path d="M14.5 4h-5L7 7H4a2 2 0 0 0-2 2v9a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2V9a2 2 0 0 0-2-2h-3l-2.5-3z"/>
+                <circle cx="12" cy="13" r="3"/>
+              </svg>
+            </div>
             <div className="admin-quick-text">
-              <strong>Kho máy ảnh & Serial</strong>
-              <span>Kiểm tra danh mục thiết bị, thông số kỹ thuật và số lượng sẵn sàng cho thuê.</span>
+              <strong>Mẫu máy ảnh & Catalog</strong>
+              <span>Quản lý danh mục thiết bị, thông số kỹ thuật, giá thuê và hình ảnh minh họa.</span>
             </div>
             <span className="admin-quick-arrow" aria-hidden="true">→</span>
           </Link>
 
           <Link to="/admin/calendar" className="admin-quick-card">
-            <div className="admin-quick-icon">📅</div>
+            <div className="admin-quick-icon">
+              <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
+                <rect x="3" y="4" width="18" height="18" rx="2" ry="2"/>
+                <line x1="16" y1="2" x2="16" y2="6"/>
+                <line x1="8" y1="2" x2="8" y2="6"/>
+                <line x1="3" y1="10" x2="21" y2="10"/>
+              </svg>
+            </div>
             <div className="admin-quick-text">
               <strong>Lịch thuê thiết bị</strong>
               <span>Biểu đồ thời gian trực quan lịch thuê từng máy tại các chi nhánh cửa hàng.</span>
@@ -588,7 +627,12 @@ function AdminDashboardPage() {
           </Link>
 
           <Link to="/admin/orders" className="admin-quick-card">
-            <div className="admin-quick-icon">📋</div>
+            <div className="admin-quick-icon">
+              <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
+                <path d="M16 4h2a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h2"/>
+                <rect x="8" y="2" width="8" height="4" rx="1" ry="1"/>
+              </svg>
+            </div>
             <div className="admin-quick-text">
               <strong>Quản lý đơn thuê</strong>
               <span>Tra cứu, lọc trạng thái, kiểm tra hợp đồng và lịch sử trạng thái của các đơn thuê.</span>
@@ -597,7 +641,14 @@ function AdminDashboardPage() {
           </Link>
 
           <Link to="/admin/customers" className="admin-quick-card">
-            <div className="admin-quick-icon">👥</div>
+            <div className="admin-quick-icon">
+              <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
+                <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/>
+                <circle cx="9" cy="7" r="4"/>
+                <path d="M23 21v-2a4 4 0 0 0-3-3.87"/>
+                <path d="M16 3.13a4 4 0 0 1 0 7.75"/>
+              </svg>
+            </div>
             <div className="admin-quick-text">
               <strong>Danh sách khách hàng</strong>
               <span>Thông tin tài khoản renter, lịch sử đơn đặt và các liên hệ hỗ trợ.</span>
@@ -617,31 +668,31 @@ function AdminDashboardPage() {
           </p>
         </div>
         <div className="admin-roadmap-phases">
-          <div className="roadmap-step is-active">
+          <div className="roadmap-step">
             <div className="step-num">Phase 7A</div>
             <div className="step-content">
-              <strong>Nền tảng & Dashboard (Hiện tại)</strong>
+              <strong>Nền tảng & Dashboard</strong>
               <span>Khởi tạo Portal quản trị, phân quyền RBAC đa vai trò và Bảng điều khiển vận hành thực tế.</span>
             </div>
-            <span className="step-status done">Đang hoạt động</span>
+            <span className="step-status done">Hoàn thành</span>
           </div>
 
           <div className="roadmap-step">
             <div className="step-num">Phase 7B</div>
             <div className="step-content">
               <strong>Catalog & Mẫu máy</strong>
-              <span>CRUD Danh mục thiết bị, Thương hiệu, Cấu hình thông số kỹ thuật và Quản lý ảnh presign.</span>
+              <span>CRUD Mẫu máy ảnh, Danh mục thiết bị, Thương hiệu, Cấu hình thông số kỹ thuật và Quản lý ảnh Storage.</span>
             </div>
-            <span className="step-status upcoming">Phân kỳ tiếp theo</span>
+            <span className="step-status done">Hoàn thành</span>
           </div>
 
-          <div className="roadmap-step">
+          <div className="roadmap-step is-active">
             <div className="step-num">Phase 7C</div>
             <div className="step-content">
-              <strong>Vận hành đơn thuê</strong>
-              <span>Xác nhận/từ chối đơn, Giao nhận máy, Biên bản ảnh lưu trữ S3/Supabase và Hóa đơn.</span>
+              <strong>Vận hành đơn thuê (Hiện tại)</strong>
+              <span>Xác nhận/từ chối đơn, Giao nhận máy, Biên bản ảnh lưu trữ S3/Supabase và Nghiệm thu hoàn cọc.</span>
             </div>
-            <span className="step-status upcoming">Phân kỳ tiếp theo</span>
+            <span className="step-status done">Đang hoạt động</span>
           </div>
 
           <div className="roadmap-step">

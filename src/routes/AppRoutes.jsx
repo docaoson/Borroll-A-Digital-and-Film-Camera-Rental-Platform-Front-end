@@ -25,9 +25,10 @@ import ProfilePage from "../pages/renter/ProfilePage";
 import FavoritesPage from "../pages/renter/FavoritesPage";
 
 import AdminDashboardPage from "../pages/admin/AdminDashboardPage";
-import AdminInventoryPage from "../pages/admin/AdminInventoryPage";
-import AddCameraPage from "../pages/admin/AddCameraPage";
-import EditCameraPage from "../pages/admin/EditCameraPage";
+import AdminProductsPage from "../pages/admin/AdminProductsPage";
+import AdminProductFormPage from "../pages/admin/AdminProductFormPage";
+import AdminCategoriesPage from "../pages/admin/AdminCategoriesPage";
+import AdminBrandsPage from "../pages/admin/AdminBrandsPage";
 import AdminCalendarPage from "../pages/admin/AdminCalendarPage";
 import AdminOrdersPage from "../pages/admin/AdminOrdersPage";
 import AdminOrderDetailPage from "../pages/admin/AdminOrderDetailPage";
@@ -129,9 +130,14 @@ function AppRoutes() {
         }
       >
         <Route index element={<AdminDashboardPage />} />
-        <Route path="inventory" element={<AdminInventoryPage />} />
-        <Route path="inventory/new" element={<AddCameraPage />} />
-        <Route path="inventory/:id/edit" element={<EditCameraPage />} />
+        <Route path="products" element={<AdminProductsPage />} />
+        <Route path="products/new" element={<AdminProductFormPage />} />
+        <Route path="products/:id/edit" element={<AdminProductFormPage />} />
+        <Route path="categories" element={<AdminCategoriesPage />} />
+        <Route path="brands" element={<AdminBrandsPage />} />
+        <Route path="inventory" element={<AdminProductsPage />} />
+        <Route path="inventory/new" element={<AdminProductFormPage />} />
+        <Route path="inventory/:id/edit" element={<AdminProductFormPage />} />
         <Route path="calendar" element={<AdminCalendarPage />} />
         <Route path="orders" element={<AdminOrdersPage />} />
         <Route path="orders/:id" element={<AdminOrderDetailPage />} />
