@@ -1,16 +1,33 @@
 :root {
   --borroll-font-sans:
     "Be Vietnam Pro", "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
-  --borroll-cream: #f7f0e8;
-  --borroll-ivory: #fffaf4;
-  --borroll-charcoal: #2f2927;
-  --borroll-terra: #b86c4d;
-  --borroll-terra-soft: #d79a7d;
-  --borroll-line: rgba(47, 41, 39, 0.12);
-  --borroll-panel: #fffdfb;
-  --borroll-shadow: rgba(47, 41, 39, 0.08);
-  --borroll-success: #4d7a5b;
-  --borroll-warning: #c58c47;
+
+  /* ==========================================================================
+     HIGH-CONTRAST SEMANTIC DESIGN TOKENS (LIGHT MODE DEFAULT - WCAG AA/AAA)
+     ========================================================================== */
+  --bg-page: #ede3d7;
+  --surface: #ffffff;
+  --surface-2: #f4ebe0;
+  --border: #7a6d65;
+  --text: #221d1b;
+  --text-muted: #544944;
+  --accent: #96462a;
+  --accent-soft: #f5dfd4;
+  --danger: #b3261e;
+  --shadow: 0 4px 14px rgba(34, 29, 27, 0.08);
+
+  /* Legacy alias mappings so all components automatically inherit high-contrast tokens */
+  --borroll-cream: var(--bg-page);
+  --borroll-ivory: var(--surface-2);
+  --borroll-charcoal: var(--text);
+  --borroll-terra: var(--accent);
+  --borroll-terra-dark: #78361f;
+  --borroll-terra-soft: #c77b5c;
+  --borroll-line: var(--border);
+  --borroll-panel: var(--surface);
+  --borroll-shadow: rgba(34, 29, 27, 0.1);
+  --borroll-success: #1b5e20;
+  --borroll-warning: #8f4e00;
 
   /* Typography Scale & Metrics Tokens for Vietnamese readability */
   --borroll-lh-tight: 1.25;
@@ -19,6 +36,35 @@
   --borroll-ls-heading: -0.01em;
   --borroll-ls-body: normal;
   --borroll-ls-caps: 0.06em;
+}
+
+/* ==========================================================================
+   DARK MODE SEMANTIC DESIGN TOKENS ([data-theme="dark"], .dark)
+   ========================================================================== */
+[data-theme="dark"],
+.dark {
+  --bg-page: #141110;
+  --surface: #1f1b19;
+  --surface-2: #2b2522;
+  --border: #8a7c73;
+  --text: #f5efe9;
+  --text-muted: #c4b7ae;
+  --accent: #9e4b2e;
+  --accent-soft: #3a231b;
+  --danger: #d93829;
+  --shadow: 0 6px 20px rgba(0, 0, 0, 0.48);
+
+  --borroll-cream: var(--bg-page);
+  --borroll-ivory: var(--surface-2);
+  --borroll-charcoal: var(--text);
+  --borroll-terra: var(--accent);
+  --borroll-terra-dark: #b85c3b;
+  --borroll-terra-soft: #e68d6c;
+  --borroll-line: var(--border);
+  --borroll-panel: var(--surface);
+  --borroll-shadow: rgba(0, 0, 0, 0.48);
+  --borroll-success: #81c784;
+  --borroll-warning: #ffb74d;
 }
 
 * {
@@ -11282,3 +11328,947 @@ select {
   margin-bottom: 1rem;
   padding: 0.75rem 1rem;
 }
+
+/* ==========================================================================
+   WCAG HIGH-CONTRAST & UI CLARITY SYSTEM (CUSTOMER + ADMIN, LIGHT + DARK)
+   ========================================================================== */
+
+/* 1. Page Background, Card Surfaces (1px border + subtle shadow), and Header */
+body,
+.home-page,
+.admin-app-shell,
+.admin-main-viewport {
+  background-color: var(--bg-page) !important;
+  color: var(--text) !important;
+}
+
+.site-header,
+.admin-topbar {
+  background: var(--surface) !important;
+  border-bottom: 1px solid var(--border) !important;
+  box-shadow: 0 2px 10px rgba(34, 29, 27, 0.08) !important;
+}
+
+/* Cards & Panels: 1px solid border + subtle shadow, lighter than --bg-page */
+.camera-card,
+.category-card,
+.category-tile,
+.home-highlights-strip,
+.home-hero-banner,
+.home-promo-banner,
+.filters-sidebar,
+.filters-panel,
+.auth-card,
+.checkout-card,
+.profile-card,
+.order-card,
+.order-detail-card,
+.order-side-card,
+.orders-toolbar,
+.orders-empty-card,
+.orders-error-state,
+.empty-state,
+.cart-section-box,
+.cart-summary-card,
+.success-banner-card,
+.fav-card,
+.favorites-empty-card,
+.favorites-error-card,
+.support-faq-item,
+.support-branch-card,
+.support-contact-banner,
+.about-hero-card,
+.admin-page-header,
+.admin-stat-card,
+.admin-kpi-card,
+.admin-quick-stat-card,
+.admin-workflow-section,
+.admin-filter-toolbar,
+.admin-filter-bar,
+.admin-table-container,
+.admin-quick-card,
+.admin-roadmap-card,
+.admin-form-card,
+.admin-detail-card,
+.admin-calendar-controls-bar,
+.admin-calendar-container,
+.admin-day-summary-card,
+.admin-sidebar-panel,
+.renter-sidebar,
+.page-placeholder {
+  background-color: var(--surface) !important;
+  border: 1px solid var(--border) !important;
+  box-shadow: var(--shadow) !important;
+}
+
+/* Secondary surface blocks */
+.cart-item-card,
+.addon-product-card,
+.order-stat,
+.order-item-chip,
+.order-detail-item-row,
+.order-addon-row,
+.handover-record-item,
+.order-payment-item,
+.profile-stat-item,
+.shortcut-link,
+.summary-policy-box,
+.policy-notice-box,
+.next-steps-list li,
+.admin-user-capsule,
+.admin-branch-filter-group,
+.admin-form-block,
+.admin-handover-record,
+.admin-payment-item,
+.admin-drawer-grid,
+.role-breakdown-card {
+  background-color: var(--surface-2) !important;
+  border: 1px solid var(--border) !important;
+}
+
+/* 2. Typography Contrast (>= 4.5:1 for normal text) & Controls/Borders/Icons (>= 3:1) */
+h1, h2, h3, h4, h5, h6,
+strong, th, label {
+  color: var(--text);
+}
+
+.brand small,
+.hero-text,
+.hero-meta span,
+.highlight-strip-text p,
+.promo-banner-copy p,
+.card-body p,
+.camera-body p,
+.camera-description,
+.camera-meta,
+.camera-meta-tags,
+.price-label,
+.camera-price small,
+.camera-deposit-hint,
+.collection-intro,
+.collection-result-count,
+.results-count,
+.empty-state p,
+.detail-breadcrumb,
+.detail-image-caption,
+.calendar-legend,
+.calendar-click-hint,
+.account-status-text,
+.auth-subtitle,
+.profile-email,
+.auth-footer-text,
+.avatar-hint,
+.field-note,
+.field-hint,
+.kyc-desc,
+.stat-label,
+.order-breadcrumb,
+.orders-subheading,
+.orders-count-bar,
+.order-created-time,
+.order-item-meta,
+.order-no-items,
+.order-addons-names,
+.order-stat span,
+.order-stat-sub,
+.order-status-tip,
+.order-created-inline,
+.stepper-time,
+.stepper-note,
+.order-detail-item-meta,
+.item-price-label,
+.order-empty-items,
+.addon-meta,
+.handover-time,
+.handover-empty-notice p,
+.payment-meta,
+.order-summary-row span,
+.order-deposit-note,
+.total-sub,
+.pickup-payment-tip,
+.info-label,
+.info-sub,
+.cancel-card-desc,
+.error-card p,
+.cart-header-desc,
+.checkout-header-desc,
+.section-box-subtitle,
+.cart-item-meta-row,
+.cart-item-pricing-row,
+.line-label,
+.addon-specs,
+.addon-price small,
+.summary-branch-badge p,
+.summary-date-label,
+.deposit-note,
+.summary-policy-box p,
+.section-instruction,
+.handover-branch-box p,
+.policy-notice-box li,
+.preview-label,
+.checkout-item-rate,
+.checkout-reassurance-note,
+.success-instructions-lead,
+.summary-row span,
+.note-text,
+.favorites-subheading,
+.favorites-count-bar,
+.fav-meta-row,
+.fav-price-label,
+.fav-deposit-label,
+.support-subheading,
+.support-faq-topbar,
+.faq-answer-body,
+.section-sub-compact,
+.branch-detail-item strong,
+.contact-banner-text p,
+.contact-banner-note,
+.admin-sidebar-sub,
+.admin-nav-group-title,
+.admin-sync-tag,
+.admin-dialog-body,
+.admin-dialog-note,
+.admin-breadcrumb,
+.admin-heading-sub,
+.admin-field-label,
+.admin-updated-time,
+.admin-stat-title,
+.admin-stat-desc,
+.admin-table-empty p,
+.admin-quick-text span,
+.admin-roadmap-head p,
+.step-content span,
+.admin-quick-stat-pill span,
+.admin-kpi-card .admin-stat-label,
+.admin-kpi-card .stat-label,
+.admin-quick-stat-card .admin-stat-label,
+.admin-quick-stat-card .stat-label,
+.admin-kpi-card .admin-stat-description,
+.admin-kpi-card .stat-sub,
+.admin-quick-stat-card .admin-stat-description,
+.admin-quick-stat-card .stat-sub,
+.admin-select-wrapper label,
+.admin-product-slug,
+.admin-pagination-info,
+.admin-card-header p,
+.upload-sub,
+.admin-empty-images,
+.image-kind-tag,
+.admin-info-content p,
+.admin-addon-tag,
+.schedule-label,
+.step-body span,
+.admin-empty-handovers,
+.admin-condition-box p,
+.admin-info-row .info-label,
+.admin-note-text,
+.finance-line,
+.payment-sub,
+.payment-note,
+.admin-calendar-legend,
+.summary-card-header p,
+.admin-unit-notes,
+.text-muted-italic,
+.branch-slug-tag,
+.admin-address-text,
+.admin-hours-text,
+.drawer-sub,
+.section-desc,
+.drawer-grid-item .label,
+.drawer-grid-item .value-desc,
+.admin-blocks-empty,
+.user-id-text,
+.user-phone,
+.user-id-sub,
+.role-choice-desc,
+.kind-tab-text span,
+.hint-text {
+  color: var(--text-muted) !important;
+}
+
+/* Inputs, Selects, Textareas, Checkboxes & Icons (>= 3:1 contrast against surface) */
+input:not([type="checkbox"]):not([type="radio"]):not([type="file"]),
+select,
+textarea,
+.form-field input,
+.form-field select,
+.admin-field-group input[type="text"],
+.admin-field-group input[type="number"],
+.admin-field-group select,
+.admin-field-group textarea,
+.admin-search-input,
+.admin-search-box > input,
+.admin-select-filter,
+.admin-date-filter-wrap input[type="date"],
+.admin-form-control,
+.orders-search-input,
+.support-search-input,
+.date-input-box {
+  background-color: var(--surface) !important;
+  color: var(--text) !important;
+  border: 1.5px solid var(--border) !important;
+}
+
+input::placeholder,
+textarea::placeholder {
+  color: var(--text-muted) !important;
+  opacity: 0.9;
+}
+
+input[type="checkbox"],
+input[type="radio"] {
+  appearance: auto;
+  width: 18px;
+  height: 18px;
+  accent-color: var(--accent) !important;
+  border: 1.5px solid var(--border) !important;
+  cursor: pointer;
+}
+
+.admin-search-box .search-icon,
+.admin-search-box > svg,
+.orders-search-input-wrap .search-icon,
+.support-search-icon,
+.admin-link-icon,
+.date-picker-btn,
+.admin-quick-arrow {
+  color: var(--text-muted) !important;
+  opacity: 1 !important;
+}
+
+/* 3. Button Hierarchy (Primary / Secondary / Tertiary / Danger) & Solid Status Badges */
+
+/* Primary Button: Deep Terracotta (--accent: #96462a) with white text (5.78:1 >= 4.5:1) */
+.primary-button,
+.button.primary-button,
+.account-link.primary,
+.header-mobile-drawer .account-link.primary,
+.brand-mark,
+.floating-contact {
+  background-color: var(--accent) !important;
+  color: #ffffff !important;
+  border: 1.5px solid var(--accent) !important;
+  font-weight: 700 !important;
+  box-shadow: 0 4px 12px rgba(150, 70, 42, 0.24) !important;
+}
+
+.primary-button:hover:not(:disabled),
+.button.primary-button:hover:not(:disabled),
+.account-link.primary:hover,
+.header-mobile-drawer .account-link.primary:hover,
+.floating-contact:hover {
+  background-color: var(--borroll-terra-dark) !important;
+  border-color: var(--borroll-terra-dark) !important;
+  color: #ffffff !important;
+}
+
+/* Secondary Button: Surface background + 1.5px high-contrast border + dark text */
+.secondary-button,
+.button.secondary-button,
+.admin-table-actions .button.secondary-button,
+.admin-topbar-btn,
+.cal-nav-btn,
+.pagination-btn,
+.pagination-num-btn:not(.active),
+.pagination-page-btn:not(.active),
+.mobile-menu-toggle,
+.admin-sidebar-toggle {
+  background-color: var(--surface) !important;
+  color: var(--text) !important;
+  border: 1.5px solid var(--border) !important;
+  font-weight: 600 !important;
+  box-shadow: none !important;
+}
+
+.secondary-button:hover:not(:disabled),
+.button.secondary-button:hover:not(:disabled),
+.admin-table-actions .button.secondary-button:hover:not(:disabled),
+.admin-topbar-btn.public-link:hover,
+.cal-nav-btn:hover:not(:disabled),
+.pagination-btn:hover:not(:disabled),
+.pagination-num-btn:hover:not(.active),
+.pagination-page-btn:hover:not(.active) {
+  background-color: var(--accent-soft) !important;
+  border-color: var(--accent) !important;
+  color: var(--accent) !important;
+}
+
+/* Tertiary Button: Subtle accent-soft or ghost style */
+.text-button,
+.button.text-button,
+.admin-table-actions .button.text-button,
+.ghost-button,
+.faq-text-btn,
+.clear-all-chips-btn,
+.admin-btn-set-primary {
+  background-color: var(--accent-soft) !important;
+  color: var(--accent) !important;
+  border: 1px solid var(--accent) !important;
+  font-weight: 700 !important;
+}
+
+.text-button:hover:not(:disabled),
+.button.text-button:hover:not(:disabled),
+.admin-table-actions .button.text-button:hover:not(:disabled) {
+  background-color: var(--accent) !important;
+  color: #ffffff !important;
+}
+
+/* Danger / Delete Buttons: High-contrast --danger (#b3261e, 6.48:1 with white) */
+.button.danger,
+.danger-button {
+  background-color: var(--danger) !important;
+  color: #ffffff !important;
+  border: 1.5px solid var(--danger) !important;
+  font-weight: 700 !important;
+}
+
+.button.danger:hover:not(:disabled),
+.danger-button:hover:not(:disabled) {
+  background-color: #8c1d18 !important;
+  border-color: #8c1d18 !important;
+  color: #ffffff !important;
+}
+
+.danger-text-button,
+.admin-table-actions .button.danger-text-button,
+.button.secondary-button.danger,
+.button-link-danger,
+.admin-delete-img-btn,
+.admin-remove-btn,
+.admin-topbar-btn.logout-btn:hover {
+  background-color: #fde8e7 !important;
+  color: var(--danger) !important;
+  border: 1.5px solid #d97772 !important;
+  font-weight: 700 !important;
+}
+
+.danger-text-button:hover:not(:disabled),
+.admin-table-actions .button.danger-text-button:hover:not(:disabled),
+.button.secondary-button.danger:hover:not(:disabled),
+.button-link-danger:hover:not(:disabled) {
+  background-color: var(--danger) !important;
+  border-color: var(--danger) !important;
+  color: #ffffff !important;
+}
+
+/* Status Badges (Hoạt động, Tạm ẩn, Sẵn sàng thuê, Đang cập nhật kho, v.v.):
+   Solid opaque background + bold high-contrast text + matching-tone border */
+.status-badge,
+.admin-status-chip,
+.admin-units-pill,
+.admin-pill-badge,
+.kyc-status-badge,
+.booking-status-pill,
+.branch-badge,
+.admin-status-indicator,
+.current-user-tag,
+.id-check-badge,
+.step-status {
+  font-weight: 700 !important;
+  border-width: 1.5px !important;
+  border-style: solid !important;
+}
+
+/* Active / Available / Ready to rent ("Hoạt động", "Sẵn sàng thuê") */
+.status-badge.success,
+.admin-status-chip.active,
+.admin-units-pill.has-units,
+.unit-status-available,
+.unit-cond-excellent,
+.kyc-status-badge,
+.branch-badge,
+.admin-status-indicator,
+.current-user-tag,
+.id-check-badge.checked,
+.step-status.done {
+  background-color: #dff2e3 !important;
+  color: #145218 !important;
+  border-color: #5a9e62 !important;
+}
+
+/* Inactive / Hidden / Danger ("Tạm ẩn", "Đã hủy", "Quá hạn") */
+.status-badge.danger,
+.admin-status-chip.inactive,
+.calendar-event-pill.is-overdue,
+.tab-badge.danger {
+  background-color: #fce4e2 !important;
+  color: #961b14 !important;
+  border-color: #d46b64 !important;
+}
+
+/* Neutral / Updating stock ("Đang cập nhật kho", "Đã ngưng") */
+.status-badge.neutral,
+.admin-units-pill.no-units,
+.unit-status-retired,
+.id-check-badge.pending,
+.step-status.upcoming {
+  background-color: #e6ded8 !important;
+  color: #2f2825 !important;
+  border-color: #8c7f77 !important;
+}
+
+/* Warning / Maintenance ("Chờ xác nhận", "Bảo trì") */
+.status-badge.warning,
+.unit-status-maintenance,
+.unit-cond-fair,
+.booking-status-pill.pending,
+.tab-badge.warning {
+  background-color: #fdedd6 !important;
+  color: #6e3a00 !important;
+  border-color: #c98a3b !important;
+}
+
+/* Info ("Đang thuê", "Đã xác nhận") */
+.status-badge.info,
+.unit-cond-good,
+.admin-handover-badge.pickup,
+.calendar-event-pill.pickup {
+  background-color: #ddeefb !important;
+  color: #0b4a78 !important;
+  border-color: #64a3d4 !important;
+}
+
+/* Dark Mode Status Badge & Modal Adaptation */
+[data-theme="dark"] .status-badge.success,
+.dark .status-badge.success,
+[data-theme="dark"] .admin-status-chip.active,
+.dark .admin-status-chip.active,
+[data-theme="dark"] .admin-units-pill.has-units,
+.dark .admin-units-pill.has-units,
+[data-theme="dark"] .unit-status-available,
+.dark .unit-status-available,
+[data-theme="dark"] .unit-cond-excellent,
+.dark .unit-cond-excellent,
+[data-theme="dark"] .kyc-status-badge,
+.dark .kyc-status-badge,
+[data-theme="dark"] .branch-badge,
+.dark .branch-badge,
+[data-theme="dark"] .admin-status-indicator,
+.dark .admin-status-indicator,
+[data-theme="dark"] .current-user-tag,
+.dark .current-user-tag,
+[data-theme="dark"] .id-check-badge.checked,
+.dark .id-check-badge.checked,
+[data-theme="dark"] .step-status.done,
+.dark .step-status.done {
+  background-color: #16361c !important;
+  color: #9be7a6 !important;
+  border-color: #387a43 !important;
+}
+
+[data-theme="dark"] .status-badge.danger,
+.dark .status-badge.danger,
+[data-theme="dark"] .admin-status-chip.inactive,
+.dark .admin-status-chip.inactive,
+[data-theme="dark"] .calendar-event-pill.is-overdue,
+.dark .calendar-event-pill.is-overdue,
+[data-theme="dark"] .tab-badge.danger,
+.dark .tab-badge.danger {
+  background-color: #3d1816 !important;
+  color: #ffb4ab !important;
+  border-color: #8c332d !important;
+}
+
+[data-theme="dark"] .status-badge.neutral,
+.dark .status-badge.neutral,
+[data-theme="dark"] .admin-units-pill.no-units,
+.dark .admin-units-pill.no-units,
+[data-theme="dark"] .unit-status-retired,
+.dark .unit-status-retired,
+[data-theme="dark"] .id-check-badge.pending,
+.dark .id-check-badge.pending,
+[data-theme="dark"] .step-status.upcoming,
+.dark .step-status.upcoming {
+  background-color: #2e2724 !important;
+  color: #e6dcd5 !important;
+  border-color: #70635b !important;
+}
+
+[data-theme="dark"] .status-badge.warning,
+.dark .status-badge.warning,
+[data-theme="dark"] .unit-status-maintenance,
+.dark .unit-status-maintenance,
+[data-theme="dark"] .unit-cond-fair,
+.dark .unit-cond-fair,
+[data-theme="dark"] .booking-status-pill.pending,
+.dark .booking-status-pill.pending,
+[data-theme="dark"] .tab-badge.warning,
+.dark .tab-badge.warning {
+  background-color: #3b260c !important;
+  color: #ffcf91 !important;
+  border-color: #8f5c1e !important;
+}
+
+[data-theme="dark"] .status-badge.info,
+.dark .status-badge.info,
+[data-theme="dark"] .unit-cond-good,
+.dark .unit-cond-good,
+[data-theme="dark"] .admin-handover-badge.pickup,
+.dark .admin-handover-badge.pickup,
+[data-theme="dark"] .calendar-event-pill.pickup,
+.dark .calendar-event-pill.pickup {
+  background-color: #122d42 !important;
+  color: #9cd2ff !important;
+  border-color: #366d96 !important;
+}
+
+[data-theme="dark"] .admin-modal-box,
+.dark .admin-modal-box,
+[data-theme="dark"] .admin-modal-head,
+.dark .admin-modal-head,
+[data-theme="dark"] .admin-modal-form,
+.dark .admin-modal-form,
+[data-theme="dark"] .borroll-modal-dialog,
+.dark .borroll-modal-dialog {
+  background-color: var(--surface) !important;
+  color: var(--text) !important;
+  border-color: var(--border) !important;
+}
+
+/* 4. Active Navigation Items (Menu, Admin Sidebar, Tabs) + Clear :focus-visible */
+.site-header .main-nav .nav-link.active,
+.header-mobile-drawer .nav-link.active,
+.admin-link.active,
+.renter-nav a.active,
+.admin-tab-btn.active,
+.admin-order-tab-btn.active {
+  background-color: var(--accent-soft) !important;
+  color: var(--accent) !important;
+  font-weight: 700 !important;
+  border-color: rgba(150, 70, 42, 0.35) !important;
+  box-shadow: inset 4px 0 0 var(--accent) !important;
+}
+
+.site-header .main-nav .nav-link.active {
+  border-radius: 10px !important;
+}
+
+/* Global Keyboard Accessibility Focus Ring (:focus-visible) */
+a:focus-visible,
+button:focus-visible,
+input:focus-visible,
+select:focus-visible,
+textarea:focus-visible,
+[role="button"]:focus-visible,
+[tabindex]:focus-visible,
+.clickable-card:focus-visible {
+  outline: 3px solid var(--accent) !important;
+  outline-offset: 2px !important;
+  box-shadow: 0 0 0 4px var(--accent-soft) !important;
+}
+
+/* 5. Admin Tables: Header --surface-2, Alternating Rows, Crisp Grid Borders */
+.admin-table {
+  border-collapse: collapse !important;
+  border: 1px solid var(--border) !important;
+}
+
+.admin-table th,
+.admin-mini-table th {
+  background-color: var(--surface-2) !important;
+  color: var(--text) !important;
+  font-weight: 800 !important;
+  border-bottom: 2px solid var(--border) !important;
+  border-right: 1px solid rgba(122, 109, 101, 0.35) !important;
+}
+
+.admin-table td,
+.admin-mini-table td {
+  border-bottom: 1px solid var(--border) !important;
+  border-right: 1px solid rgba(122, 109, 101, 0.25) !important;
+  color: var(--text) !important;
+}
+
+.admin-table th:last-child,
+.admin-table td:last-child,
+.admin-mini-table th:last-child,
+.admin-mini-table td:last-child {
+  border-right: none !important;
+}
+
+.admin-table tbody tr:nth-child(even) {
+  background-color: var(--surface-2) !important;
+}
+
+.admin-table tbody tr:nth-child(odd) {
+  background-color: var(--surface) !important;
+}
+
+.admin-table tbody tr:hover {
+  background-color: var(--accent-soft) !important;
+}
+
+/* 6. "Thiết bị" Page (CameraListPage): Unified Toolbar + Sticky Aligned Filter Sidebar */
+.page-main:has(.collection-page) {
+  padding-top: 0 !important;
+}
+
+.collection-page {
+  padding: 1rem 0 4rem !important;
+}
+
+.collection-layout {
+  display: grid !important;
+  grid-template-columns: 270px minmax(0, 1fr) !important;
+  align-items: start !important;
+  gap: 1.5rem !important;
+  margin-top: 0 !important;
+}
+
+.filters-sidebar {
+  position: sticky !important;
+  top: calc(84px + 1rem) !important;
+  margin-top: 0 !important;
+  align-self: start !important;
+  max-height: calc(100vh - 108px);
+  overflow-y: auto;
+}
+
+.collection-main {
+  margin-top: 0 !important;
+}
+
+.collection-toolbar {
+  display: flex !important;
+  align-items: center !important;
+  justify-content: space-between !important;
+  gap: 0.85rem !important;
+  flex-wrap: wrap !important;
+  margin: 0 0 1.5rem 0 !important;
+  padding: 0.85rem 1.15rem !important;
+  background-color: var(--surface-2) !important;
+  border: 1px solid var(--border) !important;
+  border-radius: 16px !important;
+  box-shadow: var(--shadow) !important;
+}
+
+.collection-toolbar-title {
+  display: flex;
+  flex-direction: column;
+  gap: 0.1rem;
+  flex-shrink: 0;
+}
+
+.collection-toolbar-title h1 {
+  font-size: 1.45rem !important;
+  line-height: 1.2 !important;
+  margin: 0 !important;
+  white-space: nowrap;
+}
+
+.collection-result-count {
+  font-size: 0.8rem !important;
+  margin: 0 !important;
+  white-space: nowrap;
+}
+
+.collection-toolbar-controls {
+  display: flex !important;
+  align-items: center !important;
+  gap: 0.65rem !important;
+  flex-wrap: wrap !important;
+  flex: 1 1 auto;
+  justify-content: flex-end;
+}
+
+.toolbar-search {
+  flex: 1 1 190px;
+  max-width: 260px;
+  min-width: 160px;
+}
+
+.toolbar-search input {
+  width: 100% !important;
+  min-width: 0 !important;
+  min-height: 38px !important;
+  height: 38px !important;
+  padding: 0.4rem 0.75rem !important;
+  font-size: 0.86rem !important;
+  border-radius: 10px !important;
+  background-color: var(--surface) !important;
+  border: 1.5px solid var(--border) !important;
+}
+
+/* Sort Chips inside Unified Toolbar */
+.toolbar-sort-chips {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+  flex-wrap: nowrap;
+  flex-shrink: 0;
+}
+
+.sort-chip {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 36px;
+  padding: 0.35rem 0.7rem;
+  border-radius: 999px;
+  border: 1.5px solid var(--border);
+  background-color: var(--surface);
+  color: var(--text);
+  font-size: 0.8rem;
+  font-weight: 600;
+  white-space: nowrap;
+  cursor: pointer;
+  transition: all 0.15s ease;
+}
+
+.sort-chip:hover:not(.active) {
+  background-color: var(--accent-soft);
+  border-color: var(--accent);
+  color: var(--accent);
+}
+
+.sort-chip.active {
+  background-color: var(--accent) !important;
+  border-color: var(--accent) !important;
+  color: #ffffff !important;
+  font-weight: 700;
+  box-shadow: 0 2px 6px rgba(150, 70, 42, 0.25);
+}
+
+/* Compact Pagination (1/4 ‹ ›) inside Unified Toolbar */
+.toolbar-pagination {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+  padding-left: 0.5rem;
+  border-left: 1px solid var(--border);
+  flex-shrink: 0;
+}
+
+.toolbar-page-counter {
+  font-size: 0.84rem;
+  font-weight: 600;
+  color: var(--text-muted);
+  white-space: nowrap;
+}
+
+.toolbar-page-counter strong {
+  color: var(--text);
+  font-weight: 800;
+}
+
+.toolbar-page-arrows {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.25rem;
+}
+
+.toolbar-page-btn {
+  width: 32px;
+  height: 32px;
+  min-height: 32px;
+  padding: 0;
+  border-radius: 8px;
+  border: 1.5px solid var(--border);
+  background-color: var(--surface);
+  color: var(--text);
+  font-size: 1.1rem;
+  font-weight: 700;
+  line-height: 1;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: all 0.15s ease;
+}
+
+.toolbar-page-btn:hover:not(:disabled) {
+  background-color: var(--accent);
+  border-color: var(--accent);
+  color: #ffffff;
+}
+
+.toolbar-page-btn:disabled {
+  opacity: 0.4;
+  cursor: not-allowed;
+}
+
+@media (max-width: 980px) {
+  .collection-layout {
+    grid-template-columns: 1fr !important;
+  }
+
+  .filters-sidebar {
+    position: static !important;
+    max-height: none !important;
+  }
+}
+
+/* On mobile, toolbar does not wrap and scrolls horizontally */
+@media (max-width: 768px) {
+  .collection-toolbar {
+    flex-wrap: nowrap !important;
+    overflow-x: auto !important;
+    -webkit-overflow-scrolling: touch !important;
+    justify-content: flex-start !important;
+    gap: 0.6rem !important;
+    padding: 0.65rem 0.85rem !important;
+  }
+
+  .collection-toolbar-controls {
+    flex-wrap: nowrap !important;
+    width: auto !important;
+    flex: 0 0 auto !important;
+    gap: 0.5rem !important;
+  }
+
+  .toolbar-search {
+    flex: 0 0 165px !important;
+    width: 165px !important;
+    min-width: 165px !important;
+  }
+
+  .toolbar-search input {
+    width: 100% !important;
+  }
+}
+
+/* 7. Fix Category Tiles Word-Breaking (COMPACT, RANGEFINDER, MIRRORLESS) */
+.category-tile,
+.category-tile-icon,
+.category-tile-icon span,
+.category-tile-name {
+  word-break: normal !important;
+  overflow-wrap: normal !important;
+  hyphens: none !important;
+  white-space: nowrap !important;
+}
+
+.category-tile {
+  min-width: 112px !important;
+  padding: 0.9rem 0.75rem !important;
+}
+
+.category-tile-icon {
+  width: auto !important;
+  min-width: 3.4rem !important;
+  height: 2.6rem !important;
+  padding: 0 0.65rem !important;
+  border-radius: 12px !important;
+  background-color: var(--accent-soft) !important;
+  color: var(--accent) !important;
+  border: 1px solid rgba(150, 70, 42, 0.3) !important;
+  font-size: 0.72rem !important;
+  font-weight: 800 !important;
+  letter-spacing: 0.03em !important;
+}
+
+@media (max-width: 768px) {
+  .category-tile {
+    min-width: 98px !important;
+    padding: 0.7rem 0.6rem !important;
+  }
+
+  .category-tile-icon {
+    min-width: 2.6rem !important;
+    height: 2.2rem !important;
+    padding: 0 0.5rem !important;
+    font-size: 0.66rem !important;
+  }
+}
+

@@ -492,21 +492,68 @@ function CameraListPage() {
                   />
                 </div>
 
-                <div className="toolbar-sort">
-                  <label htmlFor="sort-by">Sắp xếp</label>
-                  <select
-                    id="sort-by"
-                    value={sortBy}
-                    onChange={(e) => {
-                      setSortBy(e.target.value);
-                      setCurrentPage(1);
-                    }}
-                  >
-                    <option value="default">Mặc định</option>
-                    <option value="price_asc">Giá thấp đến cao</option>
-                    <option value="price_desc">Giá cao đến thấp</option>
-                    <option value="newest">Mới nhất</option>
-                  </select>
+                <div
+                  className="toolbar-sort-chips"
+                  role="group"
+                  aria-label="Sắp xếp thiết bị"
+                >
+                  {[
+                    { value: "default", label: "Mặc định" },
+                    { value: "price_asc", label: "Giá thấp → cao" },
+                    { value: "price_desc", label: "Giá cao → thấp" },
+                    { value: "newest", label: "Mới nhất" },
+                  ].map((option) => {
+                    const isActive = sortBy === option.value;
+                    return (
+                      <button
+                        key={option.value}
+                        type="button"
+                        className={`sort-chip ${isActive ? "active" : ""}`}
+                        aria-pressed={isActive}
+                        onClick={() => {
+                          setSortBy(option.value);
+                          setCurrentPage(1);
+                        }}
+                      >
+                        {option.label}
+                      </button>
+                    );
+                  })}
+                </div>
+
+                <div
+                  className="toolbar-pagination"
+                  aria-label="Phân trang nhanh"
+                >
+                  <span className="toolbar-page-counter">
+                    <strong>{currentPage}</strong>/{totalPages}
+                  </span>
+                  <div className="toolbar-page-arrows">
+                    <button
+                      type="button"
+                      className="toolbar-page-btn"
+                      disabled={currentPage <= 1 || isLoading}
+                      onClick={() =>
+                        setCurrentPage((p) => Math.max(1, p - 1))
+                      }
+                      aria-label="Trang trước"
+                      title="Trang trước"
+                    >
+                      ‹
+                    </button>
+                    <button
+                      type="button"
+                      className="toolbar-page-btn"
+                      disabled={currentPage >= totalPages || isLoading}
+                      onClick={() =>
+                        setCurrentPage((p) => Math.min(totalPages, p + 1))
+                      }
+                      aria-label="Trang tiếp theo"
+                      title="Trang tiếp theo"
+                    >
+                      ›
+                    </button>
+                  </div>
                 </div>
               </div>
             </header>
