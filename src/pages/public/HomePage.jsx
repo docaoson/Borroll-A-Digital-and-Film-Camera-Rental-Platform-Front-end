@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import heroBackground from "../../assets/background-picture for homepage.jpg";
 import { catalogService } from "../../services/catalogService";
@@ -132,6 +132,40 @@ function HomePage() {
     return cachedCats.length > 0 ? cachedCats.slice(0, 7) : fallbackCategories;
   });
 
+  const categorySliderRef = useRef(null);
+  const [canScrollLeft, setCanScrollLeft] = useState(false);
+  const [canScrollRight, setCanScrollRight] = useState(false);
+
+  const checkSliderScroll = () => {
+    const el = categorySliderRef.current;
+    if (!el) return;
+    setCanScrollLeft(el.scrollLeft > 5);
+    setCanScrollRight(el.scrollLeft + el.clientWidth < el.scrollWidth - 5);
+  };
+
+  useEffect(() => {
+    checkSliderScroll();
+    const el = categorySliderRef.current;
+    if (!el) return;
+    const handleScroll = () => checkSliderScroll();
+    el.addEventListener("scroll", handleScroll, { passive: true });
+    window.addEventListener("resize", handleScroll);
+    return () => {
+      el.removeEventListener("scroll", handleScroll);
+      window.removeEventListener("resize", handleScroll);
+    };
+  }, [categoryList]);
+
+  const handleScrollSlider = (direction) => {
+    const el = categorySliderRef.current;
+    if (!el) return;
+    const scrollAmount = Math.max(el.clientWidth * 0.75, 260);
+    el.scrollBy({
+      left: direction === "next" ? scrollAmount : -scrollAmount,
+      behavior: "smooth",
+    });
+  };
+
   useEffect(() => {
     let active = true;
     Promise.all([
@@ -245,19 +279,43 @@ function HomePage() {
             <h2>Danh mục</h2>
           </div>
 
-          <div className="category-tiles-row">
-            {categoryList.map((category) => (
-              <Link
-                to={`/cameras?category=${category.slug}`}
-                className="category-tile"
-                key={category.slug}
+          <div className="category-slider-wrapper">
+            {canScrollLeft && (
+              <button
+                type="button"
+                className="category-slider-arrow prev"
+                onClick={() => handleScrollSlider("prev")}
+                aria-label="Xem danh mục trước"
               >
-                <div className="category-tile-icon">
-                  <span>{category.label}</span>
-                </div>
-                <span className="category-tile-name">{category.name}</span>
-              </Link>
-            ))}
+                ‹
+              </button>
+            )}
+
+            <div className="category-tiles-row" ref={categorySliderRef}>
+              {categoryList.map((category) => (
+                <Link
+                  to={`/cameras?category=${category.slug}`}
+                  className="category-tile"
+                  key={category.slug}
+                >
+                  <div className="category-tile-icon">
+                    <span>{category.label}</span>
+                  </div>
+                  <span className="category-tile-name">{category.name}</span>
+                </Link>
+              ))}
+            </div>
+
+            {canScrollRight && (
+              <button
+                type="button"
+                className="category-slider-arrow next"
+                onClick={() => handleScrollSlider("next")}
+                aria-label="Xem danh mục tiếp theo"
+              >
+                ›
+              </button>
+            )}
           </div>
         </div>
       </section>
