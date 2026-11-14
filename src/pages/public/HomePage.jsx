@@ -63,6 +63,8 @@ function ProductCard({ camera, onSelect }) {
   return (
     <article
       className="camera-card clickable-card"
+      onMouseEnter={() => catalogService.prefetchModelBySlug(camera.slug)}
+      onFocus={() => catalogService.prefetchModelBySlug(camera.slug)}
       onClick={() => onSelect(camera.slug)}
     >
       <div className="camera-card-media">
@@ -72,6 +74,7 @@ function ProductCard({ camera, onSelect }) {
             alt={camera.name}
             className="camera-card-image"
             loading="lazy"
+            decoding="async"
             onError={(e) => {
               e.currentTarget.style.display = "none";
               const fallback = e.currentTarget.parentElement?.querySelector(
@@ -132,6 +135,9 @@ function HomePage() {
         if (flatCats.length > 0) {
           setCategoryList(flatCats.slice(0, 7));
         }
+
+        // Prefetch trang Thiết bị ở chế độ nền sau khi trang chủ tải xong
+        catalogService.prefetchCatalogList();
       })
       .catch(() => {
         if (!active) return;

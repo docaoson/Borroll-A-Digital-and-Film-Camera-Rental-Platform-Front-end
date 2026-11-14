@@ -539,6 +539,12 @@ function CameraListPage() {
                       <article
                         key={camera.id}
                         className="camera-card collection-card clickable-card"
+                        onMouseEnter={() =>
+                          catalogService.prefetchModelBySlug(camera.slug)
+                        }
+                        onFocus={() =>
+                          catalogService.prefetchModelBySlug(camera.slug)
+                        }
                         onClick={() => navigate(`/cameras/${camera.slug}`)}
                       >
                         {/* THUMBNAIL */}
@@ -550,6 +556,7 @@ function CameraListPage() {
                               className="camera-card-image"
                               loading={index < 4 ? "eager" : "lazy"}
                               fetchPriority={index < 4 ? "high" : "low"}
+                              decoding="async"
                               onError={(e) => {
                                 e.currentTarget.style.display = "none";
                                 const fallback =

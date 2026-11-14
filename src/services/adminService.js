@@ -1,4 +1,82 @@
 import { apiRequest, uploadFileToPresignedUrl } from "../lib/apiClient";
+import { catalogService } from "./catalogService";
+
+/**
+ * Automatically resizes and compresses large images to lightweight WebP on client-side
+ * before uploading to Supabase Storage so catalog images load 5x-10x faster.
+ */
+async function compressImageBeforeUpload(
+  file,
+  { maxDimension = 1280, quality = 0.82 } = {},
+) {
+  if (
+    !file ||
+    typeof document === "undefined" ||
+    typeof Image === "undefined" ||
+    !file.type?.startsWith("image/")
+  ) {
+    return file;
+  }
+
+  // Skip tiny files (< 120KB) that are already WebP
+  if (file.type === "image/webp" && file.size <= 120 * 1024) {
+    return file;
+  }
+
+  return new Promise((resolve) => {
+    const objectUrl = URL.createObjectURL(file);
+    const img = new Image();
+
+    img.onload = () => {
+      URL.revokeObjectURL(objectUrl);
+      let { naturalWidth: width, naturalHeight: height } = img;
+      if (!width || !height) {
+        resolve(file);
+        return;
+      }
+
+      if (width > maxDimension || height > maxDimension) {
+        const ratio = Math.min(maxDimension / width, maxDimension / height);
+        width = Math.round(width * ratio);
+        height = Math.round(height * ratio);
+      }
+
+      const canvas = document.createElement("canvas");
+      canvas.width = width;
+      canvas.height = height;
+      const ctx = canvas.getContext("2d");
+      if (!ctx) {
+        resolve(file);
+        return;
+      }
+
+      ctx.drawImage(img, 0, 0, width, height);
+      canvas.toBlob(
+        (blob) => {
+          if (!blob || blob.size >= file.size) {
+            resolve(file);
+            return;
+          }
+          const baseName = (file.name || "image").replace(/\.[^.]+$/, "");
+          const compressedFile = new File([blob], `${baseName}.webp`, {
+            type: "image/webp",
+            lastModified: Date.now(),
+          });
+          resolve(compressedFile);
+        },
+        "image/webp",
+        quality,
+      );
+    };
+
+    img.onerror = () => {
+      URL.revokeObjectURL(objectUrl);
+      resolve(file);
+    };
+
+    img.src = objectUrl;
+  });
+}
 
 function buildQuery(params = {}) {
   const query = new URLSearchParams();
@@ -77,12 +155,13 @@ export const adminService = {
   },
 
   async uploadHandoverPhoto(bookingId, file) {
-    const contentType = file.type || "image/jpeg";
+    const optimizedFile = await compressImageBeforeUpload(file);
+    const contentType = optimizedFile.type || "image/jpeg";
     const presignRes = await this.presignHandoverPhoto({
       bookingId,
       contentType,
     });
-    await uploadFileToPresignedUrl(presignRes.uploadUrl, file);
+    await uploadFileToPresignedUrl(presignRes.uploadUrl, optimizedFile);
     return presignRes.path;
   },
 
@@ -107,32 +186,43 @@ export const adminService = {
     return apiRequest(`/admin/models/${encodeURIComponent(id)}`);
   },
 
-  createAdminModel(payload) {
-    return apiRequest("/admin/models", {
+  async createAdminModel(payload) {
+    const res = await apiRequest("/admin/models", {
       method: "POST",
       body: payload,
     });
+    catalogService.clearCache();
+    return res;
   },
 
-  updateAdminModel(id, payload) {
-    return apiRequest(`/admin/models/${encodeURIComponent(id)}`, {
+  async updateAdminModel(id, payload) {
+    const res = await apiRequest(`/admin/models/${encodeURIComponent(id)}`, {
       method: "PATCH",
       body: payload,
     });
+    catalogService.clearCache();
+    return res;
   },
 
-  deleteAdminModel(id) {
-    return apiRequest(`/admin/models/${encodeURIComponent(id)}`, {
+  async deleteAdminModel(id) {
+    const res = await apiRequest(`/admin/models/${encodeURIComponent(id)}`, {
       method: "DELETE",
     });
+    catalogService.clearCache();
+    return res;
   },
 
   // Technical Specs for Model
-  updateModelSpecs(id, specsPayload) {
-    return apiRequest(`/admin/models/${encodeURIComponent(id)}/specs`, {
-      method: "PUT",
-      body: specsPayload,
-    });
+  async updateModelSpecs(id, specsPayload) {
+    const res = await apiRequest(
+      `/admin/models/${encodeURIComponent(id)}/specs`,
+      {
+        method: "PUT",
+        body: specsPayload,
+      },
+    );
+    catalogService.clearCache();
+    return res;
   },
 
   // Model Images Management
@@ -143,35 +233,48 @@ export const adminService = {
     });
   },
 
-  addModelImage(id, payload) {
-    return apiRequest(`/admin/models/${encodeURIComponent(id)}/images`, {
-      method: "POST",
-      body: payload,
-    });
+  async addModelImage(id, payload) {
+    const res = await apiRequest(
+      `/admin/models/${encodeURIComponent(id)}/images`,
+      {
+        method: "POST",
+        body: payload,
+      },
+    );
+    catalogService.clearCache();
+    return res;
   },
 
-  reorderModelImages(id, imageIds) {
-    return apiRequest(`/admin/models/${encodeURIComponent(id)}/images/order`, {
-      method: "PATCH",
-      body: { imageIds },
-    });
+  async reorderModelImages(id, imageIds) {
+    const res = await apiRequest(
+      `/admin/models/${encodeURIComponent(id)}/images/order`,
+      {
+        method: "PATCH",
+        body: { imageIds },
+      },
+    );
+    catalogService.clearCache();
+    return res;
   },
 
-  deleteModelImage(id, imageId) {
-    return apiRequest(
+  async deleteModelImage(id, imageId) {
+    const res = await apiRequest(
       `/admin/models/${encodeURIComponent(id)}/images/${encodeURIComponent(imageId)}`,
       {
         method: "DELETE",
       },
     );
+    catalogService.clearCache();
+    return res;
   },
 
   // High-level helper: upload file to S3/Storage and register to model
   async uploadModelImage(modelId, file, options = {}) {
     const { kind = "PRODUCT", caption = null, sampleLens = null, sortOrder = 0 } = options;
-    const contentType = file.type || "image/jpeg";
+    const optimizedFile = await compressImageBeforeUpload(file);
+    const contentType = optimizedFile.type || "image/jpeg";
     const presignRes = await this.presignModelImage(modelId, contentType);
-    await uploadFileToPresignedUrl(presignRes.uploadUrl, file);
+    await uploadFileToPresignedUrl(presignRes.uploadUrl, optimizedFile);
     return this.addModelImage(modelId, {
       path: presignRes.path,
       kind,

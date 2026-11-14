@@ -542,6 +542,8 @@ function CameraDetailPage() {
                   src={activeImage.url}
                   alt={activeImage.caption || camera.name}
                   className="detail-main-img"
+                  fetchPriority="high"
+                  decoding="async"
                   onError={(e) => {
                     e.currentTarget.style.display = "none";
                     const fb = e.currentTarget.parentElement?.querySelector(

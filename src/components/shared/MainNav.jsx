@@ -1,5 +1,6 @@
 import { NavLink } from "react-router-dom";
 import { useAuth } from "../../hooks/useAuth";
+import { catalogService } from "../../services/catalogService";
 
 const publicLinks = [
   { to: "/", label: "Trang chủ", end: true },
@@ -44,6 +45,16 @@ function MainNav({ variant = "public", onNavigate }) {
           className={({ isActive }) =>
             isActive ? "nav-link active" : "nav-link"
           }
+          onMouseEnter={() => {
+            if (link.to === "/cameras") {
+              catalogService.prefetchCatalogList();
+            }
+          }}
+          onFocus={() => {
+            if (link.to === "/cameras") {
+              catalogService.prefetchCatalogList();
+            }
+          }}
           onClick={onNavigate}
         >
           {link.label}

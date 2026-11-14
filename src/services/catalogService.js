@@ -2,6 +2,50 @@ import { apiRequest } from "../lib/apiClient";
 
 // In-memory cache storage with TTL and in-flight promise deduplication
 const cacheMap = new Map();
+const preconnectedOrigins = new Set();
+const preloadedImageUrls = new Set();
+
+function ensureStoragePreconnect(url) {
+  if (!url || typeof document === "undefined") return;
+  try {
+    const origin = new URL(url).origin;
+    if (!origin || preconnectedOrigins.has(origin)) return;
+    preconnectedOrigins.add(origin);
+    const link = document.createElement("link");
+    link.rel = "preconnect";
+    link.href = origin;
+    link.crossOrigin = "anonymous";
+    document.head.appendChild(link);
+  } catch {
+    // Ignore invalid URLs
+  }
+}
+
+function preloadImageUrl(url) {
+  if (!url || typeof Image === "undefined" || preloadedImageUrls.has(url)) {
+    return;
+  }
+  preloadedImageUrls.add(url);
+  ensureStoragePreconnect(url);
+  const img = new Image();
+  img.decoding = "async";
+  img.src = url;
+}
+
+function getTodayMonthIso() {
+  try {
+    const parts = new Intl.DateTimeFormat("en-CA", {
+      timeZone: "Asia/Ho_Chi_Minh",
+      year: "numeric",
+      month: "2-digit",
+    }).formatToParts(new Date());
+    const year = parts.find((p) => p.type === "year")?.value;
+    const month = parts.find((p) => p.type === "month")?.value;
+    return `${year}-${month}`;
+  } catch {
+    return new Date().toISOString().slice(0, 7);
+  }
+}
 
 /**
  * Cache helper that deduplicates concurrent in-flight promises
@@ -106,7 +150,17 @@ export const catalogService = {
     return cachedRequest(
       `models:${qs}`,
       60 * 1000,
-      () => apiRequest(endpoint, { skipAuthRetry: true }),
+      () =>
+        apiRequest(endpoint, { skipAuthRetry: true }).then((res) => {
+          const items = res?.items || [];
+          if (items[0]?.thumbnailUrl) {
+            ensureStoragePreconnect(items[0].thumbnailUrl);
+          }
+          items.slice(0, 4).forEach((item) => {
+            if (item?.thumbnailUrl) preloadImageUrl(item.thumbnailUrl);
+          });
+          return res;
+        }),
       options.force,
     );
   },
@@ -118,9 +172,36 @@ export const catalogService = {
       () =>
         apiRequest(`/models/${encodeURIComponent(slug)}`, {
           skipAuthRetry: true,
+        }).then((data) => {
+          const firstUrl = data?.images?.[0]?.url;
+          if (firstUrl) preloadImageUrl(firstUrl);
+          return data;
         }),
       options.force,
     );
+  },
+
+  prefetchModelBySlug(slug) {
+    if (!slug) return;
+    catalogService
+      .getModelBySlug(slug)
+      .then((model) => {
+        if (model?.id) {
+          const defaultBranch = model.availableAtBranches?.[0] || "tay-ho";
+          catalogService
+            .getModelAvailability(model.id, defaultBranch, getTodayMonthIso())
+            .catch(() => {});
+        }
+      })
+      .catch(() => {});
+  },
+
+  prefetchCatalogList() {
+    catalogService.getCategories().catch(() => {});
+    catalogService.getBrands().catch(() => {});
+    catalogService
+      .getModels({ sort: "default", page: 1, pageSize: 9 })
+      .catch(() => {});
   },
 
   getModelAvailability(id, branch, month, options = {}) {
