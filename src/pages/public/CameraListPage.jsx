@@ -84,9 +84,6 @@ function CameraListPage() {
     : [];
   const initialMinPrice = searchParams.get("minPrice") || "";
   const initialMaxPrice = searchParams.get("maxPrice") || "";
-  const initialCameraType = searchParams.get("cameraType") || "";
-  const initialFilmFormat = searchParams.get("filmFormat") || "";
-  const initialSensorSize = searchParams.get("sensorSize") || "";
   const initialSort = searchParams.get("sort") || "default";
   const initialPage = parseInt(searchParams.get("page") || "1", 10);
 
@@ -97,9 +94,6 @@ function CameraListPage() {
   const [selectedBrands, setSelectedBrands] = useState(initialBrands);
   const [minPrice, setMinPrice] = useState(initialMinPrice);
   const [maxPrice, setMaxPrice] = useState(initialMaxPrice);
-  const [cameraTypeFilter, setCameraTypeFilter] = useState(initialCameraType);
-  const [filmFormatFilter, setFilmFormatFilter] = useState(initialFilmFormat);
-  const [sensorSizeFilter, setSensorSizeFilter] = useState(initialSensorSize);
   const [debouncedMinPrice, setDebouncedMinPrice] = useState(initialMinPrice);
   const [debouncedMaxPrice, setDebouncedMaxPrice] = useState(initialMaxPrice);
   const [sortBy, setSortBy] = useState(initialSort);
@@ -113,22 +107,18 @@ function CameraListPage() {
   const [brands, setBrands] = useState(
     () => catalogService.peekBrands()?.items || [],
   );
-  const [facets, setFacets] = useState({ filmFormats: [], sensorSizes: [] });
   const [reloadKey, setReloadKey] = useState(0);
 
   const categoryParam = selectedCategories.join(",");
   const brandParam = selectedBrands.join(",");
 
-  const queryKey = `${debouncedSearch}|${categoryParam}|${brandParam}|${cameraTypeFilter}|${filmFormatFilter}|${sensorSizeFilter}|${debouncedMinPrice}|${debouncedMaxPrice}|${sortBy}|${currentPage}|${reloadKey}`;
+  const queryKey = `${debouncedSearch}|${categoryParam}|${brandParam}|${debouncedMinPrice}|${debouncedMaxPrice}|${sortBy}|${currentPage}|${reloadKey}`;
 
   const [resultState, setResultState] = useState(() => {
     const cached = catalogService.peekModels({
       q: initialQ || undefined,
       category: initialCategories.join(",") || undefined,
       brand: initialBrands.join(",") || undefined,
-      cameraType: initialCameraType || undefined,
-      filmFormat: initialFilmFormat || undefined,
-      sensorSize: initialSensorSize || undefined,
       minPrice: initialMinPrice || undefined,
       maxPrice: initialMaxPrice || undefined,
       sort: initialSort,
@@ -228,9 +218,6 @@ function CameraListPage() {
     if (selectedCategories.length > 0)
       params.set("category", selectedCategories.join(","));
     if (selectedBrands.length > 0) params.set("brand", selectedBrands.join(","));
-    if (cameraTypeFilter) params.set("cameraType", cameraTypeFilter);
-    if (filmFormatFilter) params.set("filmFormat", filmFormatFilter);
-    if (sensorSizeFilter) params.set("sensorSize", sensorSizeFilter);
     if (debouncedMinPrice) params.set("minPrice", debouncedMinPrice);
     if (debouncedMaxPrice) params.set("maxPrice", debouncedMaxPrice);
     if (sortBy && sortBy !== "default") params.set("sort", sortBy);
@@ -241,9 +228,6 @@ function CameraListPage() {
     debouncedSearch,
     selectedCategories,
     selectedBrands,
-    cameraTypeFilter,
-    filmFormatFilter,
-    sensorSizeFilter,
     debouncedMinPrice,
     debouncedMaxPrice,
     sortBy,
@@ -271,9 +255,6 @@ function CameraListPage() {
         q: debouncedSearch || undefined,
         category: categoryParam || undefined,
         brand: brandParam || undefined,
-        cameraType: cameraTypeFilter || undefined,
-        filmFormat: filmFormatFilter || undefined,
-        sensorSize: sensorSizeFilter || undefined,
         minPrice: debouncedMinPrice || undefined,
         maxPrice: debouncedMaxPrice || undefined,
         sort: sortBy,
@@ -288,7 +269,6 @@ function CameraListPage() {
           total: res.total ?? (res.items?.length || 0),
           error: "",
         });
-        setFacets(res.facets || { filmFormats: [], sensorSizes: [] });
       })
       .catch(() => {
         if (!active) return;
@@ -307,9 +287,6 @@ function CameraListPage() {
     debouncedSearch,
     categoryParam,
     brandParam,
-    cameraTypeFilter,
-    filmFormatFilter,
-    sensorSizeFilter,
     debouncedMinPrice,
     debouncedMaxPrice,
     sortBy,
@@ -355,9 +332,6 @@ function CameraListPage() {
     setDebouncedSearch("");
     setSelectedCategories([]);
     setSelectedBrands([]);
-    setCameraTypeFilter("");
-    setFilmFormatFilter("");
-    setSensorSizeFilter("");
     setMinPrice("");
     setMaxPrice("");
     setSortBy("default");
@@ -379,13 +353,12 @@ function CameraListPage() {
     return list;
   }, [categories]);
 
-  const categoryOptions = useMemo(() => {
-    if (cameraTypeFilter === "FILM" || cameraTypeFilter === "DIGITAL") {
-      const rootSlug = cameraTypeFilter === "FILM" ? "may-film" : "may-digital";
-      return categories.find((root) => root.slug === rootSlug)?.children || [];
-    }
-    return flatCategories;
-  }, [cameraTypeFilter, categories, flatCategories]);
+  const selectedCategoryNames = useMemo(() => {
+    if (selectedCategories.length === 0) return [];
+    const map = new Map();
+    flatCategories.forEach((c) => map.set(c.slug, c.name));
+    return selectedCategories.map((s) => map.get(s) || s);
+  }, [selectedCategories, flatCategories]);
 
   return (
     <div className="collection-page">
@@ -395,48 +368,12 @@ function CameraListPage() {
           <aside className="filters-sidebar" aria-label="Bộ lọc tìm kiếm">
             {/* Phân loại / Danh mục */}
             <div className="sidebar-filter-group">
-              <h3>Nhóm máy</h3>
-              <select
-                aria-label="Lọc theo nhóm máy"
-                value={cameraTypeFilter}
-                onChange={(event) => {
-                  setCameraTypeFilter(event.target.value);
-                  setFilmFormatFilter("");
-                  setSensorSizeFilter("");
-                  setSelectedCategories([]);
-                  setCurrentPage(1);
-                }}
-              >
-                <option value="">Tất cả nhóm</option>
-                <option value="FILM">Máy ảnh Film</option>
-                <option value="DIGITAL">Máy ảnh Digital</option>
-              </select>
-            </div>
-            {cameraTypeFilter === "FILM" && facets.filmFormats.length > 0 && (
-              <div className="sidebar-filter-group">
-                <h3>Khổ phim</h3>
-                <select aria-label="Lọc theo khổ phim" value={filmFormatFilter} onChange={(event) => { setFilmFormatFilter(event.target.value); setCurrentPage(1); }}>
-                  <option value="">Tất cả khổ phim</option>
-                  {facets.filmFormats.map(({ value, count }) => <option key={value} value={value}>{value} ({count})</option>)}
-                </select>
-              </div>
-            )}
-            {cameraTypeFilter === "DIGITAL" && facets.sensorSizes.length > 0 && (
-              <div className="sidebar-filter-group">
-                <h3>Cỡ cảm biến</h3>
-                <select aria-label="Lọc theo cỡ cảm biến" value={sensorSizeFilter} onChange={(event) => { setSensorSizeFilter(event.target.value); setCurrentPage(1); }}>
-                  <option value="">Tất cả cỡ cảm biến</option>
-                  {facets.sensorSizes.map(({ value, count }) => <option key={value} value={value}>{value} ({count})</option>)}
-                </select>
-              </div>
-            )}
-            <div className="sidebar-filter-group">
-              <h3>Loại thiết bị</h3>
+              <h3>Phân loại</h3>
               <div className="filter-check-list">
-                {categoryOptions.length === 0 ? (
+                {flatCategories.length === 0 ? (
                   <p className="hint-text">Đang tải phân loại...</p>
                 ) : (
-                  categoryOptions.map((cat) => {
+                  flatCategories.map((cat) => {
                     const checked = selectedCategories.includes(cat.slug);
                     return (
                       <label
@@ -562,21 +499,68 @@ function CameraListPage() {
                   />
                 </div>
 
-                <div className="toolbar-sort">
-                  <label htmlFor="sort-by">Sắp xếp</label>
-                  <select
-                    id="sort-by"
-                    value={sortBy}
-                    onChange={(e) => {
-                      setSortBy(e.target.value);
-                      setCurrentPage(1);
-                    }}
-                  >
-                    <option value="default">Mặc định</option>
-                    <option value="price_asc">Giá thấp đến cao</option>
-                    <option value="price_desc">Giá cao đến thấp</option>
-                    <option value="newest">Mới nhất</option>
-                  </select>
+                <div
+                  className="toolbar-sort-chips"
+                  role="group"
+                  aria-label="Sắp xếp thiết bị"
+                >
+                  {[
+                    { value: "default", label: "Mặc định" },
+                    { value: "price_asc", label: "Giá thấp → cao" },
+                    { value: "price_desc", label: "Giá cao → thấp" },
+                    { value: "newest", label: "Mới nhất" },
+                  ].map((option) => {
+                    const isActive = sortBy === option.value;
+                    return (
+                      <button
+                        key={option.value}
+                        type="button"
+                        className={`sort-chip ${isActive ? "active" : ""}`}
+                        aria-pressed={isActive}
+                        onClick={() => {
+                          setSortBy(option.value);
+                          setCurrentPage(1);
+                        }}
+                      >
+                        {option.label}
+                      </button>
+                    );
+                  })}
+                </div>
+
+                <div
+                  className="toolbar-pagination"
+                  aria-label="Phân trang nhanh"
+                >
+                  <span className="toolbar-page-counter">
+                    <strong>{currentPage}</strong>/{totalPages}
+                  </span>
+                  <div className="toolbar-page-arrows">
+                    <button
+                      type="button"
+                      className="toolbar-page-btn"
+                      disabled={currentPage <= 1 || isLoading}
+                      onClick={() =>
+                        setCurrentPage((p) => Math.max(1, p - 1))
+                      }
+                      aria-label="Trang trước"
+                      title="Trang trước"
+                    >
+                      ‹
+                    </button>
+                    <button
+                      type="button"
+                      className="toolbar-page-btn"
+                      disabled={currentPage >= totalPages || isLoading}
+                      onClick={() =>
+                        setCurrentPage((p) => Math.min(totalPages, p + 1))
+                      }
+                      aria-label="Trang tiếp theo"
+                      title="Trang tiếp theo"
+                    >
+                      ›
+                    </button>
+                  </div>
                 </div>
               </div>
             </header>
@@ -629,6 +613,23 @@ function CameraListPage() {
                       Array.isArray(camera.availableAtBranches) &&
                       camera.availableAtBranches.length > 0;
 
+                    // Nếu người dùng đang lọc theo danh mục cụ thể, hiển thị danh mục đang lọc
+                    // ngược lại hiển thị danh mục của máy, nếu không có hiển thị formatCameraType hoặc "Máy ảnh"
+                    const badgeCategoryName =
+                      selectedCategoryNames.length === 1
+                        ? selectedCategoryNames[0]
+                        : camera.category?.name ||
+                          formatCameraType(camera.cameraType) ||
+                          "Máy ảnh";
+
+                    // Dòng metadata phụ: chỉ hiển thị hãng, khổ phim hoặc ngàm lens;
+                    // Không hiển thị lặp lại cameraType để loại bỏ hoàn toàn mâu thuẫn giữa Category và Phân loại
+                    const subMetaItems = [
+                      camera.brand?.name,
+                      camera.filmFormat,
+                      camera.mount ? `Ngàm ${camera.mount}` : null,
+                    ].filter(Boolean);
+
                     return (
                       <article
                         key={camera.id}
@@ -676,7 +677,7 @@ function CameraListPage() {
                         <div className="camera-body">
                           <div className="camera-card-header">
                             <span className="camera-category">
-                              {camera.category?.name || "Máy ảnh"}
+                              {badgeCategoryName}
                             </span>
                             <FavoriteToggle
                               modelId={camera.id}
@@ -688,15 +689,14 @@ function CameraListPage() {
                           <h3 className="camera-card-title">{camera.name}</h3>
 
                           <div className="camera-meta-tags">
-                            <span className="camera-brand-tag">
-                              {camera.brand?.name || "Máy ảnh"}
-                            </span>
-                            <span className="meta-separator">·</span>
-                            <span className="camera-type-tag">
-                              {formatCameraType(camera.cameraType)}
-                            </span>
-                            {camera.filmFormat && <span className="camera-type-tag">{camera.filmFormat}</span>}
-                            {camera.sensorSize && <span className="camera-type-tag">{camera.sensorSize}</span>}
+                            {subMetaItems.map((metaText, idx) => (
+                              <span key={idx} className="camera-meta-tag-item">
+                                {idx > 0 && <span className="meta-separator">·</span>}
+                                <span className={idx === 0 ? "camera-brand-tag" : "camera-type-tag"}>
+                                  {metaText}
+                                </span>
+                              </span>
+                            ))}
                           </div>
 
                           <div className="camera-availability-row">

@@ -321,29 +321,6 @@ function ProfilePage() {
             </div>
           </div>
         </div>
-
-        {/* Quick Navigation Shortcuts */}
-        <div className="profile-card profile-shortcuts-card">
-          <h3 className="profile-card-subtitle">Lối tắt nhanh</h3>
-          <div className="profile-shortcuts-list">
-            <Link to="/orders" className="shortcut-link">
-              <span>📋 Đơn thuê của tôi</span>
-              <span className="shortcut-arrow">→</span>
-            </Link>
-            <Link to="/favorites" className="shortcut-link">
-              <span>♥ Thiết bị yêu thích</span>
-              <span className="shortcut-arrow">→</span>
-            </Link>
-            <Link to="/cart" className="shortcut-link">
-              <span>🛒 Giỏ thuê máy</span>
-              <span className="shortcut-arrow">→</span>
-            </Link>
-            <Link to="/support" className="shortcut-link">
-              <span>❓ Trung tâm hỗ trợ & FAQ</span>
-              <span className="shortcut-arrow">→</span>
-            </Link>
-          </div>
-        </div>
       </aside>
     </div>
   );

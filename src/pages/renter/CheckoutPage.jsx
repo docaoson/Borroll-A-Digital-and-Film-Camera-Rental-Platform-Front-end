@@ -277,7 +277,7 @@ function CheckoutPage() {
 
   // CHECKOUT FORM VIEW
   return (
-    <div className="checkout-page-wrapper">
+    <div className="checkout-page-wrapper checkout-shell container">
       <header className="checkout-page-header">
         <p className="eyebrow">XÁC NHẬN THÔNG TIN THUÊ</p>
         <h1>Xác nhận yêu cầu đặt thuê</h1>

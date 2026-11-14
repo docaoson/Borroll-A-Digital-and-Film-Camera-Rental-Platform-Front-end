@@ -59,7 +59,9 @@ const AdminOrderDetailPage = lazy(
   () => import("../pages/admin/AdminOrderDetailPage"),
 );
 const AdminUsersPage = lazy(() => import("../pages/admin/AdminUsersPage"));
-const AdminPaymentsPage = lazy(() => import("../pages/admin/AdminPaymentsPage"));
+const AdminPaymentsPage = lazy(
+  () => import("../pages/admin/AdminPaymentsPage"),
+);
 
 const ForbiddenPage = lazy(() => import("../pages/error/ForbiddenPage"));
 const ErrorPage = lazy(() => import("../pages/error/ErrorPage"));
@@ -68,184 +70,212 @@ function AppRoutes() {
   return (
     <Suspense fallback={null}>
       <Routes>
-      <Route path="/" element={<PublicLayout />}>
-        <Route index element={<HomePage />} />
-        <Route path="about" element={<AboutPage />} />
-        <Route path="cameras" element={<CameraListPage />} />
-        <Route path="cameras/:id" element={<CameraDetailPage />} />
-        <Route path="login" element={<LoginPage />} />
-        <Route path="register" element={<RegisterPage />} />
-        <Route path="rental-policy" element={<RentalPolicyPage />} />
-        <Route path="delivery-policy" element={<DeliveryPolicyPage />} />
-        <Route path="return-policy" element={<ReturnPolicyPage />} />
-        <Route path="privacy-policy" element={<PrivacyPolicyPage />} />
-        <Route path="support" element={<SupportPage />} />
-        <Route path="faq" element={<SupportPage />} />
-        <Route path="403" element={<ForbiddenPage />} />
-        <Route path="error" element={<ErrorPage />} />
-        <Route path="*" element={<NotFoundPage />} />
-      </Route>
+        <Route path="/" element={<PublicLayout />}>
+          <Route index element={<HomePage />} />
+          <Route path="about" element={<AboutPage />} />
+          <Route path="cameras" element={<CameraListPage />} />
+          <Route path="cameras/:id" element={<CameraDetailPage />} />
+          <Route path="login" element={<LoginPage />} />
+          <Route path="register" element={<RegisterPage />} />
+          <Route path="rental-policy" element={<RentalPolicyPage />} />
+          <Route path="delivery-policy" element={<DeliveryPolicyPage />} />
+          <Route path="return-policy" element={<ReturnPolicyPage />} />
+          <Route path="privacy-policy" element={<PrivacyPolicyPage />} />
+          <Route path="support" element={<SupportPage />} />
+          <Route path="faq" element={<SupportPage />} />
+          <Route path="403" element={<ForbiddenPage />} />
+          <Route path="error" element={<ErrorPage />} />
+          <Route path="*" element={<NotFoundPage />} />
+        </Route>
 
-      <Route
-        path="/cart"
-        element={
-          <ProtectedRoute>
-            <RenterLayout />
-          </ProtectedRoute>
-        }
-      >
-        <Route index element={<CartPage />} />
-      </Route>
-      <Route
-        path="/checkout"
-        element={
-          <ProtectedRoute>
-            <RenterLayout />
-          </ProtectedRoute>
-        }
-      >
-        <Route index element={<CheckoutPage />} />
-      </Route>
-      <Route
-        path="/orders"
-        element={
-          <ProtectedRoute>
-            <RenterLayout />
-          </ProtectedRoute>
-        }
-      >
-        <Route index element={<OrdersPage />} />
-        <Route path=":id" element={<OrderDetailPage />} />
-      </Route>
-      <Route
-        path="/profile"
-        element={
-          <ProtectedRoute>
-            <RenterLayout />
-          </ProtectedRoute>
-        }
-      >
-        <Route index element={<ProfilePage />} />
-      </Route>
-      <Route
-        path="/settings"
-        element={
-          <ProtectedRoute>
-            <RenterLayout />
-          </ProtectedRoute>
-        }
-      >
-        <Route index element={<ProfilePage />} />
-      </Route>
-      <Route
-        path="/favorites"
-        element={
-          <ProtectedRoute>
-            <RenterLayout />
-          </ProtectedRoute>
-        }
-      >
-        <Route index element={<FavoritesPage />} />
-      </Route>
+        <Route
+          path="/cart"
+          element={
+            <ProtectedRoute>
+              <PublicLayout />
+            </ProtectedRoute>
+          }
+        >
+          <Route index element={<CartPage />} />
+        </Route>
+        <Route
+          path="/checkout"
+          element={
+            <ProtectedRoute>
+              <PublicLayout />
+            </ProtectedRoute>
+          }
+        >
+          <Route index element={<CheckoutPage />} />
+        </Route>
+        <Route
+          path="/orders"
+          element={
+            <ProtectedRoute>
+              <PublicLayout />
+            </ProtectedRoute>
+          }
+        >
+          <Route index element={<OrdersPage />} />
+          <Route path=":id" element={<OrderDetailPage />} />
+        </Route>
+        <Route
+          path="/profile"
+          element={
+            <ProtectedRoute>
+              <RenterLayout />
+            </ProtectedRoute>
+          }
+        >
+          <Route index element={<ProfilePage />} />
+        </Route>
+        <Route
+          path="/settings"
+          element={
+            <ProtectedRoute>
+              <RenterLayout />
+            </ProtectedRoute>
+          }
+        >
+          <Route index element={<ProfilePage />} />
+        </Route>
+        <Route
+          path="/favorites"
+          element={
+            <ProtectedRoute>
+              <RenterLayout />
+            </ProtectedRoute>
+          }
+        >
+          <Route index element={<FavoritesPage />} />
+        </Route>
 
-      <Route
-        path="/admin"
-        element={
-          <ProtectedRoute allowedRoles={["ADMIN"]}>
-            <AdminLayout />
-          </ProtectedRoute>
-        }
-      >
-        <Route index element={<AdminDashboardPage />} />
-        {/* Chỉ ADMIN mới có quyền: Thêm, sửa, ẩn mẫu máy (Row 7) */}
         <Route
-          path="products"
+          path="/admin"
           element={
             <ProtectedRoute allowedRoles={["ADMIN"]}>
-              <AdminProductsPage />
+              <AdminLayout />
             </ProtectedRoute>
           }
-        />
-        <Route
-          path="products/new"
-          element={
-            <ProtectedRoute allowedRoles={["ADMIN"]}>
-              <AdminProductFormPage />
-            </ProtectedRoute>
-          }
-        />
-        <Route
-          path="products/:id/edit"
-          element={
-            <ProtectedRoute allowedRoles={["ADMIN"]}>
-              <AdminProductFormPage />
-            </ProtectedRoute>
-          }
-        />
-        {/* Chỉ ADMIN mới có quyền: Quản lý danh mục, hãng, chi nhánh (Row 9) */}
-        <Route
-          path="categories"
-          element={
-            <ProtectedRoute allowedRoles={["ADMIN"]}>
-              <AdminCategoriesPage />
-            </ProtectedRoute>
-          }
-        />
-        <Route
-          path="brands"
-          element={
-            <ProtectedRoute allowedRoles={["ADMIN"]}>
-              <AdminBrandsPage />
-            </ProtectedRoute>
-          }
-        />
-        <Route
-          path="branches"
-          element={
-            <ProtectedRoute allowedRoles={["ADMIN"]}>
-              <AdminBranchesPage />
-            </ProtectedRoute>
-          }
-        />
-        <Route
-          path="inventory"
-          element={
-            <ProtectedRoute allowedRoles={["ADMIN"]}>
-              <AdminInventoryPage />
-            </ProtectedRoute>
-          }
-        />
-        <Route
-          path="inventory/new"
-          element={
-            <ProtectedRoute allowedRoles={["ADMIN"]}>
-              <AdminInventoryPage />
-            </ProtectedRoute>
-          }
-        />
-        <Route
-          path="inventory/:id"
-          element={
-            <ProtectedRoute allowedRoles={["ADMIN"]}>
-              <AdminInventoryPage />
-            </ProtectedRoute>
-          }
-        />
-        <Route path="calendar" element={<ProtectedRoute allowedRoles={["ADMIN"]}><AdminCalendarPage /></ProtectedRoute>} />
-        <Route path="orders" element={<ProtectedRoute allowedRoles={["ADMIN"]}><AdminOrdersPage /></ProtectedRoute>} />
-        <Route path="orders/:id" element={<ProtectedRoute allowedRoles={["ADMIN"]}><AdminOrderDetailPage /></ProtectedRoute>} />
-        <Route path="payments" element={<ProtectedRoute allowedRoles={["ADMIN"]}><AdminPaymentsPage /></ProtectedRoute>} />
-        {/* TÀI KHOẢN: Chỉ ADMIN mới xem, gán vai trò, khóa/mở khóa (Row 10) */}
-        <Route
-          path="users"
-          element={
-            <ProtectedRoute allowedRoles={["ADMIN"]}>
-              <AdminUsersPage />
-            </ProtectedRoute>
-          }
-        />
-        <Route path="*" element={<NotFoundPage />} />
-      </Route>
+        >
+          <Route index element={<AdminDashboardPage />} />
+          {/* Chỉ ADMIN mới có quyền: Thêm, sửa, ẩn mẫu máy (Row 7) */}
+          <Route
+            path="products"
+            element={
+              <ProtectedRoute allowedRoles={["ADMIN"]}>
+                <AdminProductsPage />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="products/new"
+            element={
+              <ProtectedRoute allowedRoles={["ADMIN"]}>
+                <AdminProductFormPage />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="products/:id/edit"
+            element={
+              <ProtectedRoute allowedRoles={["ADMIN"]}>
+                <AdminProductFormPage />
+              </ProtectedRoute>
+            }
+          />
+          {/* Chỉ ADMIN mới có quyền: Quản lý danh mục, hãng, chi nhánh (Row 9) */}
+          <Route
+            path="categories"
+            element={
+              <ProtectedRoute allowedRoles={["ADMIN"]}>
+                <AdminCategoriesPage />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="brands"
+            element={
+              <ProtectedRoute allowedRoles={["ADMIN"]}>
+                <AdminBrandsPage />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="branches"
+            element={
+              <ProtectedRoute allowedRoles={["ADMIN"]}>
+                <AdminBranchesPage />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="inventory"
+            element={
+              <ProtectedRoute allowedRoles={["ADMIN"]}>
+                <AdminInventoryPage />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="inventory/new"
+            element={
+              <ProtectedRoute allowedRoles={["ADMIN"]}>
+                <AdminInventoryPage />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="inventory/:id"
+            element={
+              <ProtectedRoute allowedRoles={["ADMIN"]}>
+                <AdminInventoryPage />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="calendar"
+            element={
+              <ProtectedRoute allowedRoles={["ADMIN"]}>
+                <AdminCalendarPage />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="orders"
+            element={
+              <ProtectedRoute allowedRoles={["ADMIN"]}>
+                <AdminOrdersPage />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="orders/:id"
+            element={
+              <ProtectedRoute allowedRoles={["ADMIN"]}>
+                <AdminOrderDetailPage />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="payments"
+            element={
+              <ProtectedRoute allowedRoles={["ADMIN"]}>
+                <AdminPaymentsPage />
+              </ProtectedRoute>
+            }
+          />
+          {/* TÀI KHOẢN: Chỉ ADMIN mới xem, gán vai trò, khóa/mở khóa (Row 10) */}
+          <Route
+            path="users"
+            element={
+              <ProtectedRoute allowedRoles={["ADMIN"]}>
+                <AdminUsersPage />
+              </ProtectedRoute>
+            }
+          />
+          <Route path="*" element={<NotFoundPage />} />
+        </Route>
       </Routes>
     </Suspense>
   );

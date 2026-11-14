@@ -1,12 +1,11 @@
 import { NavLink, Outlet } from "react-router-dom";
 import Header from "../components/shared/Header";
 import Footer from "../components/shared/Footer";
+import { useAuth } from "../hooks/useAuth";
 
-const renterNavLinks = [
+const navLinks = [
   { to: "/profile", label: "Hồ sơ" },
   { to: "/favorites", label: "Yêu thích" },
-  { to: "/cart", label: "Giỏ thuê" },
-  { to: "/orders", label: "Đơn thuê" },
   { to: "/support", label: "Hỗ trợ & FAQ" },
 ];
 
@@ -18,7 +17,7 @@ function RenterLayout() {
         <aside className="renter-sidebar">
           <h3>Tài khoản thuê máy</h3>
           <nav className="renter-nav" aria-label="Quản lý người thuê">
-            {renterNavLinks.map((item) => (
+            {navLinks.map((item) => (
               <NavLink
                 key={item.to}
                 to={item.to}

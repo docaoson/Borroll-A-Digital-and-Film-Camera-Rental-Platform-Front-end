@@ -1,7 +1,17 @@
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import heroBackground from "../../assets/background-picture for homepage.jpg";
 import { catalogService } from "../../services/catalogService";
+
+const fallbackCategories = [
+  { slug: "may-film", name: "Máy ảnh Film", label: "Film" },
+  { slug: "may-digital", name: "Máy ảnh Digital", label: "Digital" },
+  { slug: "may-instant", name: "Máy ảnh Instant", label: "Instant" },
+  { slug: "ong-kinh", name: "Ống kính", label: "Lens" },
+  { slug: "film-slr", name: "SLR 35mm", label: "SLR" },
+  { slug: "film-compact", name: "Compact 35mm", label: "Compact" },
+  { slug: "digital-mirrorless", name: "Mirrorless", label: "Mirrorless" },
+];
 
 const highlights = [
   {
@@ -26,33 +36,27 @@ const highlights = [
   },
 ];
 
-function CameraGroupIcon({ film }) {
-  return (
-    <svg
-      aria-hidden="true"
-      focusable="false"
-      width="26"
-      height="26"
-      viewBox="0 0 24 24"
-      fill="none"
-      stroke="currentColor"
-      strokeWidth="1.8"
-      strokeLinecap="round"
-      strokeLinejoin="round"
-    >
-      {film ? (
-        <>
-          <rect x="3" y="4" width="18" height="16" rx="2" />
-          <path d="M7 4v16m10-16v16M3 9h4m-4 6h4m10-6h4m-4 6h4" />
-        </>
-      ) : (
-        <>
-          <path d="M4 8h3l1.5-2h7L17 8h3a1 1 0 0 1 1 1v9a1 1 0 0 1-1 1H4a1 1 0 0 1-1-1V9a1 1 0 0 1 1-1Z" />
-          <circle cx="12" cy="13" r="3.5" />
-        </>
-      )}
-    </svg>
-  );
+function flattenCategories(tree = []) {
+  const result = [];
+  for (const node of tree) {
+    result.push({
+      id: node.id || node.slug,
+      slug: node.slug,
+      name: node.name,
+      label: node.name.split(/\s+/)[0] || "Cam",
+    });
+    if (Array.isArray(node.children)) {
+      for (const child of node.children) {
+        result.push({
+          id: child.id || child.slug,
+          slug: child.slug,
+          name: child.name,
+          label: child.name.split(/\s+/)[0] || "Cam",
+        });
+      }
+    }
+  }
+  return result;
 }
 
 function ProductCard({ camera, onSelect }) {
@@ -93,8 +97,6 @@ function ProductCard({ camera, onSelect }) {
           {camera.category?.name ||
             (camera.cameraType === "FILM" ? "Máy ảnh Film" : "Digital")}
         </span>
-        {camera.filmFormat && <span className="camera-category">{camera.filmFormat}</span>}
-        {camera.sensorSize && <span className="camera-category">{camera.sensorSize}</span>}
         <h3>{camera.name}</h3>
         <p className="camera-meta">{camera.brand?.name}</p>
         <div className="camera-footer">
@@ -123,19 +125,65 @@ function HomePage() {
     () =>
       catalogService.peekModels({ sort: "newest", pageSize: 4 })?.items || [],
   );
+  const [categoryList, setCategoryList] = useState(() => {
+    const cachedCats = flattenCategories(
+      catalogService.peekCategories()?.items || [],
+    );
+    return cachedCats.length > 0 ? cachedCats.slice(0, 7) : fallbackCategories;
+  });
+
+  const categorySliderRef = useRef(null);
+  const [canScrollLeft, setCanScrollLeft] = useState(false);
+  const [canScrollRight, setCanScrollRight] = useState(false);
+
+  const checkSliderScroll = () => {
+    const el = categorySliderRef.current;
+    if (!el) return;
+    setCanScrollLeft(el.scrollLeft > 5);
+    setCanScrollRight(el.scrollLeft + el.clientWidth < el.scrollWidth - 5);
+  };
+
+  useEffect(() => {
+    checkSliderScroll();
+    const el = categorySliderRef.current;
+    if (!el) return;
+    const handleScroll = () => checkSliderScroll();
+    el.addEventListener("scroll", handleScroll, { passive: true });
+    window.addEventListener("resize", handleScroll);
+    return () => {
+      el.removeEventListener("scroll", handleScroll);
+      window.removeEventListener("resize", handleScroll);
+    };
+  }, [categoryList]);
+
+  const handleScrollSlider = (direction) => {
+    const el = categorySliderRef.current;
+    if (!el) return;
+    const scrollAmount = Math.max(el.clientWidth * 0.75, 260);
+    el.scrollBy({
+      left: direction === "next" ? scrollAmount : -scrollAmount,
+      behavior: "smooth",
+    });
+  };
 
   useEffect(() => {
     let active = true;
     Promise.all([
       catalogService.getModels({ featured: true, pageSize: 4 }),
       catalogService.getModels({ sort: "newest", pageSize: 4 }),
+      catalogService.getCategories(),
     ])
-      .then(([featuredRes, newestRes]) => {
+      .then(([featuredRes, newestRes, catRes]) => {
         if (!active) return;
         const featured = featuredRes?.items || [];
         const newest = newestRes?.items || [];
         setFeaturedModels(featured.length > 0 ? featured : newest);
         setRecommendedModels(newest);
+
+        const flatCats = flattenCategories(catRes?.items || []);
+        if (flatCats.length > 0) {
+          setCategoryList(flatCats.slice(0, 7));
+        }
 
         // Prefetch trang Thiết bị ở chế độ nền sau khi trang chủ tải xong
         catalogService.prefetchCatalogList();
@@ -231,23 +279,43 @@ function HomePage() {
             <h2>Danh mục</h2>
           </div>
 
-          <div className="camera-group-grid">
-            <Link to="/cameras?cameraType=FILM" className="camera-group-card">
-              <span className="camera-group-icon"><CameraGroupIcon film /></span>
-              <span className="camera-group-copy">
-                <strong>Máy ảnh Film</strong>
-                <span>SLR · Compact · Rangefinder · 120 · Instant</span>
-              </span>
-              <span className="camera-group-arrow" aria-hidden="true">→</span>
-            </Link>
-            <Link to="/cameras?cameraType=DIGITAL" className="camera-group-card">
-              <span className="camera-group-icon"><CameraGroupIcon /></span>
-              <span className="camera-group-copy">
-                <strong>Máy ảnh Digital</strong>
-                <span>Mirrorless · DSLR · Compact · Bridge · Medium Format</span>
-              </span>
-              <span className="camera-group-arrow" aria-hidden="true">→</span>
-            </Link>
+          <div className="category-slider-wrapper">
+            {canScrollLeft && (
+              <button
+                type="button"
+                className="category-slider-arrow prev"
+                onClick={() => handleScrollSlider("prev")}
+                aria-label="Xem danh mục trước"
+              >
+                ‹
+              </button>
+            )}
+
+            <div className="category-tiles-row" ref={categorySliderRef}>
+              {categoryList.map((category) => (
+                <Link
+                  to={`/cameras?category=${category.slug}`}
+                  className="category-tile"
+                  key={category.slug}
+                >
+                  <div className="category-tile-icon">
+                    <span>{category.label}</span>
+                  </div>
+                  <span className="category-tile-name">{category.name}</span>
+                </Link>
+              ))}
+            </div>
+
+            {canScrollRight && (
+              <button
+                type="button"
+                className="category-slider-arrow next"
+                onClick={() => handleScrollSlider("next")}
+                aria-label="Xem danh mục tiếp theo"
+              >
+                ›
+              </button>
+            )}
           </div>
         </div>
       </section>

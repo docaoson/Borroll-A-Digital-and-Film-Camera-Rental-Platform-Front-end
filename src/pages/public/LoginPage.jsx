@@ -120,6 +120,7 @@ function LoginPage() {
                 autoComplete="email"
                 placeholder="ban@example.com"
                 value={email}
+                disabled={submitting}
                 onChange={(e) => setEmail(e.target.value)}
               />
               {fieldErrors.email && (
@@ -135,6 +136,7 @@ function LoginPage() {
                 autoComplete="current-password"
                 placeholder="Nhập mật khẩu"
                 value={password}
+                disabled={submitting}
                 onChange={(e) => setPassword(e.target.value)}
               />
               {fieldErrors.password && (
@@ -144,10 +146,17 @@ function LoginPage() {
 
             <button
               type="submit"
-              className="button primary-button full-width"
+              className="button primary-button full-width auth-submit-btn"
               disabled={submitting}
             >
-              {submitting ? "Đang đăng nhập..." : "Đăng nhập"}
+              {submitting ? (
+                <span className="btn-loading-content">
+                  <span className="btn-spinner" aria-hidden="true" />
+                  Đang đăng nhập...
+                </span>
+              ) : (
+                "Đăng nhập"
+              )}
             </button>
           </form>
 
