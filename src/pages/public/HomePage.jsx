@@ -59,6 +59,20 @@ function flattenCategories(tree = []) {
   return result;
 }
 
+function CameraCardSkeleton() {
+  return (
+    <div className="camera-card camera-card-skeleton" aria-hidden="true">
+      <div className="skeleton-image" />
+      <div className="camera-body">
+        <div className="skeleton-line skeleton-meta" />
+        <div className="skeleton-line skeleton-title" />
+        <div className="skeleton-line skeleton-desc" />
+        <div className="skeleton-line skeleton-footer" />
+      </div>
+    </div>
+  );
+}
+
 function ProductCard({ camera, onSelect }) {
   return (
     <article
@@ -113,6 +127,13 @@ function ProductCard({ camera, onSelect }) {
 
 function HomePage() {
   const navigate = useNavigate();
+  const [loading, setLoading] = useState(() => {
+    const cachedFeatured =
+      catalogService.peekModels({ featured: true, pageSize: 4 })?.items || [];
+    const cachedNewest =
+      catalogService.peekModels({ sort: "newest", pageSize: 4 })?.items || [];
+    return cachedFeatured.length === 0 && cachedNewest.length === 0;
+  });
   const [featuredModels, setFeaturedModels] = useState(() => {
     const cachedFeatured =
       catalogService.peekModels({ featured: true, pageSize: 4 })?.items || [];
@@ -192,6 +213,11 @@ function HomePage() {
         if (!active) return;
         setFeaturedModels([]);
         setRecommendedModels([]);
+      })
+      .finally(() => {
+        if (active) {
+          setLoading(false);
+        }
       });
 
     return () => {
@@ -254,7 +280,13 @@ function HomePage() {
             </Link>
           </div>
 
-          {featuredModels.length === 0 ? (
+          {loading ? (
+            <div className="featured-grid" aria-label="Đang tải danh sách nổi bật">
+              {Array.from({ length: 4 }).map((_, index) => (
+                <CameraCardSkeleton key={`featured-skeleton-${index}`} />
+              ))}
+            </div>
+          ) : featuredModels.length === 0 ? (
             <div className="empty-state">
               <p>Hiện chưa có mẫu thiết bị nổi bật nào được hiển thị.</p>
             </div>
@@ -354,7 +386,13 @@ function HomePage() {
             </Link>
           </div>
 
-          {recommendedModels.length === 0 ? (
+          {loading ? (
+            <div className="featured-grid" aria-label="Đang tải thiết bị đề xuất">
+              {Array.from({ length: 4 }).map((_, index) => (
+                <CameraCardSkeleton key={`recommended-skeleton-${index}`} />
+              ))}
+            </div>
+          ) : recommendedModels.length === 0 ? (
             <div className="empty-state">
               <p>Hiện chưa có thiết bị nào được hiển thị.</p>
             </div>
