@@ -1,10 +1,11 @@
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { Link } from "react-router-dom";
 import MainNav from "./MainNav";
 import AccountMenu from "./AccountMenu";
 
 function Header({ variant = "public" }) {
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
+  const headerRef = useRef(null);
   const closeMobileMenu = () => setIsMobileMenuOpen(false);
 
   useEffect(() => {
@@ -14,12 +15,23 @@ function Header({ variant = "public" }) {
         setIsMobileMenuOpen(false);
       }
     };
+    const handlePointerDown = (event) => {
+      if (headerRef.current && !headerRef.current.contains(event.target)) {
+        setIsMobileMenuOpen(false);
+      }
+    };
     window.addEventListener("keydown", handleKeyDown);
-    return () => window.removeEventListener("keydown", handleKeyDown);
+    document.addEventListener("mousedown", handlePointerDown);
+    document.addEventListener("touchstart", handlePointerDown);
+    return () => {
+      window.removeEventListener("keydown", handleKeyDown);
+      document.removeEventListener("mousedown", handlePointerDown);
+      document.removeEventListener("touchstart", handlePointerDown);
+    };
   }, [isMobileMenuOpen]);
 
   return (
-    <header className="site-header">
+    <header className="site-header" ref={headerRef}>
       <div
         className={`container header-inner${isMobileMenuOpen ? " mobile-menu-open" : ""}`}
       >
