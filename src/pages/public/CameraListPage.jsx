@@ -353,6 +353,13 @@ function CameraListPage() {
     return list;
   }, [categories]);
 
+  const selectedCategoryNames = useMemo(() => {
+    if (selectedCategories.length === 0) return [];
+    const map = new Map();
+    flatCategories.forEach((c) => map.set(c.slug, c.name));
+    return selectedCategories.map((s) => map.get(s) || s);
+  }, [selectedCategories, flatCategories]);
+
   return (
     <div className="collection-page">
       <div className="container collection-shell">
@@ -606,6 +613,23 @@ function CameraListPage() {
                       Array.isArray(camera.availableAtBranches) &&
                       camera.availableAtBranches.length > 0;
 
+                    // Nếu người dùng đang lọc theo danh mục cụ thể, hiển thị danh mục đang lọc
+                    // ngược lại hiển thị danh mục của máy, nếu không có hiển thị formatCameraType hoặc "Máy ảnh"
+                    const badgeCategoryName =
+                      selectedCategoryNames.length === 1
+                        ? selectedCategoryNames[0]
+                        : camera.category?.name ||
+                          formatCameraType(camera.cameraType) ||
+                          "Máy ảnh";
+
+                    // Dòng metadata phụ: chỉ hiển thị hãng, khổ phim hoặc ngàm lens;
+                    // Không hiển thị lặp lại cameraType để loại bỏ hoàn toàn mâu thuẫn giữa Category và Phân loại
+                    const subMetaItems = [
+                      camera.brand?.name,
+                      camera.filmFormat,
+                      camera.mount ? `Ngàm ${camera.mount}` : null,
+                    ].filter(Boolean);
+
                     return (
                       <article
                         key={camera.id}
@@ -653,7 +677,7 @@ function CameraListPage() {
                         <div className="camera-body">
                           <div className="camera-card-header">
                             <span className="camera-category">
-                              {camera.category?.name || "Máy ảnh"}
+                              {badgeCategoryName}
                             </span>
                             <FavoriteToggle
                               modelId={camera.id}
@@ -665,13 +689,14 @@ function CameraListPage() {
                           <h3 className="camera-card-title">{camera.name}</h3>
 
                           <div className="camera-meta-tags">
-                            <span className="camera-brand-tag">
-                              {camera.brand?.name || "Máy ảnh"}
-                            </span>
-                            <span className="meta-separator">·</span>
-                            <span className="camera-type-tag">
-                              {formatCameraType(camera.cameraType)}
-                            </span>
+                            {subMetaItems.map((metaText, idx) => (
+                              <span key={idx} className="camera-meta-tag-item">
+                                {idx > 0 && <span className="meta-separator">·</span>}
+                                <span className={idx === 0 ? "camera-brand-tag" : "camera-type-tag"}>
+                                  {metaText}
+                                </span>
+                              </span>
+                            ))}
                           </div>
 
                           <div className="camera-availability-row">
