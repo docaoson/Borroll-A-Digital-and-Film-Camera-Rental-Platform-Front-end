@@ -1,48 +1,72 @@
+import { Suspense, lazy } from "react";
 import { Routes, Route } from "react-router-dom";
 
 import PublicLayout from "../layouts/PublicLayout";
-import RenterLayout from "../layouts/RenterLayout";
-import AdminLayout from "../layouts/AdminLayout";
 import ProtectedRoute from "../components/shared/ProtectedRoute";
 
 import HomePage from "../pages/public/HomePage";
 import CameraListPage from "../pages/public/CameraListPage";
 import CameraDetailPage from "../pages/public/CameraDetailPage";
-import AboutPage from "../pages/public/AboutPage";
-import LoginPage from "../pages/public/LoginPage";
-import RegisterPage from "../pages/public/RegisterPage";
-import RentalPolicyPage from "../pages/public/RentalPolicyPage";
-import DeliveryPolicyPage from "../pages/public/DeliveryPolicyPage";
-import ReturnPolicyPage from "../pages/public/ReturnPolicyPage";
-import PrivacyPolicyPage from "../pages/public/PrivacyPolicyPage";
-import SupportPage from "../pages/public/SupportPage";
-
-import CartPage from "../pages/renter/CartPage";
-import CheckoutPage from "../pages/renter/CheckoutPage";
-import OrdersPage from "../pages/renter/OrdersPage";
-import OrderDetailPage from "../pages/renter/OrderDetailPage";
-import ProfilePage from "../pages/renter/ProfilePage";
-import FavoritesPage from "../pages/renter/FavoritesPage";
-
-import AdminDashboardPage from "../pages/admin/AdminDashboardPage";
-import AdminProductsPage from "../pages/admin/AdminProductsPage";
-import AdminProductFormPage from "../pages/admin/AdminProductFormPage";
-import AdminCategoriesPage from "../pages/admin/AdminCategoriesPage";
-import AdminBrandsPage from "../pages/admin/AdminBrandsPage";
-import AdminInventoryPage from "../pages/admin/AdminInventoryPage";
-import AdminBranchesPage from "../pages/admin/AdminBranchesPage";
-import AdminCalendarPage from "../pages/admin/AdminCalendarPage";
-import AdminOrdersPage from "../pages/admin/AdminOrdersPage";
-import AdminOrderDetailPage from "../pages/admin/AdminOrderDetailPage";
-import AdminUsersPage from "../pages/admin/AdminUsersPage";
-
-import ForbiddenPage from "../pages/error/ForbiddenPage";
-import ErrorPage from "../pages/error/ErrorPage";
 import NotFoundPage from "../pages/error/NotFoundPage";
+
+const RenterLayout = lazy(() => import("../layouts/RenterLayout"));
+const AdminLayout = lazy(() => import("../layouts/AdminLayout"));
+
+const AboutPage = lazy(() => import("../pages/public/AboutPage"));
+const LoginPage = lazy(() => import("../pages/public/LoginPage"));
+const RegisterPage = lazy(() => import("../pages/public/RegisterPage"));
+const RentalPolicyPage = lazy(() => import("../pages/public/RentalPolicyPage"));
+const DeliveryPolicyPage = lazy(
+  () => import("../pages/public/DeliveryPolicyPage"),
+);
+const ReturnPolicyPage = lazy(() => import("../pages/public/ReturnPolicyPage"));
+const PrivacyPolicyPage = lazy(
+  () => import("../pages/public/PrivacyPolicyPage"),
+);
+const SupportPage = lazy(() => import("../pages/public/SupportPage"));
+
+const CartPage = lazy(() => import("../pages/renter/CartPage"));
+const CheckoutPage = lazy(() => import("../pages/renter/CheckoutPage"));
+const OrdersPage = lazy(() => import("../pages/renter/OrdersPage"));
+const OrderDetailPage = lazy(() => import("../pages/renter/OrderDetailPage"));
+const ProfilePage = lazy(() => import("../pages/renter/ProfilePage"));
+const FavoritesPage = lazy(() => import("../pages/renter/FavoritesPage"));
+
+const AdminDashboardPage = lazy(
+  () => import("../pages/admin/AdminDashboardPage"),
+);
+const AdminProductsPage = lazy(
+  () => import("../pages/admin/AdminProductsPage"),
+);
+const AdminProductFormPage = lazy(
+  () => import("../pages/admin/AdminProductFormPage"),
+);
+const AdminCategoriesPage = lazy(
+  () => import("../pages/admin/AdminCategoriesPage"),
+);
+const AdminBrandsPage = lazy(() => import("../pages/admin/AdminBrandsPage"));
+const AdminInventoryPage = lazy(
+  () => import("../pages/admin/AdminInventoryPage"),
+);
+const AdminBranchesPage = lazy(
+  () => import("../pages/admin/AdminBranchesPage"),
+);
+const AdminCalendarPage = lazy(
+  () => import("../pages/admin/AdminCalendarPage"),
+);
+const AdminOrdersPage = lazy(() => import("../pages/admin/AdminOrdersPage"));
+const AdminOrderDetailPage = lazy(
+  () => import("../pages/admin/AdminOrderDetailPage"),
+);
+const AdminUsersPage = lazy(() => import("../pages/admin/AdminUsersPage"));
+
+const ForbiddenPage = lazy(() => import("../pages/error/ForbiddenPage"));
+const ErrorPage = lazy(() => import("../pages/error/ErrorPage"));
 
 function AppRoutes() {
   return (
-    <Routes>
+    <Suspense fallback={null}>
+      <Routes>
       <Route path="/" element={<PublicLayout />}>
         <Route index element={<HomePage />} />
         <Route path="about" element={<AboutPage />} />
@@ -208,7 +232,8 @@ function AppRoutes() {
         />
         <Route path="*" element={<NotFoundPage />} />
       </Route>
-    </Routes>
+      </Routes>
+    </Suspense>
   );
 }
 
