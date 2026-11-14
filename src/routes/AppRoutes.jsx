@@ -59,6 +59,7 @@ const AdminOrderDetailPage = lazy(
   () => import("../pages/admin/AdminOrderDetailPage"),
 );
 const AdminUsersPage = lazy(() => import("../pages/admin/AdminUsersPage"));
+const AdminPaymentsPage = lazy(() => import("../pages/admin/AdminPaymentsPage"));
 
 const ForbiddenPage = lazy(() => import("../pages/error/ForbiddenPage"));
 const ErrorPage = lazy(() => import("../pages/error/ErrorPage"));
@@ -221,6 +222,7 @@ function AppRoutes() {
         {/* VẬN HÀNH ĐƠN THUÊ: Nhân viên & Admin xem, xác nhận, giao/nhận máy (Row 2, 4, 5) */}
         <Route path="orders" element={<AdminOrdersPage />} />
         <Route path="orders/:id" element={<AdminOrderDetailPage />} />
+        <Route path="payments" element={<AdminPaymentsPage />} />
         {/* TÀI KHOẢN: Chỉ ADMIN mới xem, gán vai trò, khóa/mở khóa (Row 10) */}
         <Route
           path="users"

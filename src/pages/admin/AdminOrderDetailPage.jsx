@@ -511,6 +511,20 @@ function AdminOrderDetailPage() {
         </div>
       </section>
 
+      <section className="payment-review-card" aria-label="Lịch sử thanh toán">
+        <h2>Lịch sử thanh toán chuyển khoản</h2>
+        <p>Trạng thái: <strong>{booking.payment?.status || "UNPAID"}</strong> · Số tiền: <strong>{formatCurrency(booking.payment?.amount ?? booking.totalDueAtPickup)}</strong></p>
+        {booking.payment?.proofs?.length ? booking.payment.proofs.map((proof) => (
+          <article className="payment-history-row" key={proof.id}>
+            <a href={proof.imageUrl} target="_blank" rel="noreferrer">Xem ảnh minh chứng</a>
+            <span>{formatDateTime(proof.submittedAt)}</span>
+            <strong>{proof.status}</strong>
+            {proof.rejectionReason && <p>Lý do từ chối: {proof.rejectionReason}</p>}
+          </article>
+        )) : <p>Chưa có ảnh minh chứng thanh toán.</p>}
+        <Link to="/admin/payments" className="button secondary-button small">Mở danh sách xử lý thanh toán</Link>
+      </section>
+
       {/* SUCCESS ALERTS */}
       {successMsg && (
         <div className="form-alert success admin-alert-bar" role="status">
