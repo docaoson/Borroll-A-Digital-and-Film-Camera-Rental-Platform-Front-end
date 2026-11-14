@@ -40,6 +40,19 @@ body {
   letter-spacing: var(--borroll-ls-body, normal);
   overflow-x: hidden;
   width: 100%;
+  overflow-wrap: anywhere;
+  word-break: break-word;
+}
+
+/* Word break & layout overflow protection for unbroken strings */
+p, span, div, h1, h2, h3, h4, h5, h6,
+td, th, li, label, blockquote, dt, dd,
+.camera-card-title, .camera-description,
+.detail-description, .checkout-summary,
+.booking-note, .table-cell, .form-alert,
+.camera-meta, .admin-note {
+  overflow-wrap: anywhere;
+  word-break: break-word;
 }
 
 #root {

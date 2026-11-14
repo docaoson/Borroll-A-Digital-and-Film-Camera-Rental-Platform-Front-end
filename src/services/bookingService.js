@@ -10,8 +10,13 @@ export const bookingService = {
   },
 
   createBooking(payload) {
+    const headers = {};
+    if (payload?.idempotencyKey) {
+      headers["Idempotency-Key"] = payload.idempotencyKey;
+    }
     return apiRequest("/bookings", {
       method: "POST",
+      headers,
       body: payload,
     });
   },

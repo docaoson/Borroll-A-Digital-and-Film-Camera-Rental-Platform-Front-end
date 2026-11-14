@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { Link } from "react-router-dom";
 import { useAuth } from "../../hooks/useAuth";
 import { useRentalSelection } from "../../hooks/useRentalSelection";
@@ -19,6 +19,7 @@ function CheckoutPage() {
   const [submitting, setSubmitting] = useState(false);
   const [submitError, setSubmitError] = useState("");
   const [createdBooking, setCreatedBooking] = useState(null);
+  const idempotencyKeyRef = useRef(null);
 
   // Quote State
   const [quoteState, setQuoteState] = useState({
@@ -120,6 +121,13 @@ function CheckoutPage() {
       return;
     }
 
+    if (!idempotencyKeyRef.current) {
+      idempotencyKeyRef.current =
+        typeof crypto !== "undefined" && crypto.randomUUID
+          ? crypto.randomUUID()
+          : `idemp_${Date.now()}_${Math.random().toString(36).slice(2, 10)}`;
+    }
+
     setSubmitting(true);
     try {
       const booking = await bookingService.createBooking({
@@ -132,8 +140,10 @@ function CheckoutPage() {
         contactPhone: contactPhone.trim(),
         note: note.trim() || null,
         setupPlanId: null,
+        idempotencyKey: idempotencyKeyRef.current,
       });
 
+      idempotencyKeyRef.current = null;
       setCreatedBooking(booking);
       clearSelection();
     } catch (error) {
