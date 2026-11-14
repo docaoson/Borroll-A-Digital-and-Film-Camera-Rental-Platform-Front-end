@@ -1,12 +1,45 @@
 import { apiRequest } from "../lib/apiClient";
 
+const quoteCache = new Map();
+
 export const bookingService = {
-  quote(payload) {
-    return apiRequest("/bookings/quote", {
+  quote(payload, options = {}) {
+    const key = JSON.stringify(payload);
+    const now = Date.now();
+    const cached = quoteCache.get(key);
+
+    if (!options.force && cached) {
+      if (cached.inFlight) return cached.inFlight;
+      if (cached.data !== undefined && now < cached.expiresAt) {
+        return Promise.resolve(cached.data);
+      }
+    }
+
+    const promise = apiRequest("/bookings/quote", {
       method: "POST",
       body: payload,
       skipAuthRetry: true,
+    })
+      .then((data) => {
+        quoteCache.set(key, {
+          data,
+          expiresAt: Date.now() + 60 * 1000,
+          inFlight: null,
+        });
+        return data;
+      })
+      .catch((err) => {
+        quoteCache.delete(key);
+        throw err;
+      });
+
+    quoteCache.set(key, {
+      data: cached?.data,
+      expiresAt: cached?.expiresAt || 0,
+      inFlight: promise,
     });
+
+    return promise;
   },
 
   createBooking(payload) {
