@@ -90,7 +90,7 @@ function AppRoutes() {
         path="/cart"
         element={
           <ProtectedRoute>
-            <RenterLayout />
+            <PublicLayout />
           </ProtectedRoute>
         }
       >
@@ -100,7 +100,7 @@ function AppRoutes() {
         path="/checkout"
         element={
           <ProtectedRoute>
-            <RenterLayout />
+            <PublicLayout />
           </ProtectedRoute>
         }
       >
@@ -110,7 +110,7 @@ function AppRoutes() {
         path="/orders"
         element={
           <ProtectedRoute>
-            <RenterLayout />
+            <PublicLayout />
           </ProtectedRoute>
         }
       >

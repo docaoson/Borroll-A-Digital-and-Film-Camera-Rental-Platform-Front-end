@@ -4287,7 +4287,9 @@ select {
 
 .cart-page-wrapper,
 .checkout-page-wrapper {
-  width: 100%;
+  width: min(1200px, calc(100% - 2.5rem));
+  margin: 0 auto;
+  padding: 1.5rem 0 3.5rem;
 }
 
 .cart-page-header,

@@ -149,7 +149,7 @@ function CartPage() {
   const currentBranch = branches.find((b) => b.slug === branchSlug);
 
   return (
-    <div className="cart-page-wrapper">
+    <div className="cart-page-wrapper cart-shell container">
       <header className="cart-page-header">
         <div>
           <p className="eyebrow">GIỎ THUÊ THIẾT BỊ</p>
