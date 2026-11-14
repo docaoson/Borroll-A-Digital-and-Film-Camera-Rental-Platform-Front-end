@@ -18,7 +18,6 @@ function MainNav({ variant = "public", onNavigate }) {
   const links =
     variant === "admin"
       ? [
-          { to: "/admin", label: "Tổng quan", end: true },
           { to: "/admin/inventory", label: "Kho máy" },
           { to: "/admin/calendar", label: "Lịch thuê" },
           { to: "/admin/orders", label: "Đơn thuê" },

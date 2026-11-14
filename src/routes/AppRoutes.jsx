@@ -1,5 +1,5 @@
 import { Suspense, lazy } from "react";
-import { Routes, Route } from "react-router-dom";
+import { Routes, Route, Navigate } from "react-router-dom";
 
 import PublicLayout from "../layouts/PublicLayout";
 import ProtectedRoute from "../components/shared/ProtectedRoute";
@@ -32,9 +32,6 @@ const OrderDetailPage = lazy(() => import("../pages/renter/OrderDetailPage"));
 const ProfilePage = lazy(() => import("../pages/renter/ProfilePage"));
 const FavoritesPage = lazy(() => import("../pages/renter/FavoritesPage"));
 
-const AdminDashboardPage = lazy(
-  () => import("../pages/admin/AdminDashboardPage"),
-);
 const AdminProductsPage = lazy(
   () => import("../pages/admin/AdminProductsPage"),
 );
@@ -158,7 +155,7 @@ function AppRoutes() {
             </ProtectedRoute>
           }
         >
-          <Route index element={<AdminDashboardPage />} />
+          <Route index element={<Navigate to="orders" replace />} />
           {/* Chỉ ADMIN mới có quyền: Thêm, sửa, ẩn mẫu máy (Row 7) */}
           <Route
             path="products"

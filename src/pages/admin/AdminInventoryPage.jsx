@@ -508,7 +508,7 @@ function AdminInventoryPage() {
       <div className="admin-page-header">
         <div className="admin-page-title-wrap">
           <div className="admin-breadcrumb">
-            <Link to="/admin">Admin</Link>
+            <Link to="/admin/orders">Đơn thuê</Link>
             <span className="separator">/</span>
             <span>Kho máy & Serial</span>
           </div>

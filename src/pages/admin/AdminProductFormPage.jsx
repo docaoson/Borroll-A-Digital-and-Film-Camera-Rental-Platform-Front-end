@@ -8,18 +8,6 @@ import {
 import { adminService } from "../../services/adminService";
 import { ApiError } from "../../lib/apiClient";
 
-function slugify(text) {
-  return text
-    .toString()
-    .toLowerCase()
-    .normalize("NFD")
-    .replace(/[\u0300-\u036f]/g, "")
-    .replace(/[^a-z0-9\s-]/g, "")
-    .trim()
-    .replace(/[\s-]+/g, "-")
-    .replace(/^-+|-+$/g, "");
-}
-
 const MAX_FILE_SIZE = 8 * 1024 * 1024; // 8MB
 const ALLOWED_MIME_TYPES = ["image/jpeg", "image/png", "image/webp"];
 
@@ -70,7 +58,7 @@ function AdminProductFormPage() {
 
   // Basic Details Form State
   const [name, setName] = useState("");
-  const [slug, setSlug] = useState("");
+  const [savedSlug, setSavedSlug] = useState("");
   const [kind, setKind] = useState(() =>
     initialType === "accessory" ? "ACCESSORY" : "CAMERA",
   );
@@ -145,7 +133,7 @@ function AdminProductFormPage() {
       .then((data) => {
         if (!active) return;
         setName(data.name || "");
-        setSlug(data.slug || "");
+        setSavedSlug(data.slug || "");
         setKind(data.kind || "CAMERA");
         const loadedSpecs =
           data.specs?.specs &&
@@ -260,13 +248,6 @@ function AdminProductFormPage() {
     };
   }, [selectedFiles]);
 
-  // Handle auto-generating slug on Name blur
-  const handleNameBlur = () => {
-    if (!slug.trim() && name.trim()) {
-      setSlug(slugify(name));
-    }
-  };
-
   // Add files to local preview list with validation
   const processIncomingFiles = (fileList) => {
     if (!fileList || fileList.length === 0) return;
@@ -346,7 +327,6 @@ function AdminProductFormPage() {
   const validateForm = () => {
     const errors = {};
     if (!name.trim()) errors.name = "Vui lòng nhập tên mẫu máy";
-    if (!slug.trim()) errors.slug = "Vui lòng nhập slug định danh URL";
     if (kind === "CAMERA") {
       const cameraRoot = getCameraCategoryRoot(categories, cameraType);
       if (cameraType !== "FILM" && cameraType !== "DIGITAL") {
@@ -441,7 +421,6 @@ function AdminProductFormPage() {
       categoryId: effectiveCategoryId,
       brandId,
       name: name.trim(),
-      slug: slugify(slug),
       description: description.trim(),
       cameraType: kind === "CAMERA" ? cameraType : null,
       mount: mount.trim() || null,
@@ -567,7 +546,7 @@ function AdminProductFormPage() {
         // Reload fresh server model data to ensure all UI components display updated values
         const freshModel = await adminService.getAdminModel(id);
         setName(freshModel.name || "");
-        setSlug(freshModel.slug || "");
+        setSavedSlug(freshModel.slug || "");
         setFilmFormat(freshModel.filmFormat || "");
         setCategoryId(freshModel.categoryId || "");
         setCameraType(
@@ -790,7 +769,7 @@ function AdminProductFormPage() {
       <section className="admin-page-header">
         <div className="admin-page-titles">
           <div className="admin-breadcrumb">
-            <Link to="/admin">Bảng điều khiển</Link>
+            <Link to="/admin/orders">Đơn thuê</Link>
             <span className="sep">/</span>
             <Link to="/admin/products">Danh mục sản phẩm</Link>
             <span className="sep">/</span>
@@ -827,9 +806,9 @@ function AdminProductFormPage() {
           >
             Quay lại danh sách
           </Link>
-          {isEditMode && slug && !isFilmRollForm && (
+          {isEditMode && savedSlug && !isFilmRollForm && (
             <a
-              href={`/cameras/${slug}`}
+              href={`/cameras/${savedSlug}`}
               target="_blank"
               rel="noopener noreferrer"
               className="button secondary-button compact"
@@ -909,8 +888,7 @@ function AdminProductFormPage() {
       )}
 
       {/* MAIN FORM */}
-      <form onSubmit={handleSubmit} noValidate className="admin-form-shell">
-        {/* SECTION 1: THÔNG TIN CƠ BẢN */}
+      <form onSubmit={handleSubmit} noValidate className="admin-form-shell">        {/* SECTION 1: BASIC INFORMATION */}
         <div className="admin-form-card">
           <div className="admin-card-header">
             <span className="admin-section-num">01</span>
@@ -937,38 +915,10 @@ function AdminProductFormPage() {
                 placeholder="Ví dụ: Fujifilm X-T5, Canon EOS R6 Mark II, Leica M6..."
                 value={name}
                 onChange={(e) => setName(e.target.value)}
-                onBlur={handleNameBlur}
                 required
               />
               {fieldErrors.name && (
                 <span className="field-error-msg">{fieldErrors.name}</span>
-              )}
-            </div>
-
-            {/* Slug */}
-            <div
-              className={`admin-field-group col-span-2 ${fieldErrors.slug ? "has-error" : ""}`}
-            >
-              <label htmlFor="model-slug">
-                Slug URL định danh <span className="req">*</span>
-              </label>
-              <div className="admin-input-prefix-box">
-                <span className="input-prefix">/cameras/</span>
-                <input
-                  id="model-slug"
-                  type="text"
-                  placeholder="fujifilm-x-t5"
-                  value={slug}
-                  onChange={(e) => setSlug(e.target.value)}
-                  required
-                />
-              </div>
-              <span className="field-hint">
-                Dùng cho đường dẫn SEO công khai. Chỉ gồm chữ cái thường, số và
-                dấu gạch ngang (-).
-              </span>
-              {fieldErrors.slug && (
-                <span className="field-error-msg">{fieldErrors.slug}</span>
               )}
             </div>
 

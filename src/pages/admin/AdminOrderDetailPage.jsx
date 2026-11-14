@@ -410,8 +410,6 @@ function AdminOrderDetailPage() {
       <section className="admin-page-header">
         <div className="admin-page-titles">
           <div className="admin-breadcrumb">
-            <Link to="/admin">Bảng điều khiển</Link>
-            <span className="sep">/</span>
             <Link to="/admin/orders">Quản lý đơn thuê</Link>
             <span className="sep">/</span>
             <span className="current">#{booking.code || booking.id.slice(0, 8)}</span>

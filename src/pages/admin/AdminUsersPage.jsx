@@ -333,7 +333,7 @@ function AdminUsersPage({ defaultRole = "ALL" }) {
       <div className="admin-page-header">
         <div className="admin-page-title-wrap">
           <div className="admin-breadcrumb">
-            <Link to="/admin">Admin</Link>
+            <Link to="/admin/orders">Đơn thuê</Link>
             <span className="separator">/</span>
             <span>Tài khoản & Phân quyền</span>
           </div>

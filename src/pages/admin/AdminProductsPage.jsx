@@ -193,7 +193,7 @@ function AdminProductsPage() {
       <section className="admin-page-header">
         <div className="admin-page-titles">
           <div className="admin-breadcrumb">
-            <Link to="/admin">Bảng điều khiển</Link>
+            <Link to="/admin/orders">Đơn thuê</Link>
             <span className="sep">/</span>
             <span className="current">Quản lý mẫu sản phẩm</span>
           </div>

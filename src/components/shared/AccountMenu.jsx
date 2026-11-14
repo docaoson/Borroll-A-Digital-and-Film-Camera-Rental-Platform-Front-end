@@ -28,7 +28,7 @@ function AccountMenu({ onNavigate }) {
     return (
       <div className="account-menu" aria-label="Tài khoản người dùng">
         {isAdmin && (
-          <NavLink to="/admin" className="account-link" onClick={onNavigate}>
+          <NavLink to="/admin/orders" className="account-link" onClick={onNavigate}>
             Quản trị
           </NavLink>
         )}

@@ -316,8 +316,6 @@ function AdminOrdersPage() {
       <section className="admin-page-header">
         <div className="admin-page-titles">
           <div className="admin-breadcrumb">
-            <Link to="/admin">Bảng điều khiển</Link>
-            <span className="sep">/</span>
             <span className="current">Quản lý đơn thuê & Vận hành</span>
           </div>
           <h1 className="admin-heading-title">Quản lý đơn thuê thiết bị</h1>
