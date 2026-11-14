@@ -113,9 +113,24 @@ function ProductCard({ camera, onSelect }) {
 
 function HomePage() {
   const navigate = useNavigate();
-  const [featuredModels, setFeaturedModels] = useState([]);
-  const [recommendedModels, setRecommendedModels] = useState([]);
-  const [categoryList, setCategoryList] = useState(fallbackCategories);
+  const [featuredModels, setFeaturedModels] = useState(() => {
+    const cachedFeatured =
+      catalogService.peekModels({ featured: true, pageSize: 4 })?.items || [];
+    if (cachedFeatured.length > 0) return cachedFeatured;
+    return (
+      catalogService.peekModels({ sort: "newest", pageSize: 4 })?.items || []
+    );
+  });
+  const [recommendedModels, setRecommendedModels] = useState(
+    () =>
+      catalogService.peekModels({ sort: "newest", pageSize: 4 })?.items || [],
+  );
+  const [categoryList, setCategoryList] = useState(() => {
+    const cachedCats = flattenCategories(
+      catalogService.peekCategories()?.items || [],
+    );
+    return cachedCats.length > 0 ? cachedCats.slice(0, 7) : fallbackCategories;
+  });
 
   useEffect(() => {
     let active = true;

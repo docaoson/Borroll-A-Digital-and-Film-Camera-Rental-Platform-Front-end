@@ -85,7 +85,13 @@ export async function refreshAccessToken() {
 }
 
 export async function apiRequest(path, options = {}) {
-  const { method = "GET", body, headers = {}, skipAuthRetry = false } = options;
+  const {
+    method = "GET",
+    body,
+    headers = {},
+    skipAuthRetry = false,
+    publicEndpoint = false,
+  } = options;
 
   const requestHeaders = new Headers(headers);
   if (body !== undefined && !requestHeaders.has("Content-Type")) {
@@ -106,7 +112,7 @@ export async function apiRequest(path, options = {}) {
         : typeof body === "string"
           ? body
           : JSON.stringify(body),
-    credentials: "include",
+    credentials: publicEndpoint && !accessToken ? "omit" : "include",
   });
 
   const payload = await parseJsonSafe(response);

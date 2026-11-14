@@ -4,6 +4,90 @@ import { apiRequest } from "../lib/apiClient";
 const cacheMap = new Map();
 const preconnectedOrigins = new Set();
 const preloadedImageUrls = new Set();
+const STORAGE_CACHE_PREFIX = "borroll_catalog_v1:";
+const STORAGE_STALE_MAX_MS = 24 * 60 * 60 * 1000; // 24 hours max stale retention
+
+function readStorageCache(key) {
+  try {
+    if (typeof window === "undefined" || !window.localStorage) return null;
+    const raw = window.localStorage.getItem(`${STORAGE_CACHE_PREFIX}${key}`);
+    if (!raw) return null;
+    const parsed = JSON.parse(raw);
+    if (
+      !parsed ||
+      parsed.data === undefined ||
+      typeof parsed.savedAt !== "number" ||
+      Date.now() - parsed.savedAt > STORAGE_STALE_MAX_MS
+    ) {
+      window.localStorage.removeItem(`${STORAGE_CACHE_PREFIX}${key}`);
+      return null;
+    }
+    return parsed;
+  } catch {
+    return null;
+  }
+}
+
+function writeStorageCache(key, data, ttlMs) {
+  try {
+    if (typeof window === "undefined" || !window.localStorage) return;
+    const now = Date.now();
+    window.localStorage.setItem(
+      `${STORAGE_CACHE_PREFIX}${key}`,
+      JSON.stringify({
+        data,
+        savedAt: now,
+        expiresAt: now + ttlMs,
+      }),
+    );
+  } catch {
+    // Ignore storage quota errors
+  }
+}
+
+function clearStorageCache(prefix) {
+  try {
+    if (typeof window === "undefined" || !window.localStorage) return;
+    const fullPrefix = `${STORAGE_CACHE_PREFIX}${prefix || ""}`;
+    const keysToDelete = [];
+    for (let i = 0; i < window.localStorage.length; i += 1) {
+      const k = window.localStorage.key(i);
+      if (k && k.startsWith(fullPrefix)) {
+        keysToDelete.push(k);
+      }
+    }
+    keysToDelete.forEach((k) => window.localStorage.removeItem(k));
+  } catch {
+    // Ignore storage errors
+  }
+}
+
+function peekCachedData(key) {
+  const mem = cacheMap.get(key);
+  if (mem?.data !== undefined) {
+    return mem.data;
+  }
+  const stored = readStorageCache(key);
+  if (stored?.data !== undefined) {
+    cacheMap.set(key, {
+      data: stored.data,
+      expiresAt: stored.expiresAt || 0,
+      inFlight: null,
+    });
+    return stored.data;
+  }
+  return null;
+}
+
+function buildModelsQueryString(params = {}) {
+  const query = new URLSearchParams();
+  Object.entries(params).forEach(([key, val]) => {
+    if (val !== undefined && val !== null && val !== "") {
+      query.set(key, String(val));
+    }
+  });
+  return query.toString();
+}
 
 function ensureStoragePreconnect(url) {
   if (!url || typeof document === "undefined") return;
@@ -53,7 +137,19 @@ function getTodayMonthIso() {
  */
 function cachedRequest(key, ttlMs, fetcher, force = false) {
   const now = Date.now();
-  const cached = cacheMap.get(key);
+  let cached = cacheMap.get(key);
+
+  if (!cached) {
+    const stored = readStorageCache(key);
+    if (stored?.data !== undefined) {
+      cached = {
+        data: stored.data,
+        expiresAt: stored.expiresAt || 0,
+        inFlight: null,
+      };
+      cacheMap.set(key, cached);
+    }
+  }
 
   if (!force && cached) {
     if (cached.inFlight) {
@@ -71,10 +167,19 @@ function cachedRequest(key, ttlMs, fetcher, force = false) {
         expiresAt: Date.now() + ttlMs,
         inFlight: null,
       });
+      writeStorageCache(key, data, ttlMs);
       return data;
     })
     .catch((err) => {
-      cacheMap.delete(key);
+      if (cached?.data !== undefined) {
+        cacheMap.set(key, {
+          data: cached.data,
+          expiresAt: cached.expiresAt || 0,
+          inFlight: null,
+        });
+      } else {
+        cacheMap.delete(key);
+      }
       throw err;
     });
 
@@ -90,6 +195,7 @@ function cachedRequest(key, ttlMs, fetcher, force = false) {
 export const catalogService = {
   // Clear cache entries matching a prefix, or entire cache if no prefix given
   clearCache(prefix) {
+    clearStorageCache(prefix);
     if (!prefix) {
       cacheMap.clear();
       return;
@@ -101,11 +207,34 @@ export const catalogService = {
     }
   },
 
+  peekBranches() {
+    return peekCachedData("branches");
+  },
+
+  peekCategories() {
+    return peekCachedData("categories");
+  },
+
+  peekBrands() {
+    return peekCachedData("brands");
+  },
+
+  peekModels(params = {}) {
+    const qs = buildModelsQueryString(params);
+    return peekCachedData(`models:${qs}`);
+  },
+
+  peekModelBySlug(slug) {
+    if (!slug) return null;
+    return peekCachedData(`model:${slug}`);
+  },
+
   getBranches(options = {}) {
     return cachedRequest(
       "branches",
       10 * 60 * 1000,
-      () => apiRequest("/branches", { skipAuthRetry: true }),
+      () =>
+        apiRequest("/branches", { skipAuthRetry: true, publicEndpoint: true }),
       options.force,
     );
   },
@@ -114,7 +243,11 @@ export const catalogService = {
     return cachedRequest(
       "categories",
       10 * 60 * 1000,
-      () => apiRequest("/categories", { skipAuthRetry: true }),
+      () =>
+        apiRequest("/categories", {
+          skipAuthRetry: true,
+          publicEndpoint: true,
+        }),
       options.force,
     );
   },
@@ -123,7 +256,8 @@ export const catalogService = {
     return cachedRequest(
       "brands",
       10 * 60 * 1000,
-      () => apiRequest("/brands", { skipAuthRetry: true }),
+      () =>
+        apiRequest("/brands", { skipAuthRetry: true, publicEndpoint: true }),
       options.force,
     );
   },
@@ -132,26 +266,27 @@ export const catalogService = {
     return cachedRequest(
       "film-products",
       10 * 60 * 1000,
-      () => apiRequest("/film-products", { skipAuthRetry: true }),
+      () =>
+        apiRequest("/film-products", {
+          skipAuthRetry: true,
+          publicEndpoint: true,
+        }),
       options.force,
     );
   },
 
   getModels(params = {}, options = {}) {
-    const query = new URLSearchParams();
-    Object.entries(params).forEach(([key, val]) => {
-      if (val !== undefined && val !== null && val !== "") {
-        query.set(key, String(val));
-      }
-    });
-    const qs = query.toString();
+    const qs = buildModelsQueryString(params);
     const endpoint = `/models${qs ? `?${qs}` : ""}`;
     // Cache filtered catalog model lists for 60 seconds
     return cachedRequest(
       `models:${qs}`,
       60 * 1000,
       () =>
-        apiRequest(endpoint, { skipAuthRetry: true }).then((res) => {
+        apiRequest(endpoint, {
+          skipAuthRetry: true,
+          publicEndpoint: true,
+        }).then((res) => {
           const items = res?.items || [];
           if (items[0]?.thumbnailUrl) {
             ensureStoragePreconnect(items[0].thumbnailUrl);
@@ -172,6 +307,7 @@ export const catalogService = {
       () =>
         apiRequest(`/models/${encodeURIComponent(slug)}`, {
           skipAuthRetry: true,
+          publicEndpoint: true,
         }).then((data) => {
           const firstUrl = data?.images?.[0]?.url;
           if (firstUrl) preloadImageUrl(firstUrl);
@@ -213,6 +349,7 @@ export const catalogService = {
       () =>
         apiRequest(`/models/${encodeURIComponent(id)}/availability?${qs}`, {
           skipAuthRetry: true,
+          publicEndpoint: true,
         }),
       options.force,
     );

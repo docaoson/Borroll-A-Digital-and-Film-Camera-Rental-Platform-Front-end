@@ -101,8 +101,12 @@ function CameraListPage() {
     Number.isInteger(initialPage) && initialPage > 0 ? initialPage : 1,
   );
 
-  const [categories, setCategories] = useState([]);
-  const [brands, setBrands] = useState([]);
+  const [categories, setCategories] = useState(
+    () => catalogService.peekCategories()?.items || [],
+  );
+  const [brands, setBrands] = useState(
+    () => catalogService.peekBrands()?.items || [],
+  );
   const [reloadKey, setReloadKey] = useState(0);
 
   const categoryParam = selectedCategories.join(",");
@@ -110,11 +114,31 @@ function CameraListPage() {
 
   const queryKey = `${debouncedSearch}|${categoryParam}|${brandParam}|${debouncedMinPrice}|${debouncedMaxPrice}|${sortBy}|${currentPage}|${reloadKey}`;
 
-  const [resultState, setResultState] = useState({
-    key: null,
-    items: [],
-    total: 0,
-    error: "",
+  const [resultState, setResultState] = useState(() => {
+    const cached = catalogService.peekModels({
+      q: initialQ || undefined,
+      category: initialCategories.join(",") || undefined,
+      brand: initialBrands.join(",") || undefined,
+      minPrice: initialMinPrice || undefined,
+      maxPrice: initialMaxPrice || undefined,
+      sort: initialSort,
+      page: Number.isInteger(initialPage) && initialPage > 0 ? initialPage : 1,
+      pageSize: PAGE_SIZE,
+    });
+    if (cached) {
+      return {
+        key: queryKey,
+        items: cached.items || [],
+        total: cached.total ?? (cached.items?.length || 0),
+        error: "",
+      };
+    }
+    return {
+      key: null,
+      items: [],
+      total: 0,
+      error: "",
+    };
   });
 
   const isLoading = resultState.key !== queryKey;

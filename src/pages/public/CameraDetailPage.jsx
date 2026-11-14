@@ -96,13 +96,26 @@ function CameraDetailPage() {
   const todayString = getTodayVietnamIso();
 
   const [prevId, setPrevId] = useState(id);
-  const [modelState, setModelState] = useState({
-    slug: null,
-    data: null,
-    notFound: false,
-    error: "",
+  const [modelState, setModelState] = useState(() => {
+    const cached = id ? catalogService.peekModelBySlug(id) : null;
+    if (cached) {
+      return {
+        slug: id,
+        data: cached,
+        notFound: false,
+        error: "",
+      };
+    }
+    return {
+      slug: null,
+      data: null,
+      notFound: false,
+      error: "",
+    };
   });
-  const [branches, setBranches] = useState([]);
+  const [branches, setBranches] = useState(
+    () => catalogService.peekBranches()?.items || [],
+  );
   const [branchSlug, setBranchSlug] = useState(savedBranchSlug || "tay-ho");
   const [pickupDate, setPickupDate] = useState(savedStartDate || todayString);
   const [returnDate, setReturnDate] = useState(savedEndDate || "");

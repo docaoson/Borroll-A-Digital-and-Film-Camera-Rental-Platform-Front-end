@@ -3,13 +3,38 @@ import { AuthContext } from "./auth-context";
 import { setAccessToken, setAuthExpiredHandler } from "../lib/apiClient";
 import { authService } from "../services/authService";
 
+const SESSION_HINT_KEY = "borroll_has_session";
+
+function hasSessionHint() {
+  try {
+    return typeof window !== "undefined" &&
+      window.localStorage.getItem(SESSION_HINT_KEY) === "1";
+  } catch {
+    return false;
+  }
+}
+
+function setSessionHint(enabled) {
+  try {
+    if (typeof window === "undefined") return;
+    if (enabled) {
+      window.localStorage.setItem(SESSION_HINT_KEY, "1");
+    } else {
+      window.localStorage.removeItem(SESSION_HINT_KEY);
+    }
+  } catch {
+    // Ignore storage quota / privacy mode errors
+  }
+}
+
 export function AuthProvider({ children }) {
   const [user, setUser] = useState(null);
-  const [isLoading, setIsLoading] = useState(true);
+  const [isLoading, setIsLoading] = useState(hasSessionHint);
 
   const clearSession = useCallback(() => {
     setAccessToken(null);
     setUser(null);
+    setSessionHint(false);
   }, []);
 
   useEffect(() => {
@@ -20,6 +45,7 @@ export function AuthProvider({ children }) {
   const refreshSession = useCallback(async () => {
     try {
       await authService.refresh();
+      setSessionHint(true);
       const me = await authService.getMe();
       setUser(me);
       return me;
@@ -32,11 +58,19 @@ export function AuthProvider({ children }) {
   }, [clearSession]);
 
   useEffect(() => {
+    if (!hasSessionHint()) {
+      setIsLoading(false);
+      return;
+    }
+
     let active = true;
 
     authService
       .refresh()
-      .then(() => authService.getMe())
+      .then(() => {
+        setSessionHint(true);
+        return authService.getMe();
+      })
       .then((me) => {
         if (active) setUser(me);
       })
@@ -54,6 +88,7 @@ export function AuthProvider({ children }) {
 
   const login = useCallback(async (credentials) => {
     const data = await authService.login(credentials);
+    setSessionHint(true);
     if (data?.user) {
       setUser(data.user);
     }
@@ -68,6 +103,7 @@ export function AuthProvider({ children }) {
 
   const register = useCallback(async (payload) => {
     const data = await authService.register(payload);
+    setSessionHint(true);
     if (data?.user) {
       setUser(data.user);
     }
