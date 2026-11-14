@@ -115,7 +115,10 @@ function AdminProductsPage() {
         return false;
       }
       if (selectedCategory !== "ALL" && item.categoryId !== selectedCategory) {
-        return false;
+        const selectedRoot = categories.find((root) => root.id === selectedCategory);
+        if (!(selectedRoot?.children || []).some((child) => child.id === item.categoryId)) {
+          return false;
+        }
       }
       if (selectedStatus === "ACTIVE" && !item.isActive) {
         return false;
@@ -132,6 +135,7 @@ function AdminProductsPage() {
     selectedBrand,
     selectedCategory,
     selectedStatus,
+    categories,
   ]);
 
   // Handle delete or deactivate model
@@ -173,6 +177,15 @@ function AdminProductsPage() {
   const digitalCount = models.filter((m) => m.cameraType === "DIGITAL").length;
   const filmCount = models.filter((m) => m.cameraType === "FILM").length;
   const activeCount = models.filter((m) => m.isActive).length;
+  const categoryGroupById = useMemo(() => {
+    const groups = new Map();
+    categories.forEach((root) => {
+      const group = { slug: root.slug, name: root.name };
+      groups.set(root.id, group);
+      (root.children || []).forEach((child) => groups.set(child.id, group));
+    });
+    return groups;
+  }, [categories]);
 
   return (
     <div className="admin-products-page">
@@ -184,7 +197,7 @@ function AdminProductsPage() {
             <span className="sep">/</span>
             <span className="current">Quản lý mẫu sản phẩm</span>
           </div>
-          <h1 className="admin-heading-title">Danh mục mẫu máy ảnh</h1>
+          <h1 className="admin-heading-title">Danh mục sản phẩm</h1>
           <p className="admin-heading-sub">
             Quản lý toàn diện các dòng máy ảnh số, film, ống kính và phụ kiện; cấu hình giá thuê theo ngày, tiền cọc và thông số kỹ thuật.
           </p>
@@ -195,13 +208,13 @@ function AdminProductsPage() {
             to="/admin/products/new?type=camera"
             className="button primary-button admin-action-cta"
           >
-            <span>+ Thêm máy ảnh</span>
+            <span>+ Thêm sản phẩm</span>
           </Link>
           <Link
             to="/admin/products/new?type=accessory"
             className="button secondary-button admin-action-cta"
           >
-            <span>+ Thêm thiết bị (Phụ kiện / Film)</span>
+            <span>+ Thêm cuộn film</span>
           </Link>
         </div>
       </section>
@@ -262,8 +275,8 @@ function AdminProductsPage() {
       )}
 
       {/* FILTER & SEARCH TOOLBAR */}
-      <section className="admin-filter-toolbar">
-        <div className="admin-search-box">
+      <section className="admin-products-filter-layout" aria-label="Tìm kiếm và lọc sản phẩm">
+        <div className="admin-search-box admin-products-search">
           <span className="search-icon" aria-hidden="true">
             <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
               <circle cx="11" cy="11" r="8"/>
@@ -273,7 +286,7 @@ function AdminProductsPage() {
           <input
             type="text"
             className="admin-search-input"
-            placeholder="Tìm theo tên máy, slug định danh..."
+            placeholder="Tìm theo tên sản phẩm hoặc slug..."
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
           />
@@ -288,10 +301,10 @@ function AdminProductsPage() {
           )}
         </div>
 
-        <div className="admin-filter-controls">
+        <div className="admin-products-filter-grid">
           {/* Kind Filter */}
           <select
-            className="admin-select-filter"
+            className="admin-select-filter filter-kind"
             value={selectedKind}
             onChange={(e) => setSelectedKind(e.target.value)}
             aria-label="Lọc theo phân loại sản phẩm"
@@ -305,7 +318,7 @@ function AdminProductsPage() {
           {/* Camera Type Filter (Active when kind is ALL or CAMERA) */}
           {(selectedKind === "ALL" || selectedKind === "CAMERA") && (
             <select
-              className="admin-select-filter"
+              className="admin-select-filter filter-camera-type"
               value={selectedCameraType}
               onChange={(e) => setSelectedCameraType(e.target.value)}
               aria-label="Lọc theo dòng máy"
@@ -319,7 +332,7 @@ function AdminProductsPage() {
 
           {/* Brand Filter */}
           <select
-            className="admin-select-filter"
+            className="admin-select-filter filter-brand"
             value={selectedBrand}
             onChange={(e) => setSelectedBrand(e.target.value)}
             aria-label="Lọc theo thương hiệu"
@@ -334,22 +347,23 @@ function AdminProductsPage() {
 
           {/* Category Filter */}
           <select
-            className="admin-select-filter"
+            className="admin-select-filter filter-category"
             value={selectedCategory}
             onChange={(e) => setSelectedCategory(e.target.value)}
             aria-label="Lọc theo danh mục"
           >
             <option value="ALL">Tất cả danh mục</option>
-            {categories.map((c) => (
-              <option key={c.id} value={c.id}>
-                {c.name}
-              </option>
-            ))}
+            {categories.flatMap((root) => [
+              <option key={root.id} value={root.id}>{root.name}</option>,
+              ...(root.children || []).map((child) => (
+                <option key={child.id} value={child.id}>— {child.name}</option>
+              )),
+            ])}
           </select>
 
           {/* Status Filter */}
           <select
-            className="admin-select-filter"
+            className="admin-select-filter filter-status"
             value={selectedStatus}
             onChange={(e) => setSelectedStatus(e.target.value)}
             aria-label="Lọc theo trạng thái"
@@ -359,27 +373,22 @@ function AdminProductsPage() {
             <option value="INACTIVE">Tạm ẩn</option>
           </select>
 
-          {(selectedKind !== "ALL" ||
-            selectedCameraType !== "ALL" ||
-            selectedBrand !== "ALL" ||
-            selectedCategory !== "ALL" ||
-            selectedStatus !== "ALL" ||
-            searchQuery) && (
-            <button
-              type="button"
-              className="button secondary-button compact"
-              onClick={() => {
-                setSelectedKind("ALL");
-                setSelectedCameraType("ALL");
-                setSelectedBrand("ALL");
-                setSelectedCategory("ALL");
-                setSelectedStatus("ALL");
-                setSearchQuery("");
-              }}
-            >
-              Đặt lại lọc
-            </button>
-          )}
+          <button
+            type="button"
+            className="button secondary-button compact filter-reset"
+            disabled={selectedKind === "ALL" && selectedCameraType === "ALL" && selectedBrand === "ALL" && selectedCategory === "ALL" && selectedStatus === "ALL" && !searchQuery}
+            onClick={() => {
+              setSelectedKind("ALL");
+              setSelectedCameraType("ALL");
+              setSelectedBrand("ALL");
+              setSelectedCategory("ALL");
+              setSelectedStatus("ALL");
+              setSearchQuery("");
+              setPage(1);
+            }}
+          >
+            Đặt lại lọc
+          </button>
         </div>
       </section>
 
@@ -418,18 +427,18 @@ function AdminProductsPage() {
           </div>
         ) : (
           <div className="admin-table-wrapper">
-            <table className="admin-table">
+            <table className="admin-table admin-products-table">
               <thead>
                 <tr>
-                  <th scope="col" style={{ width: "56px" }}>
-                    Loại
+                  <th scope="col" className="product-image-heading">
+                    Ảnh
                   </th>
-                  <th scope="col">Tên mẫu máy & Slug</th>
+                  <th scope="col">Tên sản phẩm & Slug</th>
                   <th scope="col">Thương hiệu</th>
                   <th scope="col">Danh mục</th>
                   <th scope="col">Phân loại</th>
-                  <th scope="col">Giá thuê / ngày</th>
-                  <th scope="col">Tiền cọc</th>
+                  <th scope="col" className="amount-heading">Giá thuê / ngày</th>
+                  <th scope="col" className="amount-heading">Tiền cọc</th>
                   <th scope="col">Kho máy</th>
                   <th scope="col">Trạng thái</th>
                   <th scope="col" className="text-right">
@@ -443,9 +452,11 @@ function AdminProductsPage() {
                   return (
                     <tr key={model.id}>
                       {/* Icon / Kind indicator */}
-                      <td>
+                      <td className="product-image-cell">
                         <div className="admin-thumb-wrapper" title={model.name}>
-                          {model.kind === "CAMERA" ? (
+                          {model.thumbnailUrl ? (
+                            <img src={model.thumbnailUrl} alt="" className="admin-product-thumbnail" loading="lazy" />
+                          ) : model.kind === "CAMERA" ? (
                             <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
                               <path d="M14.5 4h-5L7 7H4a2 2 0 0 0-2 2v9a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2V9a2 2 0 0 0-2-2h-3l-2.5-3z"/>
                               <circle cx="12" cy="13" r="3"/>
@@ -470,10 +481,11 @@ function AdminProductsPage() {
                           <Link
                             to={`/admin/products/${model.id}/edit`}
                             className="admin-product-name-link"
+                            title={model.name}
                           >
                             <strong>{model.name}</strong>
                           </Link>
-                          <span className="admin-product-slug">
+                          <span className="admin-product-slug" title={model.slug}>
                             /{model.slug}
                           </span>
                         </div>
@@ -488,15 +500,29 @@ function AdminProductsPage() {
 
                       {/* Category */}
                       <td>
-                        <span className="admin-category-pill">
-                          {model.category?.name || "--"}
-                        </span>
+                        {(() => {
+                          const group = categoryGroupById.get(model.categoryId);
+                          const categoryName = model.category?.name || "--";
+                          const showGroup = model.kind === "CAMERA" && group && group.name !== categoryName;
+                          return (
+                            <span className="admin-category-pill">
+                              {showGroup ? `${group.name} / ${categoryName}` : categoryName}
+                            </span>
+                          );
+                        })()}
+                        {model.kind === "CAMERA" && (() => {
+                          const expectedGroup = model.cameraType === "FILM" ? "may-film" : model.cameraType === "DIGITAL" ? "may-digital" : model.cameraType === "INSTANT" ? "may-instant" : null;
+                          const actualGroup = categoryGroupById.get(model.categoryId)?.slug || model.category?.slug;
+                          return !expectedGroup || actualGroup !== expectedGroup ? (
+                            <span className="product-classification-warning" title="Danh mục và phân loại đang không khớp; vui lòng sửa trong biểu mẫu sản phẩm.">Cần rà soát</span>
+                          ) : null;
+                        })()}
                       </td>
 
                       {/* Kind / CameraType Badge */}
                       <td>
                         {model.kind === "CAMERA" ? (
-                          <span
+                          model.cameraType ? <span
                             className={`admin-kind-badge ${
                               model.cameraType === "FILM"
                                 ? "is-film"
@@ -511,24 +537,25 @@ function AdminProductsPage() {
                                 ? "Instant"
                                 : "Digital"}
                           </span>
+                          : <span className="product-classification-warning">Cần rà soát</span>
                         ) : model.kind === "LENS" ? (
                           <span className="admin-kind-badge is-lens">
                             Ống kính
                           </span>
                         ) : (
                           <span className="admin-kind-badge is-accessory">
-                            Phụ kiện
+                            {model.filmFormat ? "Cuộn film" : "Phụ kiện"}
                           </span>
                         )}
                       </td>
 
                       {/* Price Per Day */}
-                      <td className="amount-cell">
+                      <td className="amount-cell product-money-cell">
                         <strong>{formatCurrency(model.pricePerDay)}</strong>
                       </td>
 
                       {/* Deposit */}
-                      <td className="amount-cell text-muted">
+                      <td className="amount-cell text-muted product-money-cell">
                         {formatCurrency(model.deposit)}
                       </td>
 

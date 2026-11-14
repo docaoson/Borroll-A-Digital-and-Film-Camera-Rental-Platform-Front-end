@@ -15,13 +15,7 @@ function AdminTopbar({ isSidebarOpen, onToggleSidebar }) {
 
   const roles = user?.roles || (user?.role ? [user.role] : []);
   const isAdmin = roles.includes("ADMIN");
-  const isStaff = roles.includes("STAFF");
-
-  const roleLabel = isAdmin
-    ? "Quản trị viên"
-    : isStaff
-      ? "Nhân viên vận hành"
-      : "Người dùng";
+  const roleLabel = isAdmin ? "Quản trị viên" : "Tài khoản";
 
   const userInitial = (user?.fullName?.trim()?.[0] || "A").toUpperCase();
 
@@ -38,7 +32,7 @@ function AdminTopbar({ isSidebarOpen, onToggleSidebar }) {
           <span aria-hidden="true">{isSidebarOpen ? "✕" : "☰"}</span>
         </button>
 
-        <Link to="/admin" className="admin-brand">
+        <Link to="/" className="admin-brand" aria-label="BORROLL - về trang chủ">
           <span className="brand-mark">B</span>
           <div className="admin-brand-info">
             <strong className="admin-brand-name">BORROLL</strong>
@@ -55,17 +49,6 @@ function AdminTopbar({ isSidebarOpen, onToggleSidebar }) {
       </div>
 
       <div className="admin-topbar-right">
-        <Link
-          to="/"
-          className="admin-topbar-btn public-link"
-          title="Mở giao diện website cho người thuê"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <span aria-hidden="true">↗</span>
-          <span>Xem website khách</span>
-        </Link>
-
         <div className="admin-user-capsule">
           <div className="admin-user-avatar" aria-hidden="true">
             {user?.avatarUrl ? (
@@ -79,7 +62,7 @@ function AdminTopbar({ isSidebarOpen, onToggleSidebar }) {
               {user?.fullName || "Quản trị viên"}
             </span>
             <span
-              className={`admin-role-badge ${isAdmin ? "is-admin" : "is-staff"}`}
+              className={`admin-role-badge ${isAdmin ? "is-admin" : ""}`}
             >
               {roleLabel}
             </span>

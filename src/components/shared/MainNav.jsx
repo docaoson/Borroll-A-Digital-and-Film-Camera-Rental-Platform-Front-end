@@ -14,7 +14,6 @@ function MainNav({ variant = "public", onNavigate }) {
   const isRenter =
     isAuthenticated &&
     roles.includes("RENTER") &&
-    !roles.includes("STAFF") &&
     !roles.includes("ADMIN");
   const links =
     variant === "admin"

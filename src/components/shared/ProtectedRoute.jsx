@@ -28,11 +28,7 @@ function ProtectedRoute({ children, allowedRoles }) {
 
   if (allowedRoles && allowedRoles.length > 0) {
     const rawRoles = user?.roles || (user?.role ? [user.role] : []);
-    // Admin inherits Staff privileges automatically (matching NestJS RolesGuard)
-    const effectiveRoles = rawRoles.includes("ADMIN")
-      ? Array.from(new Set([...rawRoles, "STAFF"]))
-      : rawRoles;
-    const hasAccess = allowedRoles.some((role) => effectiveRoles.includes(role));
+    const hasAccess = allowedRoles.some((role) => rawRoles.includes(role));
     if (!hasAccess) {
       return <Navigate to="/403" replace />;
     }

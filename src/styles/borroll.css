@@ -11477,6 +11477,98 @@ select {
   .floating-contact-item,
   .floating-contact-tooltip { transition: none !important; animation: none !important; }
 }
+
+/* Admin product catalog refinements */
+.admin-products-filter-layout {
+  display: grid;
+  grid-template-columns: repeat(12, minmax(0, 1fr));
+  align-items: end;
+  gap: 14px;
+  padding: 18px;
+  border: 1px solid rgba(68, 53, 43, .1);
+  border-radius: 16px;
+  background: #fffdfb;
+}
+.admin-products-search { grid-column: span 6; min-width: 0; }
+.admin-products-filter-grid { display: contents; }
+.admin-products-filter-grid > select,
+.admin-products-filter-grid > button {
+  grid-column: span 3;
+  width: 100%;
+  min-width: 0;
+  height: 46px;
+  margin: 0;
+  border-radius: 10px;
+  font: inherit;
+}
+.admin-products-filter-grid > select { padding: 0 12px; }
+.admin-products-search .admin-search-input { height: 46px; }
+.admin-products-filter-grid .filter-kind,
+.admin-products-filter-grid .filter-camera-type { grid-column: span 3; }
+.admin-products-filter-grid .filter-reset { justify-self: stretch; }
+.admin-products-table { width: 100%; min-width: 1120px; table-layout: fixed; }
+.admin-products-table th:nth-child(1),
+.admin-products-table td:nth-child(1) { width: 62px; }
+.admin-products-table th:nth-child(2),
+.admin-products-table td:nth-child(2) { width: 21%; }
+.admin-products-table th:nth-child(3),
+.admin-products-table td:nth-child(3) { width: 11%; }
+.admin-products-table th:nth-child(4),
+.admin-products-table td:nth-child(4) { width: 13%; }
+.admin-products-table th:nth-child(5),
+.admin-products-table td:nth-child(5) { width: 9%; }
+.admin-products-table th:nth-child(6),
+.admin-products-table td:nth-child(6),
+.admin-products-table th:nth-child(7),
+.admin-products-table td:nth-child(7) { width: 11%; }
+.admin-products-table th:nth-child(8),
+.admin-products-table td:nth-child(8) { width: 8%; }
+.admin-products-table th:nth-child(9),
+.admin-products-table td:nth-child(9) { width: 9%; }
+.admin-products-table th:nth-child(10),
+.admin-products-table td:nth-child(10) { width: 16%; }
+.admin-products-table .amount-heading,
+.admin-products-table .product-money-cell { text-align: right; }
+.admin-products-table .product-money-cell { white-space: nowrap; font-variant-numeric: tabular-nums; }
+.admin-products-table .admin-product-info-cell { min-width: 0; max-width: 100%; }
+.admin-products-table .admin-product-name-link,
+.admin-products-table .admin-product-name-link strong,
+.admin-products-table .admin-product-slug {
+  display: block;
+  min-width: 0;
+  max-width: 100%;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.admin-products-table .admin-product-slug { overflow-wrap: anywhere; }
+.admin-products-table .admin-thumb-wrapper { width: 42px; height: 42px; display: grid; place-items: center; overflow: hidden; }
+.admin-products-table .admin-product-thumbnail { width: 100%; height: 100%; object-fit: cover; border-radius: 8px; }
+.product-classification-warning { display: inline-block; margin-top: 5px; color: #9a4d18; font-size: 11px; font-weight: 700; }
+.admin-brand { border-radius: 8px; transition: background-color .18s ease, opacity .18s ease; }
+.admin-brand:hover,
+.admin-brand:focus-visible { background: rgba(255, 255, 255, .12); opacity: .9; }
+.inventory-page-actions { display: flex; justify-content: flex-end; align-items: center; gap: 12px; flex-wrap: wrap; }
+.inventory-page-actions > .button { min-height: 44px; padding: 0 18px; border-radius: 10px; font-weight: 650; }
+
+@media (max-width: 980px) {
+  .admin-products-filter-layout { grid-template-columns: repeat(6, minmax(0, 1fr)); }
+  .admin-products-search { grid-column: span 6; }
+  .admin-products-filter-grid > select,
+  .admin-products-filter-grid > button { grid-column: span 2; }
+  .admin-products-filter-grid .filter-kind,
+  .admin-products-filter-grid .filter-camera-type { grid-column: span 3; }
+}
+@media (max-width: 620px) {
+  .admin-products-filter-layout { grid-template-columns: minmax(0, 1fr); gap: 10px; padding: 12px; }
+  .admin-products-search,
+  .admin-products-filter-grid > select,
+  .admin-products-filter-grid > button,
+  .admin-products-filter-grid .filter-kind,
+  .admin-products-filter-grid .filter-camera-type { grid-column: 1; }
+  .inventory-page-actions { width: 100%; justify-content: stretch; }
+  .inventory-page-actions > .button { flex: 1 1 100%; justify-content: center; }
+}
 .payment-panel,
 .payment-settings-card,
 .payment-review-card {

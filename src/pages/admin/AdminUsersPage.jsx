@@ -33,12 +33,6 @@ const ROLE_CONFIG = {
     badgeClass: "role-badge-admin",
     description: "Toàn quyền quản trị hệ thống, danh mục, thiết bị, chi nhánh, đơn hàng và phân quyền người dùng.",
   },
-  STAFF: {
-    label: "Nhân viên vận hành (STAFF)",
-    shortLabel: "STAFF",
-    badgeClass: "role-badge-staff",
-    description: "Vận hành giao nhận thiết bị, kiểm tra máy, tải ảnh biên bản và khóa lịch bảo trì.",
-  },
   RENTER: {
     label: "Khách hàng thuê máy (RENTER)",
     shortLabel: "RENTER",
@@ -59,7 +53,8 @@ function AdminUsersPage({ defaultRole = "ALL" }) {
   const [searchParams, setSearchParams] = useSearchParams();
 
   // URL query role filter
-  const selectedRole = searchParams.get("role") || defaultRole;
+  const requestedRole = searchParams.get("role") || defaultRole;
+  const selectedRole = requestedRole === "STAFF" ? "ALL" : requestedRole;
 
   // State
   const [loading, setLoading] = useState(true);
@@ -115,7 +110,16 @@ function AdminUsersPage({ defaultRole = "ALL" }) {
       .getAdminUsers(params)
       .then((data) => {
         if (!active) return;
-        setUsers(data.items || []);
+        const visibleUsers = (data.items || [])
+          .filter((entry) => {
+            const roles = Array.isArray(entry.roles) ? entry.roles : [];
+            return !roles.includes("STAFF") || roles.some((role) => role !== "STAFF");
+          })
+          .map((entry) => ({
+            ...entry,
+            roles: (Array.isArray(entry.roles) ? entry.roles : []).filter((role) => role !== "STAFF"),
+          }));
+        setUsers(visibleUsers);
         setTotal(data.total || 0);
         setError(null);
       })
@@ -176,7 +180,6 @@ function AdminUsersPage({ defaultRole = "ALL" }) {
   // Metrics from current dataset
   const stats = useMemo(() => {
     let adminCount = 0;
-    let staffCount = 0;
     let renterCount = 0;
     let activeCount = 0;
     let suspendedCount = 0;
@@ -184,7 +187,6 @@ function AdminUsersPage({ defaultRole = "ALL" }) {
     users.forEach((u) => {
       const roles = Array.isArray(u.roles) ? u.roles : [];
       if (roles.includes("ADMIN")) adminCount++;
-      if (roles.includes("STAFF")) staffCount++;
       if (roles.includes("RENTER")) renterCount++;
 
       if (u.status === "ACTIVE") activeCount++;
@@ -195,7 +197,6 @@ function AdminUsersPage({ defaultRole = "ALL" }) {
       total,
       currentCount: users.length,
       adminCount,
-      staffCount,
       renterCount,
       activeCount,
       suspendedCount,
@@ -205,7 +206,7 @@ function AdminUsersPage({ defaultRole = "ALL" }) {
   // Open Edit Access Modal
   const openEditModal = (targetUser) => {
     setEditTarget(targetUser);
-    const initialRoles = Array.isArray(targetUser.roles) ? [...targetUser.roles] : ["RENTER"];
+    const initialRoles = Array.isArray(targetUser.roles) ? targetUser.roles.filter((role) => role !== "STAFF") : ["RENTER"];
     setFormRoles(initialRoles);
     setFormStatus(targetUser.status || "ACTIVE");
     setModalError("");
@@ -241,7 +242,7 @@ function AdminUsersPage({ defaultRole = "ALL" }) {
     setFormRoles((prev) => {
       if (prev.includes(roleKey)) {
         if (prev.length <= 1) {
-          setModalError("Người dùng phải có ít nhất một vai trò hợp lệ (ADMIN, STAFF hoặc RENTER).");
+          setModalError("Người dùng phải có ít nhất một vai trò hợp lệ (ADMIN hoặc RENTER).");
           return prev;
         }
         return prev.filter((r) => r !== roleKey);
@@ -273,14 +274,13 @@ function AdminUsersPage({ defaultRole = "ALL" }) {
       const payload = {};
 
       if (isTargetHost) {
-        // Backend UpdateAdminUserDto only allows [RENTER, STAFF, ADMIN] in roles.
-        // Sending roles with "HOST" fails validation. Sending roles without "HOST" deletes HOST from userRole.
+        // HOST accounts are status-only in this form to preserve their system role.
         // Therefore, for accounts with HOST, we DO NOT send `roles` in payload; we only update `status`.
         payload.status = formStatus;
       } else {
-        const cleanRoles = formRoles.filter((r) => ["ADMIN", "STAFF", "RENTER"].includes(r));
+        const cleanRoles = formRoles.filter((r) => ["ADMIN", "RENTER"].includes(r));
         if (cleanRoles.length === 0) {
-          setModalError("Vui lòng chọn ít nhất một vai trò hợp lệ (ADMIN, STAFF hoặc RENTER).");
+          setModalError("Vui lòng chọn ít nhất một vai trò hợp lệ (ADMIN hoặc RENTER).");
           setModalSubmitting(false);
           return;
         }
@@ -345,7 +345,7 @@ function AdminUsersPage({ defaultRole = "ALL" }) {
           <p className="admin-page-desc">
             {selectedRole === "RENTER"
               ? "Danh sách khách hàng thuê thiết bị trên Borroll. Theo dõi thông tin tài khoản, phân quyền và kiểm soát trạng thái hoạt động."
-              : "Quản trị danh sách người dùng toàn hệ thống, cấp quyền ADMIN / STAFF / RENTER và kiểm soát trạng thái hoạt động tài khoản."}
+              : "Quản trị danh sách người dùng toàn hệ thống, cấp quyền ADMIN hoặc RENTER và kiểm soát trạng thái hoạt động tài khoản."}
           </p>
         </div>
 
@@ -417,19 +417,6 @@ function AdminUsersPage({ defaultRole = "ALL" }) {
         </div>
 
         <div
-          className={`admin-quick-stat-card is-interactive ${selectedRole === "STAFF" ? "is-selected-kpi" : ""}`}
-          onClick={() => handleSelectRoleQuickFilter("STAFF")}
-          role="button"
-          tabIndex={0}
-          onKeyDown={(e) => e.key === "Enter" && handleSelectRoleQuickFilter("STAFF")}
-          title="Nhấp để lọc nhanh Nhân viên (STAFF)"
-        >
-          <span className="stat-label">Nhân viên (STAFF)</span>
-          <strong className="stat-value text-primary">{stats.staffCount}</strong>
-          <span className="stat-sub">Vận hành kho & đơn</span>
-        </div>
-
-        <div
           className={`admin-quick-stat-card is-interactive ${selectedRole === "ADMIN" ? "is-selected-kpi" : ""}`}
           onClick={() => handleSelectRoleQuickFilter("ADMIN")}
           role="button"
@@ -469,19 +456,6 @@ function AdminUsersPage({ defaultRole = "ALL" }) {
             <path d="M16 3.13a4 4 0 0 1 0 7.75"/>
           </svg>
           <span>Khách thuê (RENTER)</span>
-        </button>
-
-        <button
-          type="button"
-          role="tab"
-          aria-selected={selectedRole === "STAFF"}
-          className={`admin-role-tab ${selectedRole === "STAFF" ? "active" : ""}`}
-          onClick={() => handleSelectRoleQuickFilter("STAFF")}
-        >
-          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
-            <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/>
-          </svg>
-          <span>Nhân viên (STAFF)</span>
         </button>
 
         <button
@@ -538,7 +512,6 @@ function AdminUsersPage({ defaultRole = "ALL" }) {
             >
               <option value="ALL">Tất cả vai trò</option>
               <option value="RENTER">RENTER – Khách thuê</option>
-              <option value="STAFF">STAFF – Nhân viên vận hành</option>
               <option value="ADMIN">ADMIN – Quản trị viên</option>
             </select>
           </div>

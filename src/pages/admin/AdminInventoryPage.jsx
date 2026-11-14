@@ -518,7 +518,7 @@ function AdminInventoryPage() {
           </p>
         </div>
 
-        <div className="admin-page-actions">
+        <div className="admin-page-actions inventory-page-actions">
           <Link to="/admin/calendar" className="button secondary-button compact">
             <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
               <rect x="3" y="4" width="18" height="18" rx="2" ry="2"/>
@@ -528,8 +528,7 @@ function AdminInventoryPage() {
             </svg>
             Lịch thuê thiết bị
           </Link>
-          {isAdmin ? (
-            <button
+          <button
               type="button"
               className="button primary-button compact"
               onClick={openCreateModal}
@@ -539,10 +538,7 @@ function AdminInventoryPage() {
                 <line x1="5" y1="12" x2="19" y2="12" />
               </svg>
               Thêm máy mới
-            </button>
-          ) : (
-            <span className="admin-staff-role-badge">STAFF View Only</span>
-          )}
+          </button>
         </div>
       </div>
 

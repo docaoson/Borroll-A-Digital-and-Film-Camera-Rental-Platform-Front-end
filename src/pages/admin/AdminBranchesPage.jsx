@@ -342,8 +342,7 @@ function AdminBranchesPage() {
             </svg>
             Xem kho thiết bị
           </Link>
-          {isAdmin ? (
-            <button
+          <button
               type="button"
               className="button primary-button compact"
               onClick={openCreateModal}
@@ -353,10 +352,7 @@ function AdminBranchesPage() {
                 <line x1="5" y1="12" x2="19" y2="12" />
               </svg>
               Thêm chi nhánh mới
-            </button>
-          ) : (
-            <span className="admin-staff-role-badge">STAFF View Only</span>
-          )}
+          </button>
         </div>
       </div>
 

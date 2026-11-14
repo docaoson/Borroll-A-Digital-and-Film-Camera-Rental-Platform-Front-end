@@ -8,7 +8,6 @@ const MAX_AVATAR_BYTES = 2 * 1024 * 1024; // 2 MB
 
 const ROLE_LABELS = {
   RENTER: "Khách hàng thuê máy",
-  STAFF: "Nhân viên vận hành",
   ADMIN: "Quản trị viên",
 };
 
@@ -150,7 +149,7 @@ function ProfilePage() {
             <p className="profile-email">{user?.email}</p>
           </div>
           <div className="profile-roles">
-            {(user?.roles || []).map((role) => (
+            {(user?.roles || []).filter((role) => role !== "STAFF").map((role) => (
               <span key={role} className="role-badge">
                 {ROLE_LABELS[role] || role}
               </span>
@@ -313,7 +312,7 @@ function ProfilePage() {
             <div className="profile-stat-item">
               <span className="stat-label">Vai trò hệ thống</span>
               <strong className="stat-value">
-                {user?.roles?.map((r) => ROLE_LABELS[r] || r).join(", ") || "Khách"}
+                {(user?.roles || []).filter((r) => r !== "STAFF").map((r) => ROLE_LABELS[r] || r).join(", ") || "Khách"}
               </strong>
             </div>
             <div className="profile-stat-item">

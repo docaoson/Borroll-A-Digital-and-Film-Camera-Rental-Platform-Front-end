@@ -1,5 +1,4 @@
-import { useState } from "react";
-import { NavLink } from "react-router-dom";
+import { NavLink, useLocation } from "react-router-dom";
 import { useAuth } from "../../hooks/useAuth";
 
 function NavIcon({ type }) {
@@ -118,12 +117,14 @@ function getNavSections(isAdmin) {
         },
         {
           to: "/admin/products/new?type=camera",
-          label: "+ Thêm máy ảnh",
+          activeSearch: "?type=camera",
+          label: "+ Thêm sản phẩm",
           iconType: "plus",
         },
         {
           to: "/admin/products/new?type=accessory",
-          label: "+ Thêm thiết bị (Phụ kiện/Film)",
+          activeSearch: "?type=accessory",
+          label: "+ Thêm cuộn film",
           iconType: "plus",
         },
         {
@@ -212,6 +213,7 @@ function getNavSections(isAdmin) {
 
 function AdminSidebar({ isOpen, onClose }) {
   const { user } = useAuth();
+  const location = useLocation();
   const rawRoles = user?.roles || (user?.role ? [user.role] : []);
   const isAdmin = rawRoles.includes("ADMIN");
   const navSections = getNavSections(isAdmin);
@@ -224,7 +226,7 @@ function AdminSidebar({ isOpen, onClose }) {
       <div className="admin-sidebar-header">
         <div className="admin-sidebar-heading">
           <span className="admin-sidebar-role-tag">
-            {isAdmin ? "QUẢN TRỊ VIÊN (ADMIN)" : "NHÂN VIÊN (STAFF)"}
+            "QUẢN TRỊ VIÊN (ADMIN)"
           </span>
           <span className="admin-sidebar-sub">Borroll Platform v2.0</span>
         </div>
@@ -250,9 +252,10 @@ function AdminSidebar({ isOpen, onClose }) {
                   key={item.to + item.label}
                   to={item.to}
                   end={item.end}
-                  className={({ isActive }) =>
-                    isActive ? "admin-link active" : "admin-link"
-                  }
+                  className={({ isActive }) => {
+                    const matchesSearch = !item.activeSearch || location.search === item.activeSearch;
+                    return isActive && matchesSearch ? "admin-link active" : "admin-link";
+                  }}
                   onClick={onClose}
                 >
                   <span className="admin-link-icon" aria-hidden="true">

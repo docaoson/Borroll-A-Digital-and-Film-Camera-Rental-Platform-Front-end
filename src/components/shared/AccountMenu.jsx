@@ -23,12 +23,11 @@ function AccountMenu({ onNavigate }) {
   }
 
   if (isAuthenticated && user) {
-    const isStaffOrAdmin =
-      user.roles?.includes("STAFF") || user.roles?.includes("ADMIN");
+    const isAdmin = user.roles?.includes("ADMIN") || user.role === "ADMIN";
 
     return (
       <div className="account-menu" aria-label="Tài khoản người dùng">
-        {isStaffOrAdmin && (
+        {isAdmin && (
           <NavLink to="/admin" className="account-link" onClick={onNavigate}>
             Quản trị
           </NavLink>

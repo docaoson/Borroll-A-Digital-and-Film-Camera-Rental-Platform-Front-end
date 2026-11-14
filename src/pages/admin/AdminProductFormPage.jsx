@@ -15,20 +15,33 @@ function slugify(text) {
     .replace(/^-+|-+$/g, "");
 }
 
-const MODEL_KINDS = [
-  { value: "CAMERA", label: "Máy ảnh (Camera)" },
-  { value: "LENS", label: "Ống kính (Lens)" },
-  { value: "ACCESSORY", label: "Phụ kiện (Accessory)" },
-];
-
-const CAMERA_TYPES = [
-  { value: "DIGITAL", label: "Máy ảnh Kỹ thuật số (Digital)" },
-  { value: "FILM", label: "Máy ảnh Film (Film 35mm / 120)" },
-  { value: "INSTANT", label: "Máy chụp lấy liền (Instant)" },
-];
-
 const MAX_FILE_SIZE = 8 * 1024 * 1024; // 8MB
 const ALLOWED_MIME_TYPES = ["image/jpeg", "image/png", "image/webp"];
+
+function getCameraCategoryRoot(categories, cameraType) {
+  const rootSlugs = { FILM: "may-film", DIGITAL: "may-digital" };
+  const rootSlug = rootSlugs[cameraType];
+  return categories.find((category) => category.slug === rootSlug) || null;
+}
+
+function getFilmMetadata(specs = {}) {
+  const exposure = specs.exposure;
+  return exposure && typeof exposure === "object" && !Array.isArray(exposure)
+    ? { ...specs, ...exposure }
+    : specs;
+}
+
+function buildFilmSpecsPayload(existingSpecs, filmValues) {
+  const metadata = { ...getFilmMetadata(existingSpecs) };
+  delete metadata.exposure;
+  const payload = {
+    exposure: { ...metadata, ...filmValues },
+  };
+  ["controls", "power", "quirks", "beginnerNotes"].forEach((key) => {
+    if (existingSpecs[key] !== undefined) payload[key] = existingSpecs[key];
+  });
+  return payload;
+}
 
 function AdminProductFormPage() {
   const { id } = useParams();
@@ -56,9 +69,11 @@ function AdminProductFormPage() {
   const [kind, setKind] = useState(() =>
     initialType === "accessory" ? "ACCESSORY" : "CAMERA",
   );
+  const [isStoredFilmRoll, setIsStoredFilmRoll] = useState(false);
+  const [cameraType, setCameraType] = useState("");
   const [categoryId, setCategoryId] = useState("");
   const [brandId, setBrandId] = useState("");
-  const [cameraType, setCameraType] = useState("DIGITAL");
+  const [savedCameraType, setSavedCameraType] = useState("");
   const [mount, setMount] = useState("");
   const [filmFormat, setFilmFormat] = useState("");
   const [sensorSize, setSensorSize] = useState("");
@@ -75,6 +90,11 @@ function AdminProductFormPage() {
   const [specsPower, setSpecsPower] = useState("");
   const [specsQuirks, setSpecsQuirks] = useState("");
   const [specsBeginnerNotes, setSpecsBeginnerNotes] = useState("");
+  const [savedSpecs, setSavedSpecs] = useState({});
+  const [filmType, setFilmType] = useState("");
+  const [filmIso, setFilmIso] = useState("");
+  const [filmExposures, setFilmExposures] = useState("");
+  const [filmProcessing, setFilmProcessing] = useState("");
 
   // Server Images (in Edit mode)
   const [serverImages, setServerImages] = useState([]);
@@ -95,9 +115,6 @@ function AdminProductFormPage() {
       if (catRes.status === "fulfilled") {
         const catList = catRes.value.items || catRes.value || [];
         setCategories(catList);
-        if (catList.length > 0) {
-          setCategoryId((prev) => prev || catList[0].id);
-        }
       }
       if (brandRes.status === "fulfilled") {
         const brandList = brandRes.value.items || brandRes.value || [];
@@ -125,9 +142,26 @@ function AdminProductFormPage() {
         setName(data.name || "");
         setSlug(data.slug || "");
         setKind(data.kind || "CAMERA");
+        const loadedSpecs = data.specs?.specs && typeof data.specs.specs === "object" && !Array.isArray(data.specs.specs)
+          ? data.specs.specs
+          : {};
+        const loadedFilmMetadata = getFilmMetadata(loadedSpecs);
+        setSavedSpecs(loadedSpecs);
+        setIsStoredFilmRoll(
+          data.kind === "ACCESSORY" && Boolean(
+            loadedFilmMetadata.productType === "FILM_ROLL" ||
+            data.filmFormat ||
+            ["filmType", "iso", "exposuresPerRoll", "processing"].some((key) => loadedFilmMetadata[key] !== undefined),
+          ),
+        );
         setCategoryId(data.categoryId || "");
         setBrandId(data.brandId || "");
-        setCameraType(data.cameraType || "DIGITAL");
+        setSavedCameraType(data.cameraType || "");
+        setCameraType(
+          data.cameraType === "FILM" || data.cameraType === "DIGITAL"
+            ? data.cameraType
+            : "",
+        );
         setMount(data.mount || "");
         setFilmFormat(data.filmFormat || "");
         setPricePerDay(data.pricePerDay !== undefined ? String(data.pricePerDay) : "");
@@ -142,8 +176,8 @@ function AdminProductFormPage() {
         setIsFeatured(data.isFeatured ?? false);
         setServerImages(data.images || []);
 
-        if (data.specs?.specs) {
-          const s = data.specs.specs;
+        if (Object.keys(loadedSpecs).length > 0) {
+          const s = loadedSpecs;
           setSpecsExposure(
             typeof s.exposure === "object"
               ? JSON.stringify(s.exposure, null, 2)
@@ -162,6 +196,10 @@ function AdminProductFormPage() {
               ? s.beginnerNotes.join(", ")
               : s.beginnerNotes || "",
           );
+          setFilmType(typeof loadedFilmMetadata.filmType === "string" ? loadedFilmMetadata.filmType : "");
+          setFilmIso(loadedFilmMetadata.iso !== undefined && loadedFilmMetadata.iso !== null ? String(loadedFilmMetadata.iso) : "");
+          setFilmExposures(loadedFilmMetadata.exposuresPerRoll !== undefined && loadedFilmMetadata.exposuresPerRoll !== null ? String(loadedFilmMetadata.exposuresPerRoll) : "");
+          setFilmProcessing(typeof loadedFilmMetadata.processing === "string" ? loadedFilmMetadata.processing : "");
         }
       })
       .catch((err) => {
@@ -274,9 +312,38 @@ function AdminProductFormPage() {
     const errors = {};
     if (!name.trim()) errors.name = "Vui lòng nhập tên mẫu máy";
     if (!slug.trim()) errors.slug = "Vui lòng nhập slug định danh URL";
-    if (!categoryId) errors.categoryId = "Vui lòng chọn danh mục thiết bị";
+    if (kind === "CAMERA") {
+      const cameraRoot = getCameraCategoryRoot(categories, cameraType);
+      if (cameraType !== "FILM" && cameraType !== "DIGITAL") {
+        errors.cameraType = "Vui lòng chọn loại máy ảnh Film hoặc Digital.";
+      } else if (!cameraRoot) {
+        errors.cameraType = "Không tìm thấy danh mục gốc tương ứng với loại máy ảnh.";
+      } else if (
+        categoryId &&
+        categoryId !== cameraRoot.id &&
+        !cameraRoot.children?.some((category) => category.id === categoryId) &&
+        !(isEditMode && savedCameraType !== cameraType)
+      ) {
+        errors.cameraType = "Danh mục đã lưu không khớp với loại máy ảnh. Hãy chọn đúng loại trước khi lưu.";
+      }
+    } else if (!categoryId) {
+      errors.categoryId = "Vui lòng chọn danh mục sản phẩm";
+    }
     if (!brandId) errors.brandId = "Vui lòng chọn thương hiệu sản xuất";
     if (!description.trim()) errors.description = "Vui lòng nhập mô tả chi tiết mẫu máy";
+    if (isFilmRollForm) {
+      if (!isEditMode && !filmFormat.trim()) errors.filmFormat = "Vui lòng chọn khổ phim.";
+      const iso = Number(filmIso);
+      if (!isEditMode && !filmIso) {
+        errors.filmIso = "ISO phải là số nguyên lớn hơn 0.";
+      } else if (filmIso && (!Number.isInteger(iso) || iso < 1)) {
+        errors.filmIso = "ISO phải là số nguyên lớn hơn 0.";
+      }
+      if (!isEditMode && !filmType) errors.filmType = "Vui lòng chọn loại film.";
+      if (filmExposures && (!Number.isInteger(Number(filmExposures)) || Number(filmExposures) < 1)) {
+        errors.filmExposures = "Số kiểu ảnh phải là số nguyên lớn hơn 0.";
+      }
+    }
 
     const pDay = parseInt(pricePerDay, 10);
     if (isNaN(pDay) || pDay < 0) {
@@ -315,22 +382,43 @@ function AdminProductFormPage() {
     setSubmitting(true);
 
     // Build payload strictly adhering to CreateModelDto / UpdateModelDto
+    const cameraRoot = getCameraCategoryRoot(categories, cameraType);
+    const categoryBelongsToSelectedCameraType = cameraRoot && (
+      categoryId === cameraRoot.id ||
+      cameraRoot.children?.some((category) => category.id === categoryId)
+    );
+    const effectiveCategoryId = kind === "CAMERA"
+      ? (categoryBelongsToSelectedCameraType ? categoryId : cameraRoot?.id || "")
+      : categoryId;
     const payload = {
       kind,
-      categoryId,
+      categoryId: effectiveCategoryId,
       brandId,
       name: name.trim(),
       slug: slugify(slug),
       description: description.trim(),
       cameraType: kind === "CAMERA" ? cameraType : null,
       mount: mount.trim() || null,
-      filmFormat: kind === "CAMERA" && cameraType === "FILM" ? filmFormat.trim() || null : null,
+      filmFormat: isFilmRollForm
+        ? filmFormat.trim() || (isEditMode ? undefined : null)
+        : kind !== "CAMERA"
+          ? isEditMode ? undefined : null
+          : cameraType === "FILM"
+          ? filmFormat.trim() || null
+          : isEditMode
+            ? undefined
+            : null,
       pricePerDay: parseInt(pricePerDay, 10),
       pricePerWeek: pricePerWeek.trim() ? parseInt(pricePerWeek, 10) : null,
       deposit: parseInt(deposit, 10),
       isActive,
       isFeatured,
     };
+    const cameraClassificationChanged = Boolean(
+      isEditMode &&
+      kind === "CAMERA" &&
+      savedCameraType !== cameraType,
+    );
 
     try {
       if (isEditMode) {
@@ -344,33 +432,46 @@ function AdminProductFormPage() {
           specsControls ||
           specsPower ||
           specsQuirks ||
-          specsBeginnerNotes
+          specsBeginnerNotes ||
+          cameraClassificationChanged ||
+          isFilmRollForm
         ) {
-          const specsPayload = {};
-          if (sensorSize.trim()) specsPayload.sensorSize = sensorSize.trim();
-          if (specsExposure) {
+          const specsPayload = isFilmRollForm
+            ? buildFilmSpecsPayload(isEditMode ? savedSpecs : {}, {
+                productType: "FILM_ROLL",
+                ...(filmType ? { filmType } : {}),
+                ...(filmIso ? { iso: Number(filmIso) } : {}),
+                ...(filmExposures ? { exposuresPerRoll: Number(filmExposures) } : {}),
+                ...(filmProcessing ? { processing: filmProcessing } : {}),
+              })
+            : {};
+          if (cameraClassificationChanged && cameraType !== "DIGITAL") {
+            specsPayload.sensorSize = null;
+          }
+          if (!isFilmRollForm && sensorSize.trim()) specsPayload.sensorSize = sensorSize.trim();
+          if (!isFilmRollForm && specsExposure) {
             try {
               specsPayload.exposure = JSON.parse(specsExposure);
             } catch {
               specsPayload.exposure = { description: specsExposure };
             }
           }
-          if (specsControls) {
+          if (!isFilmRollForm && specsControls) {
             specsPayload.controls = specsControls
               .split(",")
               .map((s) => s.trim())
               .filter(Boolean);
           }
-          if (specsPower) {
+          if (!isFilmRollForm && specsPower) {
             specsPayload.power = specsPower.trim();
           }
-          if (specsQuirks) {
+          if (!isFilmRollForm && specsQuirks) {
             specsPayload.quirks = specsQuirks
               .split(",")
               .map((s) => s.trim())
               .filter(Boolean);
           }
-          if (specsBeginnerNotes) {
+          if (!isFilmRollForm && specsBeginnerNotes) {
             specsPayload.beginnerNotes = specsBeginnerNotes
               .split(",")
               .map((s) => s.trim())
@@ -409,7 +510,7 @@ function AdminProductFormPage() {
 
           if (failedUploads > 0) {
             setFormError(
-              `Đã lưu thông tin mẫu máy, nhưng có ${failedUploads} ảnh tải lên thất bại.`,
+              `Đã lưu thông tin sản phẩm, nhưng có ${failedUploads} ảnh tải lên thất bại.`,
             );
           }
         }
@@ -418,30 +519,62 @@ function AdminProductFormPage() {
         const freshModel = await adminService.getAdminModel(id);
         setName(freshModel.name || "");
         setSlug(freshModel.slug || "");
+        setFilmFormat(freshModel.filmFormat || "");
+        setCategoryId(freshModel.categoryId || "");
+        setCameraType(
+          freshModel.cameraType === "FILM" || freshModel.cameraType === "DIGITAL"
+            ? freshModel.cameraType
+            : "",
+        );
+        setSavedCameraType(freshModel.cameraType || "");
+        const refreshedSpecs = freshModel.specs?.specs && typeof freshModel.specs.specs === "object" && !Array.isArray(freshModel.specs.specs)
+          ? freshModel.specs.specs
+          : {};
+        const refreshedFilmMetadata = getFilmMetadata(refreshedSpecs);
+        setSavedSpecs(refreshedSpecs);
+        setIsStoredFilmRoll(
+          freshModel.kind === "ACCESSORY" && Boolean(
+            refreshedFilmMetadata.productType === "FILM_ROLL" ||
+            freshModel.filmFormat ||
+            ["filmType", "iso", "exposuresPerRoll", "processing"].some((key) => refreshedFilmMetadata[key] !== undefined),
+          ),
+        );
+        setFilmType(typeof refreshedFilmMetadata.filmType === "string" ? refreshedFilmMetadata.filmType : "");
+        setFilmIso(refreshedFilmMetadata.iso !== undefined && refreshedFilmMetadata.iso !== null ? String(refreshedFilmMetadata.iso) : "");
+        setFilmExposures(refreshedFilmMetadata.exposuresPerRoll !== undefined && refreshedFilmMetadata.exposuresPerRoll !== null ? String(refreshedFilmMetadata.exposuresPerRoll) : "");
+        setFilmProcessing(typeof refreshedFilmMetadata.processing === "string" ? refreshedFilmMetadata.processing : "");
         setServerImages(freshModel.images || []);
         setUploadStatus("");
-        setSuccessMsg("Cập nhật thông tin và hình ảnh mẫu máy thành công.");
+        setSuccessMsg("Cập nhật thông tin và hình ảnh sản phẩm thành công.");
       } else {
         // --- 2. CREATE NEW MODEL ---
         const created = await adminService.createAdminModel(payload);
 
-        const specsPayload = {};
-        if (sensorSize.trim()) specsPayload.sensorSize = sensorSize.trim();
-        if (specsExposure) {
+        const specsPayload = isFilmRollForm
+          ? buildFilmSpecsPayload({}, {
+              productType: "FILM_ROLL",
+              ...(filmType ? { filmType } : {}),
+              ...(filmIso ? { iso: Number(filmIso) } : {}),
+              ...(filmExposures ? { exposuresPerRoll: Number(filmExposures) } : {}),
+              ...(filmProcessing ? { processing: filmProcessing } : {}),
+            })
+          : {};
+        if (!isFilmRollForm && sensorSize.trim()) specsPayload.sensorSize = sensorSize.trim();
+        if (!isFilmRollForm && specsExposure) {
           try { specsPayload.exposure = JSON.parse(specsExposure); }
           catch { specsPayload.exposure = { description: specsExposure }; }
         }
-        if (specsControls) specsPayload.controls = specsControls.split(",").map((s) => s.trim()).filter(Boolean);
-        if (specsPower) specsPayload.power = specsPower.trim();
-        if (specsQuirks) specsPayload.quirks = specsQuirks.split(",").map((s) => s.trim()).filter(Boolean);
-        if (specsBeginnerNotes) specsPayload.beginnerNotes = specsBeginnerNotes.split(",").map((s) => s.trim()).filter(Boolean);
+        if (!isFilmRollForm && specsControls) specsPayload.controls = specsControls.split(",").map((s) => s.trim()).filter(Boolean);
+        if (!isFilmRollForm && specsPower) specsPayload.power = specsPower.trim();
+        if (!isFilmRollForm && specsQuirks) specsPayload.quirks = specsQuirks.split(",").map((s) => s.trim()).filter(Boolean);
+        if (!isFilmRollForm && specsBeginnerNotes) specsPayload.beginnerNotes = specsBeginnerNotes.split(",").map((s) => s.trim()).filter(Boolean);
         if (Object.keys(specsPayload).length > 0) {
           await adminService.updateModelSpecs(created.id, specsPayload);
         }
 
         // Upload any selected local images to the newly created product
         if (selectedFiles.length > 0) {
-          setUploadStatus(`Mẫu máy đã tạo. Đang tải lên ${selectedFiles.length} ảnh...`);
+          setUploadStatus(`Sản phẩm đã tạo. Đang tải lên ${selectedFiles.length} ảnh...`);
           const sortedUploads = [...selectedFiles].sort((a, b) =>
             a.isPrimary ? -1 : b.isPrimary ? 1 : 0,
           );
@@ -468,13 +601,13 @@ function AdminProductFormPage() {
 
           if (failedUploads > 0) {
             setSuccessMsg(
-              `Tạo mẫu máy thành công, nhưng có ${failedUploads} ảnh tải lên thất bại. Đang chuyển đến trang chỉnh sửa...`,
+          `${isFilmRollForm ? "Tạo cuộn film" : "Tạo sản phẩm"} thành công, nhưng có ${failedUploads} ảnh tải lên thất bại. Đang chuyển đến trang chỉnh sửa...`,
             );
           } else {
-            setSuccessMsg("Tạo mẫu máy và tải toàn bộ ảnh thành công! Đang chuyển đến trang quản lý...");
+            setSuccessMsg(`${isFilmRollForm ? "Tạo cuộn film" : "Tạo sản phẩm"} và tải toàn bộ ảnh thành công! Đang chuyển đến trang quản lý...`);
           }
         } else {
-          setSuccessMsg("Tạo mẫu máy thành công! Đang chuyển đến trang quản lý...");
+          setSuccessMsg(`${isFilmRollForm ? "Tạo cuộn film" : "Tạo sản phẩm"} thành công! Đang chuyển đến trang quản lý...`);
         }
 
         setTimeout(() => {
@@ -526,13 +659,16 @@ function AdminProductFormPage() {
     }
   };
 
-  const categoryOptions = (() => {
-    if (kind !== "CAMERA") {
-      return categories.flatMap((root) => [root, ...(root.children || [])]);
-    }
-    const rootSlug = cameraType === "FILM" ? "may-film" : cameraType === "DIGITAL" ? "may-digital" : "may-instant";
-    return categories.find((root) => root.slug === rootSlug)?.children || [];
-  })();
+  const isFilmRollForm = kind === "ACCESSORY" && (!isEditMode || isStoredFilmRoll);
+  const categoryOptions = kind === "CAMERA"
+    ? []
+    : categories.flatMap((root) => [
+        { ...root, displayName: root.name },
+        ...(root.children || []).map((child) => ({
+          ...child,
+          displayName: `${root.name} — ${child.name}`,
+        })),
+      ]);
 
   if (loading) {
     return (
@@ -551,29 +687,27 @@ function AdminProductFormPage() {
           <div className="admin-breadcrumb">
             <Link to="/admin">Bảng điều khiển</Link>
             <span className="sep">/</span>
-            <Link to="/admin/products">Mẫu máy & Thiết bị</Link>
+            <Link to="/admin/products">Danh mục sản phẩm</Link>
             <span className="sep">/</span>
             <span className="current">
               {isEditMode
-                ? `Chỉnh sửa: ${name || "Sản phẩm"}`
-                : kind === "CAMERA"
-                  ? "Thêm máy ảnh"
-                  : "Thêm thiết bị (Phụ kiện / Film)"}
+                ? `Chỉnh sửa${isFilmRollForm ? " cuộn film" : ""}: ${name || "Sản phẩm"}`
+                : kind === "CAMERA" ? "Thêm sản phẩm" : "Thêm cuộn film"}
             </span>
           </div>
           <h1 className="admin-heading-title">
             {isEditMode
-              ? `Chỉnh sửa: ${name || "Mẫu máy"}`
-              : kind === "CAMERA"
-                ? "Thêm máy ảnh mới"
-                : "Thêm thiết bị & Phụ kiện mới (Cuộn film, ống kính, pin...)"}
+              ? `Chỉnh sửa${isFilmRollForm ? " cuộn film" : ""}: ${name || "Sản phẩm"}`
+              : kind === "CAMERA" ? "Thêm sản phẩm" : "Thêm cuộn film"}
           </h1>
           <p className="admin-heading-sub">
             {isEditMode
-              ? "Cập nhật thông tin định danh, cấu hình giá thuê, tiền cọc, thông số kỹ thuật và thư viện ảnh."
+              ? isFilmRollForm
+                ? "Cập nhật thông tin cuộn film, cấu hình giá, mô tả, trạng thái và hình ảnh."
+                : "Cập nhật thông tin định danh, cấu hình giá thuê, tiền cọc, thông số kỹ thuật và thư viện ảnh."
               : kind === "CAMERA"
                 ? "Nhập thông tin chi tiết về thân máy ảnh số hoặc máy phim để đưa vào hệ thống cho thuê."
-                : "Nhập thông tin phụ kiện của máy ảnh như cuộn film, ống kính, pin sạc, chân máy... để khách hàng thuê kèm."}
+                : "Nhập thông tin cuộn film, khổ phim, ISO và các thông số cần thiết để quản lý sản phẩm."}
           </p>
         </div>
 
@@ -581,7 +715,7 @@ function AdminProductFormPage() {
           <Link to="/admin/products" className="button secondary-button compact">
             Quay lại danh sách
           </Link>
-          {isEditMode && slug && (
+          {isEditMode && slug && !isFilmRollForm && (
             <a
               href={`/cameras/${slug}`}
               target="_blank"
@@ -594,7 +728,7 @@ function AdminProductFormPage() {
         </div>
       </section>
 
-      {/* MODE TABS (Chỉ hiện khi Thêm mới): Thêm máy ảnh vs Thêm thiết bị/phụ kiện */}
+      {/* MODE TABS (Chỉ hiện khi Thêm mới): Máy ảnh hoặc cuộn film */}
       {!isEditMode && (
         <div className="product-kind-tabs-wrapper">
           <div className="product-kind-tabs" role="tablist">
@@ -613,15 +747,15 @@ function AdminProductFormPage() {
             </button>
             <button
               type="button"
-              className={`product-kind-tab ${kind === "ACCESSORY" || kind === "LENS" ? "active" : ""}`}
+              className={`product-kind-tab ${kind === "ACCESSORY" ? "active" : ""}`}
               onClick={() => setKind("ACCESSORY")}
               role="tab"
-              aria-selected={kind === "ACCESSORY" || kind === "LENS"}
+              aria-selected={kind === "ACCESSORY"}
             >
               <span className="kind-tab-icon">🎞️</span>
               <div className="kind-tab-text">
-                <strong>Thêm thiết bị (Phụ kiện / Cuộn film)</strong>
-                <span>Cuộn film, ống kính rời, pin sạc, chân máy, thẻ nhớ</span>
+                <strong>Thêm cuộn film</strong>
+                <span>Quản lý film theo khổ, loại film và ISO</span>
               </div>
             </button>
           </div>
@@ -678,7 +812,7 @@ function AdminProductFormPage() {
             {/* Tên mẫu máy */}
             <div className={`admin-field-group col-span-2 ${fieldErrors.name ? "has-error" : ""}`}>
               <label htmlFor="model-name">
-                Tên mẫu máy ảnh <span className="req">*</span>
+                Tên sản phẩm <span className="req">*</span>
               </label>
               <input
                 id="model-name"
@@ -718,57 +852,16 @@ function AdminProductFormPage() {
               )}
             </div>
 
-            {/* Phân loại ModelKind */}
+            {/* Loại sản phẩm được xác định từ tab tạo mới hoặc giữ nguyên khi sửa. */}
             <div className="admin-field-group">
-              <label htmlFor="model-kind">
-                Loại sản phẩm <span className="req">*</span>
-              </label>
-              <select
-                id="model-kind"
-                value={kind}
-                onChange={(e) => setKind(e.target.value)}
-                required
-              >
-                {MODEL_KINDS.map((k) => (
-                  <option key={k.value} value={k.value}>
-                    {k.label}
-                  </option>
-                ))}
-              </select>
+              <label>Loại sản phẩm</label>
+              <input
+                type="text"
+                value={isFilmRollForm ? "Cuộn film (ACCESSORY)" : kind === "CAMERA" ? "Máy ảnh (CAMERA)" : kind === "LENS" ? "Ống kính (LENS)" : "Phụ kiện (ACCESSORY)"}
+                disabled
+                readOnly
+              />
             </div>
-
-            {/* Phân loại CameraType (nếu là CAMERA) */}
-            {kind === "CAMERA" ? (
-              <div className="admin-field-group">
-                <label htmlFor="model-cameratype">
-                  Công nghệ máy ảnh <span className="req">*</span>
-                </label>
-                <select
-                  id="model-cameratype"
-                  value={cameraType}
-                  onChange={(e) => {
-                    setCameraType(e.target.value);
-                    setCategoryId("");
-                  }}
-                  required
-                >
-                  {CAMERA_TYPES.map((t) => (
-                    <option key={t.value} value={t.value}>
-                      {t.label}
-                    </option>
-                  ))}
-                </select>
-              </div>
-            ) : (
-              <div className="admin-field-group">
-                <label>Phân loại phụ trợ</label>
-                <input
-                  type="text"
-                  disabled
-                  value={kind === "LENS" ? "Ống kính quang học" : "Phụ kiện hỗ trợ quay chụp"}
-                />
-              </div>
-            )}
 
             {/* Thương hiệu */}
             <div className={`admin-field-group ${fieldErrors.brandId ? "has-error" : ""}`}>
@@ -793,11 +886,39 @@ function AdminProductFormPage() {
               )}
             </div>
 
-            {/* Danh mục */}
-            <div className={`admin-field-group ${fieldErrors.categoryId ? "has-error" : ""}`}>
-              <label htmlFor="model-category">
-                Danh mục thiết bị <span className="req">*</span>
-              </label>
+            {kind === "CAMERA" && (
+              <div className={`admin-field-group col-span-2 ${fieldErrors.cameraType ? "has-error" : ""}`}>
+                <label htmlFor="camera-type">
+                  Loại máy ảnh <span className="req">*</span>
+                </label>
+                <select
+                  id="camera-type"
+                  value={cameraType}
+                  onChange={(event) => {
+                    const nextType = event.target.value;
+                    setCameraType(nextType);
+                    if (nextType !== "DIGITAL") setSensorSize("");
+                    setFieldErrors((prev) => ({ ...prev, cameraType: undefined }));
+                  }}
+                  required
+                >
+                  {(!isEditMode || !cameraType) && (
+                    <option value="" disabled>Chọn loại máy ảnh</option>
+                  )}
+                  <option value="FILM">FILM</option>
+                  <option value="DIGITAL">DIGITAL</option>
+                </select>
+                <span className="field-hint">
+                  Danh mục gốc Film hoặc Digital được lưu tự động; danh mục con hiện có được giữ nếu thuộc nhóm đã chọn.
+                </span>
+                {fieldErrors.cameraType && (
+                  <span className="field-error-msg">{fieldErrors.cameraType}</span>
+                )}
+              </div>
+            )}
+
+            {kind !== "CAMERA" && <div className={`admin-field-group ${fieldErrors.categoryId ? "has-error" : ""}`}>
+              <label htmlFor="model-category">Danh mục sản phẩm <span className="req">*</span></label>
               <select
                 id="model-category"
                 value={categoryId}
@@ -807,17 +928,17 @@ function AdminProductFormPage() {
                 <option value="">-- Chọn danh mục --</option>
                 {categoryOptions.map((c) => (
                   <option key={c.id} value={c.id}>
-                    {c.name}
+                    {c.displayName || c.name}
                   </option>
                 ))}
               </select>
               {fieldErrors.categoryId && (
                 <span className="field-error-msg">{fieldErrors.categoryId}</span>
               )}
-            </div>
+            </div>}
 
-            {/* Ngàm ống kính Mount */}
-            <div className="admin-field-group">
+            {/* Ngàm chỉ dùng cho camera và bản ghi legacy dạng lens/accessory. */}
+            {!isFilmRollForm && <div className="admin-field-group">
               <label htmlFor="model-mount">Ngàm ống kính (Lens Mount)</label>
               <input
                 id="model-mount"
@@ -826,10 +947,66 @@ function AdminProductFormPage() {
                 value={mount}
                 onChange={(e) => setMount(e.target.value)}
               />
-            </div>
+            </div>}
 
             {/* Khổ phim FilmFormat */}
-            {kind === "CAMERA" && cameraType === "FILM" ? (
+            {isFilmRollForm ? (
+              <>
+                <div className={`admin-field-group ${fieldErrors.filmFormat ? "has-error" : ""}`}>
+                  <label htmlFor="model-filmformat">Khổ phim <span className="req">*</span></label>
+                  <select
+                    id="model-filmformat"
+                    value={filmFormat}
+                    onChange={(e) => setFilmFormat(e.target.value)}
+                    required={!isEditMode}
+                  >
+                    <option value="">-- Chọn khổ phim --</option>
+                    {["35mm (135)", "120", "4x5 / Large Format"].map((format) => (
+                      <option key={format} value={format}>{format}</option>
+                    ))}
+                    {filmFormat && !["35mm (135)", "120", "4x5 / Large Format"].includes(filmFormat) && (
+                      <option value={filmFormat}>{filmFormat}</option>
+                    )}
+                  </select>
+                  {fieldErrors.filmFormat && <span className="field-error-msg">{fieldErrors.filmFormat}</span>}
+                </div>
+                <div className={`admin-field-group ${fieldErrors.filmType ? "has-error" : ""}`}>
+                  <label htmlFor="film-type">Loại film <span className="req">*</span></label>
+                  <select id="film-type" value={filmType} onChange={(e) => setFilmType(e.target.value)} required={!isEditMode}>
+                    <option value="">-- Chọn loại film --</option>
+                    <option value="COLOR_NEGATIVE">Color Negative</option>
+                    <option value="BLACK_AND_WHITE">Black &amp; White</option>
+                    <option value="SLIDE_REVERSAL">Slide / Reversal</option>
+                    {filmType && !["COLOR_NEGATIVE", "BLACK_AND_WHITE", "SLIDE_REVERSAL"].includes(filmType) && (
+                      <option value={filmType}>{filmType}</option>
+                    )}
+                  </select>
+                  {fieldErrors.filmType && <span className="field-error-msg">{fieldErrors.filmType}</span>}
+                </div>
+                <div className={`admin-field-group ${fieldErrors.filmIso ? "has-error" : ""}`}>
+                  <label htmlFor="film-iso">ISO <span className="req">*</span></label>
+                  <input id="film-iso" type="number" min="1" step="1" value={filmIso} onChange={(e) => setFilmIso(e.target.value)} required={!isEditMode} />
+                  {fieldErrors.filmIso && <span className="field-error-msg">{fieldErrors.filmIso}</span>}
+                </div>
+                <div className={`admin-field-group ${fieldErrors.filmExposures ? "has-error" : ""}`}>
+                  <label htmlFor="film-exposures">Số kiểu ảnh mỗi cuộn</label>
+                  <input id="film-exposures" type="number" min="1" step="1" value={filmExposures} onChange={(e) => setFilmExposures(e.target.value)} placeholder="Ví dụ: 24 hoặc 36" />
+                  {fieldErrors.filmExposures && <span className="field-error-msg">{fieldErrors.filmExposures}</span>}
+                </div>
+                <div className="admin-field-group">
+                  <label htmlFor="film-processing">Quy trình xử lý</label>
+                  <select id="film-processing" value={filmProcessing} onChange={(e) => setFilmProcessing(e.target.value)}>
+                    <option value="">-- Chọn quy trình --</option>
+                    <option value="C-41">C-41</option>
+                    <option value="E-6">E-6</option>
+                    <option value="B&W">B&amp;W</option>
+                    {filmProcessing && !["C-41", "E-6", "B&W"].includes(filmProcessing) && (
+                      <option value={filmProcessing}>{filmProcessing}</option>
+                    )}
+                  </select>
+                </div>
+              </>
+            ) : kind === "CAMERA" && cameraType === "FILM" ? (
               <div className="admin-field-group">
                 <label htmlFor="model-filmformat">Khổ phim</label>
                 <input
@@ -840,7 +1017,7 @@ function AdminProductFormPage() {
                   onChange={(e) => setFilmFormat(e.target.value)}
                 />
               </div>
-            ) : (
+            ) : !isFilmRollForm && (
               <div className="admin-field-group">
                 <label htmlFor="model-filmformat">Ghi chú định dạng</label>
                 <input
@@ -970,8 +1147,8 @@ function AdminProductFormPage() {
           <div className="admin-card-header">
             <span className="admin-section-num">03</span>
             <div>
-              <h3>Mô tả chi tiết và Giới thiệu máy</h3>
-              <p>Nội dung giới thiệu đặc điểm nổi bật, chất ảnh và đối tượng người dùng phù hợp.</p>
+              <h3>{isFilmRollForm ? "Mô tả chi tiết cuộn film" : "Mô tả chi tiết và Giới thiệu máy"}</h3>
+              <p>{isFilmRollForm ? "Mô tả màu sắc, chất ảnh, điều kiện bảo quản và cách sử dụng cuộn film." : "Nội dung giới thiệu đặc điểm nổi bật, chất ảnh và đối tượng người dùng phù hợp."}</p>
             </div>
           </div>
 
@@ -983,7 +1160,7 @@ function AdminProductFormPage() {
               <textarea
                 id="model-desc"
                 rows={5}
-                placeholder="Nhập thông tin giới thiệu về cảm biến, màu sắc, khả năng quay phim, ống kính phù hợp..."
+                placeholder={isFilmRollForm ? "Mô tả màu sắc, chất ảnh, điều kiện bảo quản và cách sử dụng cuộn film..." : "Nhập thông tin giới thiệu về cảm biến, màu sắc, khả năng quay phim, ống kính phù hợp..."}
                 value={description}
                 onChange={(e) => setDescription(e.target.value)}
                 required
@@ -996,7 +1173,7 @@ function AdminProductFormPage() {
         </div>
 
         {/* SECTION 4: THÔNG SỐ KỸ THUẬT (SPECS) */}
-        <div className="admin-form-card">
+        {!isFilmRollForm && <div className="admin-form-card">
           <div className="admin-card-header">
             <span className="admin-section-num">04</span>
             <div>
@@ -1061,7 +1238,7 @@ function AdminProductFormPage() {
               />
             </div>
           </div>
-        </div>
+        </div>}
 
         {/* SECTION 5: QUẢN LÝ HÌNH ẢNH (CHO CẢ CREATE VÀ EDIT MODE) */}
         <div className="admin-form-card">
@@ -1110,7 +1287,7 @@ function AdminProductFormPage() {
                 <span className="field-hint">
                   {isEditMode
                     ? "Các ảnh này sẽ được tải lên khi bạn nhấn Lưu các thay đổi."
-                    : "Các ảnh này sẽ tự động tải lên ngay sau khi mẫu máy được khởi tạo thành công."}
+                    : `Các ảnh này sẽ tự động tải lên ngay sau khi ${isFilmRollForm ? "cuộn film" : "sản phẩm"} được tạo thành công.`}
                 </span>
               </div>
 
@@ -1221,7 +1398,7 @@ function AdminProductFormPage() {
               ? "Đang lưu dữ liệu..."
               : isEditMode
                 ? "Lưu các thay đổi"
-                : "Tạo mẫu máy mới"}
+                : isFilmRollForm ? "Tạo cuộn film" : "Tạo sản phẩm"}
           </button>
         </div>
       </form>

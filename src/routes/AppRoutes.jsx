@@ -151,7 +151,7 @@ function AppRoutes() {
       <Route
         path="/admin"
         element={
-          <ProtectedRoute allowedRoles={["STAFF", "ADMIN"]}>
+          <ProtectedRoute allowedRoles={["ADMIN"]}>
             <AdminLayout />
           </ProtectedRoute>
         }
@@ -207,8 +207,14 @@ function AppRoutes() {
             </ProtectedRoute>
           }
         />
-        {/* KHO MÁY: Nhân viên & Admin xem chiếc máy & khóa bảo trì (Row 6), nhưng Thêm máy (Row 8) chỉ ADMIN */}
-        <Route path="inventory" element={<AdminInventoryPage />} />
+        <Route
+          path="inventory"
+          element={
+            <ProtectedRoute allowedRoles={["ADMIN"]}>
+              <AdminInventoryPage />
+            </ProtectedRoute>
+          }
+        />
         <Route
           path="inventory/new"
           element={
@@ -217,12 +223,18 @@ function AppRoutes() {
             </ProtectedRoute>
           }
         />
-        <Route path="inventory/:id" element={<AdminInventoryPage />} />
-        <Route path="calendar" element={<AdminCalendarPage />} />
-        {/* VẬN HÀNH ĐƠN THUÊ: Nhân viên & Admin xem, xác nhận, giao/nhận máy (Row 2, 4, 5) */}
-        <Route path="orders" element={<AdminOrdersPage />} />
-        <Route path="orders/:id" element={<AdminOrderDetailPage />} />
-        <Route path="payments" element={<AdminPaymentsPage />} />
+        <Route
+          path="inventory/:id"
+          element={
+            <ProtectedRoute allowedRoles={["ADMIN"]}>
+              <AdminInventoryPage />
+            </ProtectedRoute>
+          }
+        />
+        <Route path="calendar" element={<ProtectedRoute allowedRoles={["ADMIN"]}><AdminCalendarPage /></ProtectedRoute>} />
+        <Route path="orders" element={<ProtectedRoute allowedRoles={["ADMIN"]}><AdminOrdersPage /></ProtectedRoute>} />
+        <Route path="orders/:id" element={<ProtectedRoute allowedRoles={["ADMIN"]}><AdminOrderDetailPage /></ProtectedRoute>} />
+        <Route path="payments" element={<ProtectedRoute allowedRoles={["ADMIN"]}><AdminPaymentsPage /></ProtectedRoute>} />
         {/* TÀI KHOẢN: Chỉ ADMIN mới xem, gán vai trò, khóa/mở khóa (Row 10) */}
         <Route
           path="users"
