@@ -3,22 +3,13 @@ import Header from "../components/shared/Header";
 import Footer from "../components/shared/Footer";
 import { useAuth } from "../hooks/useAuth";
 
+const navLinks = [
+  { to: "/profile", label: "Hồ sơ" },
+  { to: "/favorites", label: "Yêu thích" },
+  { to: "/support", label: "Hỗ trợ & FAQ" },
+];
+
 function RenterLayout() {
-  const { user } = useAuth();
-  const isAdmin = user?.roles?.includes("ADMIN");
-
-  const navLinks = [
-    { to: "/profile", label: "Hồ sơ" },
-    { to: "/favorites", label: "Yêu thích" },
-    ...(!isAdmin
-      ? [
-          { to: "/cart", label: "Giỏ thuê" },
-          { to: "/orders", label: "Đơn thuê" },
-        ]
-      : []),
-    { to: "/support", label: "Hỗ trợ & FAQ" },
-  ];
-
   return (
     <div className="app-shell renter-shell">
       <Header variant="renter" />

@@ -12665,3 +12665,30 @@ textarea:focus-visible,
   .payment-history-row { grid-template-columns: 1fr; }
   .payment-panel-header, .payment-review-heading { align-items: flex-start; flex-direction: column; }
 }
+
+/* Auth Submit Button Spinner */
+.auth-submit-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  position: relative;
+  min-height: 48px;
+}
+
+.btn-loading-content {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.6rem;
+}
+
+.btn-spinner {
+  width: 18px;
+  height: 18px;
+  border: 2.5px solid rgba(255, 255, 255, 0.35);
+  border-top-color: #ffffff;
+  border-radius: 50%;
+  animation: spin 0.75s linear infinite;
+  display: inline-block;
+  vertical-align: middle;
+}
