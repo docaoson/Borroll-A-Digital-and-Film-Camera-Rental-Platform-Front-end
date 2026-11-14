@@ -146,6 +146,11 @@ function getNavSections(isAdmin) {
   // Chi nhánh (Row 9) chỉ dành cho ADMIN
   const operationItems = [
     {
+      to: "/admin/payments",
+      label: "Thanh toán chuyển khoản",
+      iconType: "handover",
+    },
+    {
       to: "/admin/orders",
       label: "Quản lý đơn thuê",
       iconType: "orders",

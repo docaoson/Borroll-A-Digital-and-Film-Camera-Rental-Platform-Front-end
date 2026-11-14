@@ -2,6 +2,7 @@ import { useEffect, useMemo, useState } from "react";
 import { Link, useParams } from "react-router-dom";
 
 import StatusBadge from "../../components/shared/StatusBadge";
+import PaymentPanel from "../../components/shared/PaymentPanel";
 import { ApiError } from "../../lib/apiClient";
 import { bookingService } from "../../services/bookingService";
 
@@ -353,6 +354,8 @@ function OrderDetailPage() {
             </Link>
           </div>
         </div>
+
+        <PaymentPanel booking={booking} />
 
         {/* Main 2-Column Content Layout */}
         <div className="order-detail-layout">

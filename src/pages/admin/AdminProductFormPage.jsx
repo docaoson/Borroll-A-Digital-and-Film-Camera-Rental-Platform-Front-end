@@ -61,6 +61,7 @@ function AdminProductFormPage() {
   const [cameraType, setCameraType] = useState("DIGITAL");
   const [mount, setMount] = useState("");
   const [filmFormat, setFilmFormat] = useState("");
+  const [sensorSize, setSensorSize] = useState("");
   const [pricePerDay, setPricePerDay] = useState("");
   const [pricePerWeek, setPricePerWeek] = useState("");
   const [deposit, setDeposit] = useState("");
@@ -148,6 +149,7 @@ function AdminProductFormPage() {
               ? JSON.stringify(s.exposure, null, 2)
               : s.exposure || "",
           );
+          setSensorSize(typeof s.sensorSize === "string" ? s.sensorSize : "");
           setSpecsControls(
             Array.isArray(s.controls) ? s.controls.join(", ") : s.controls || "",
           );
@@ -338,12 +340,14 @@ function AdminProductFormPage() {
         // Update technical specifications if provided
         if (
           specsExposure ||
+          sensorSize ||
           specsControls ||
           specsPower ||
           specsQuirks ||
           specsBeginnerNotes
         ) {
           const specsPayload = {};
+          if (sensorSize.trim()) specsPayload.sensorSize = sensorSize.trim();
           if (specsExposure) {
             try {
               specsPayload.exposure = JSON.parse(specsExposure);
@@ -420,6 +424,20 @@ function AdminProductFormPage() {
       } else {
         // --- 2. CREATE NEW MODEL ---
         const created = await adminService.createAdminModel(payload);
+
+        const specsPayload = {};
+        if (sensorSize.trim()) specsPayload.sensorSize = sensorSize.trim();
+        if (specsExposure) {
+          try { specsPayload.exposure = JSON.parse(specsExposure); }
+          catch { specsPayload.exposure = { description: specsExposure }; }
+        }
+        if (specsControls) specsPayload.controls = specsControls.split(",").map((s) => s.trim()).filter(Boolean);
+        if (specsPower) specsPayload.power = specsPower.trim();
+        if (specsQuirks) specsPayload.quirks = specsQuirks.split(",").map((s) => s.trim()).filter(Boolean);
+        if (specsBeginnerNotes) specsPayload.beginnerNotes = specsBeginnerNotes.split(",").map((s) => s.trim()).filter(Boolean);
+        if (Object.keys(specsPayload).length > 0) {
+          await adminService.updateModelSpecs(created.id, specsPayload);
+        }
 
         // Upload any selected local images to the newly created product
         if (selectedFiles.length > 0) {
@@ -507,6 +525,14 @@ function AdminProductFormPage() {
       processIncomingFiles(e.dataTransfer.files);
     }
   };
+
+  const categoryOptions = (() => {
+    if (kind !== "CAMERA") {
+      return categories.flatMap((root) => [root, ...(root.children || [])]);
+    }
+    const rootSlug = cameraType === "FILM" ? "may-film" : cameraType === "DIGITAL" ? "may-digital" : "may-instant";
+    return categories.find((root) => root.slug === rootSlug)?.children || [];
+  })();
 
   if (loading) {
     return (
@@ -720,7 +746,10 @@ function AdminProductFormPage() {
                 <select
                   id="model-cameratype"
                   value={cameraType}
-                  onChange={(e) => setCameraType(e.target.value)}
+                  onChange={(e) => {
+                    setCameraType(e.target.value);
+                    setCategoryId("");
+                  }}
                   required
                 >
                   {CAMERA_TYPES.map((t) => (
@@ -776,7 +805,7 @@ function AdminProductFormPage() {
                 required
               >
                 <option value="">-- Chọn danh mục --</option>
-                {categories.map((c) => (
+                {categoryOptions.map((c) => (
                   <option key={c.id} value={c.id}>
                     {c.name}
                   </option>
@@ -821,6 +850,18 @@ function AdminProductFormPage() {
                   value={filmFormat}
                   onChange={(e) => setFilmFormat(e.target.value)}
                   disabled={kind !== "CAMERA" || cameraType !== "FILM"}
+                />
+              </div>
+            )}
+            {kind === "CAMERA" && cameraType === "DIGITAL" && (
+              <div className="admin-field-group">
+                <label htmlFor="model-sensor-size">Cỡ cảm biến</label>
+                <input
+                  id="model-sensor-size"
+                  type="text"
+                  placeholder="Ví dụ: Full Frame, APS-C, Micro Four Thirds"
+                  value={sensorSize}
+                  onChange={(e) => setSensorSize(e.target.value)}
                 />
               </div>
             )}

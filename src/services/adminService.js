@@ -100,6 +100,26 @@ export const adminService = {
     return apiRequest(`/staff/bookings${buildQuery(params)}`);
   },
 
+  getPayments(params = {}) {
+    return apiRequest(`/staff/payments${buildQuery(params)}`);
+  },
+
+  confirmPayment(id) {
+    return apiRequest(`/staff/payments/${encodeURIComponent(id)}/confirm`, { method: "POST" });
+  },
+
+  rejectPayment(id, reason) {
+    return apiRequest(`/staff/payments/${encodeURIComponent(id)}/reject`, { method: "POST", body: { reason } });
+  },
+
+  presignPaymentQr(contentType, fileSize) {
+    return apiRequest("/admin/payment-settings/qr/presign", { method: "POST", body: { contentType, fileSize } });
+  },
+
+  updateContactSettings(payload) {
+    return apiRequest("/admin/contact-settings", { method: "PUT", body: payload });
+  },
+
   // Booking Actions
   getBookingDetail(id) {
     return apiRequest(`/bookings/${encodeURIComponent(id)}`);

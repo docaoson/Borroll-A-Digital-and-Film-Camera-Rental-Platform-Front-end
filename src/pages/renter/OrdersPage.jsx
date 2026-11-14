@@ -327,6 +327,9 @@ function OrdersPage() {
                         status={booking.status}
                         isOverdue={Boolean(booking.isOverdue)}
                       />
+                      <span className={`payment-status ${(booking.payment?.status || "unpaid").toLowerCase()}`}>
+                        {({ UNPAID: "Chưa thanh toán", PENDING_VERIFICATION: "Chờ xác nhận thanh toán", PAID: "Đã thanh toán", REJECTED: "Thanh toán bị từ chối" })[booking.payment?.status || "UNPAID"]}
+                      </span>
                     </div>
                   </div>
 

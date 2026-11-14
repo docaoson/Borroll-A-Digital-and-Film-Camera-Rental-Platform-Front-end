@@ -175,6 +175,7 @@ function CheckoutPage() {
           <p className="success-instructions-lead">
             Cảm ơn bạn đã lựa chọn Borroll! Yêu cầu đặt thuê của bạn đã được ghi nhận vào hệ thống. Đội ngũ kỹ thuật viên tại chi nhánh sẽ liên hệ với bạn trong vòng 30–60 phút để xác nhận và chuẩn bị thiết bị.
           </p>
+          <Link className="button primary-button" to={`/orders/${createdBooking.id}`}>Thanh toán và gửi minh chứng</Link>
         </div>
 
         <div className="success-details-grid">

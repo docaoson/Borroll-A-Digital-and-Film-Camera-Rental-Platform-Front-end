@@ -1,4 +1,4 @@
-import { apiRequest } from "../lib/apiClient";
+import { apiRequest, uploadFileToPresignedUrl } from "../lib/apiClient";
 
 const quoteCache = new Map();
 
@@ -71,6 +71,30 @@ export const bookingService = {
     return apiRequest(`/bookings/${encodeURIComponent(id)}/cancel`, {
       method: "POST",
       body: reason ? { reason } : {},
+    });
+  },
+
+  getPaymentSettings() {
+    return apiRequest("/payment-settings", {
+      skipAuthRetry: true,
+      publicEndpoint: true,
+      headers: { "Cache-Control": "no-cache" },
+    });
+  },
+
+  getPaymentHistory(id) {
+    return apiRequest(`/bookings/${encodeURIComponent(id)}/payment/history`);
+  },
+
+  async submitPaymentProof(id, file) {
+    const presign = await apiRequest(`/bookings/${encodeURIComponent(id)}/payment/proof/presign`, {
+      method: "POST",
+      body: { contentType: file.type, fileSize: file.size },
+    });
+    await uploadFileToPresignedUrl(presign.uploadUrl, file);
+    return apiRequest(`/bookings/${encodeURIComponent(id)}/payment/proof`, {
+      method: "POST",
+      body: { path: presign.path },
     });
   },
 };
