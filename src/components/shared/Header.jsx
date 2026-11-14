@@ -2,6 +2,7 @@ import { useEffect, useRef, useState } from "react";
 import { Link } from "react-router-dom";
 import MainNav from "./MainNav";
 import AccountMenu from "./AccountMenu";
+import borrollLogo from "../../assets/borroll-logo.jpg";
 
 function Header({ variant = "public" }) {
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
@@ -43,7 +44,9 @@ function Header({ variant = "public" }) {
             aria-label="BORROLL Trang chủ"
             onClick={closeMobileMenu}
           >
-            <span className="brand-mark">B</span>
+            <span className="brand-mark">
+              <img src={borrollLogo} alt="BORROLL Logo" className="brand-mark-img" />
+            </span>
             <span>
               <strong>BORROLL</strong>
               <small>Camera Rental</small>

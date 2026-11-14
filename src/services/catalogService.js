@@ -278,10 +278,10 @@ export const catalogService = {
   getModels(params = {}, options = {}) {
     const qs = buildModelsQueryString(params);
     const endpoint = `/models${qs ? `?${qs}` : ""}`;
-    // Cache filtered catalog model lists for 60 seconds
+    // Fetch directly or with short cache (5s) for instant sync when admin creates models
     return cachedRequest(
       `models:${qs}`,
-      60 * 1000,
+      5 * 1000,
       () =>
         apiRequest(endpoint, {
           skipAuthRetry: true,
@@ -303,7 +303,7 @@ export const catalogService = {
   getModelBySlug(slug, options = {}) {
     return cachedRequest(
       `model:${slug}`,
-      3 * 60 * 1000,
+      10 * 1000,
       () =>
         apiRequest(`/models/${encodeURIComponent(slug)}`, {
           skipAuthRetry: true,

@@ -1,5 +1,6 @@
 import { Link, useNavigate } from "react-router-dom";
 import { useAuth } from "../../hooks/useAuth";
+import borrollLogo from "../../assets/borroll-logo.jpg";
 
 function AdminTopbar({ isSidebarOpen, onToggleSidebar }) {
   const { user, logout } = useAuth();
@@ -39,7 +40,9 @@ function AdminTopbar({ isSidebarOpen, onToggleSidebar }) {
         </button>
 
         <Link to="/admin" className="admin-brand">
-          <span className="brand-mark">B</span>
+          <span className="brand-mark">
+            <img src={borrollLogo} alt="BORROLL Logo" className="brand-mark-img" />
+          </span>
           <div className="admin-brand-info">
             <strong className="admin-brand-name">BORROLL</strong>
             <span className="admin-brand-tag">Admin & Ops Portal</span>
