@@ -1,6 +1,6 @@
 import { Link, useNavigate } from "react-router-dom";
 import { useAuth } from "../../hooks/useAuth";
-
+import borrolllogo from "../../assets/borroll-logo.jpg";
 function AdminTopbar({ isSidebarOpen, onToggleSidebar }) {
   const { user, logout } = useAuth();
   const navigate = useNavigate();
@@ -26,14 +26,22 @@ function AdminTopbar({ isSidebarOpen, onToggleSidebar }) {
           type="button"
           className="admin-sidebar-toggle"
           onClick={onToggleSidebar}
-          aria-label={isSidebarOpen ? "Đóng bảng điều hướng" : "Mở bảng điều hướng"}
+          aria-label={
+            isSidebarOpen ? "Đóng bảng điều hướng" : "Mở bảng điều hướng"
+          }
           aria-expanded={isSidebarOpen}
         >
           <span aria-hidden="true">{isSidebarOpen ? "✕" : "☰"}</span>
         </button>
 
-        <Link to="/" className="admin-brand" aria-label="BORROLL - về trang chủ">
-          <span className="brand-mark">B</span>
+        <Link
+          to="/"
+          className="admin-brand"
+          aria-label="BORROLL - về trang chủ"
+        >
+          <span className="brand-mark">
+            <img src={borrolllogo} alt="BORROLL" className="brand-mark-image" />
+          </span>
           <div className="admin-brand-info">
             <strong className="admin-brand-name">BORROLL</strong>
             <span className="admin-brand-tag">Admin & Ops Portal</span>
@@ -58,12 +66,13 @@ function AdminTopbar({ isSidebarOpen, onToggleSidebar }) {
             )}
           </div>
           <div className="admin-user-details">
-            <span className="admin-user-name" title={user?.fullName || "Tài khoản"}>
+            <span
+              className="admin-user-name"
+              title={user?.fullName || "Tài khoản"}
+            >
               {user?.fullName || "Quản trị viên"}
             </span>
-            <span
-              className={`admin-role-badge ${isAdmin ? "is-admin" : ""}`}
-            >
+            <span className={`admin-role-badge ${isAdmin ? "is-admin" : ""}`}>
               {roleLabel}
             </span>
           </div>

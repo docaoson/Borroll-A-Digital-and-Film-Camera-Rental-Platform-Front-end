@@ -66,4 +66,3 @@ export const authService = {
     return this.updateMe({ avatarPath: path });
   },
 };
-
